@@ -134,6 +134,9 @@ function transform(html, path) {
   h = h.replace(/<div[^>]*class="klarna-container"[^>]*>[\s\S]*?<\/div>/g, '');
   // Cookie consent first in <head>; "Cookie settings" in the footer's bottom line
   h = h.replace(/<head>/i, `<head>\n<script src="/_static/bd-consent.js?v=${CONSENT_V}"></script>`);
+  // Browser-tab icon: the logo on the header's charcoal (site/public/favicon.*)
+  h = h.replace(/<link[^>]+rel=["'](?:shortcut )?icon["'][^>]*>\s*|<link[^>]+apple-touch-icon[^>]*>\s*/gi, '')
+    .replace(/<\/head>/i, '<link rel="icon" href="/favicon.ico" sizes="48x48">\n<link rel="icon" href="/favicon.svg" type="image/svg+xml">\n<link rel="apple-touch-icon" href="/apple-touch-icon.png">\n</head>');
   h = h.replace(/(<section class="footer-bottom">[\s\S]*?)(<\/section>)/, '$1 | <a class="text-white" href="#cookie-settings" data-bd-cookie-settings>Cookie settings</a>$2');
   // Our form script, after the theme's scripts
   h = h.replace(/<\/body>/i, `<script src="/_static/bd-forms.js?v=${FORMS_V}" defer></script>\n</body>`);
