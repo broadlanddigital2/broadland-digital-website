@@ -1,0 +1,68 @@
+{
+  "_about": "The full-screen menu (hamburger) on every page. tools/build.mjs turns this into the menu's HTML. Each section has its theme colour and font (class: signage, print, design, web, liquid-wrapping).",
+  "sections": [
+    {
+      "title": "Signage", "href": "/signage-home/", "class": "signage",
+      "links": [
+        ["Building & shop signage", "/signage-home/building-signage-shop-signs/"],
+        ["Large format print & posters", "/large-format-print-posters/"],
+        ["Laser cutting & engraving", "/signage-home/laser-cutting-engraving-2/"],
+        ["Vehicle graphics", "/vehicle-graphics/"],
+        ["Exhibition stands, pull-ups & PVC banners", "/signage-home/signage-exhibition-stands/"],
+        ["Signage brochure", "/signage-home/signage-brochure/"],
+        ["Signage near you", "/signage-home/locations/"],
+        ["Guides & advice", "/signage-home/guides-and-advice/"],
+        ["Compare sign types", "/signage-home/compare/"]
+      ]
+    },
+    {
+      "title": "Print", "href": "/print-home/", "class": "print",
+      "links": [
+        ["Digital print", "/digital-print/"],
+        ["Litho printing", "/print-home/litho-printing/"],
+        ["Site safety", "/site-safety/"],
+        ["Print finishing", "/print-home/print-finishing/"],
+        ["Promotional items", "/print-home/promotional-items/"]
+      ]
+    },
+    {
+      "title": "Design", "href": "/design-home/", "class": "design",
+      "links": [
+        ["Logo design", "/design-home/logo-design/"],
+        ["Vehicle livery", "/vehicle-livery/"],
+        ["Design for print", "/design-home/design-for-print/"],
+        ["Signage design", "/signage-design/"],
+        ["Promotional design", "/design-home/promotional-design/"]
+      ]
+    },
+    {
+      "title": "Web Dev", "href": "/web-dev-home/", "class": "web",
+      "links": [
+        ["Ecommerce websites", "/web-dev-home/ecommerce-websites/"],
+        ["CMS websites", "/web-dev-home/cms-websites/"],
+        ["Bespoke software systems", "/web-dev-home/bespoke-software-systems/"],
+        ["Web hosting", "/web-hosting/"]
+      ]
+    },
+    {
+      "title": "Liquid Wrapping", "href": "/liquid-wrapping-home/", "class": "liquid-wrapping",
+      "links": [
+        ["Half wrap", "/liquid-wrapping-home/half-liquid-wrapping/"],
+        ["Roof wrap", "/liquid-wrapping-home/liquid-roof-wraps/"],
+        ["Alloy wheels", "/liquid-wrapping-home/alloy-wheel-wraps/"],
+        ["Dechroming", "/liquid-wrapping-home/trim-dechroming/"],
+        ["Hydro dipping", "/hydro-dipping-2/"],
+        ["Shop", "/category/liquid-wrapping/shop/"]
+      ]
+    }
+  ],
+  "more": [
+    ["Get a quote", "/get-a-quote/"],
+    ["Contact us", "/contact-us/"],
+    ["Shop", "/shop/"],
+    ["Blog", "/blog"]
+  ],
+  "phone": "01603 407786",
+  "email": "production@broadlanddigital.co.uk",
+  "address": "Vulcan House, Vulcan Road North, Norwich NR6 6AQ"
+}

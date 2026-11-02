@@ -138,6 +138,14 @@ function transform(html, path) {
   h = h.replace(/<link[^>]+rel=["'](?:shortcut )?icon["'][^>]*>\s*|<link[^>]+apple-touch-icon[^>]*>\s*/gi, '')
     .replace(/<\/head>/i, '<link rel="icon" href="/favicon.ico" sizes="48x48">\n<link rel="icon" href="/favicon.svg" type="image/svg+xml">\n<link rel="apple-touch-icon" href="/apple-touch-icon.png">\n</head>');
   h = h.replace(/(<section class="footer-bottom">[\s\S]*?)(<\/section>)/, '$1 | <a class="text-white" href="#cookie-settings" data-bd-cookie-settings>Cookie settings</a>$2');
+  // Menu: the theme's checkbox menu is replaced (content/menu.json)
+  if (/<div class="navbar">/.test(h)) {
+    const m = megaMenu(path);
+    h = h.replace(/<div class="navbar">[\s\S]*?(<\/nav><!-- #site-navigation -->)/, () => m.button + '\n</nav><!-- #site-navigation -->')
+      .replace(/<\/header>(<!-- #masthead -->)?/, (x) => x + '\n' + m.panel);
+  }
+  h = h.replace(/<\/head>/i, `<link rel="stylesheet" href="/_static/bd-menu.css?v=${MENU_V}">\n</head>`);
+  h = h.replace(/<\/body>/i, `<script src="/_static/bd-menu.js?v=${MENU_V}" defer></script>\n</body>`);
   // Our form script, after the theme's scripts
   h = h.replace(/<\/body>/i, `<script src="/_static/bd-forms.js?v=${FORMS_V}" defer></script>\n</body>`);
   return h;
@@ -146,6 +154,32 @@ function transform(html, path) {
 const formsJs = readFileSync(join(ROOT, 'site/bd-forms.js'));
 const FORMS_V = hash(formsJs);
 const consentJs = readFileSync(join(ROOT, 'site/bd-consent.js'));
+const menuCss = readFileSync(join(ROOT, 'site/bd-menu.css'));
+const menuJs = readFileSync(join(ROOT, 'site/bd-menu.js'));
+const MENU_V = hash(Buffer.concat([menuCss, menuJs]));
+const menu = JSON.parse(readFileSync(join(ROOT, 'content/menu.json'), 'utf8'));
+
+// The full-screen menu (content/menu.json), in place of the theme's checkbox menu. The current page and its section
+// are marked; header.js still looks for the old checkbox, so an inert one stays.
+function megaMenu(path) {
+  const here = path === '/' ? '/' : path + '/';
+  const inSection = (sec) => here === sec.href || here.startsWith(sec.href) || sec.links.some(([, h]) => h === here);
+  const cur = (h) => (h === here ? ' aria-current="page"' : '');
+  const cols = menu.sections.map((sec) => `<details class="bdm-col ${sec.class}"${inSection(sec) ? ' data-current' : ''} open>
+<summary><a class="bdm-title" href="${sec.href}"${cur(sec.href)}>${esc(sec.title)}.</a></summary>
+<ul>${sec.links.map(([l, h]) => `<li><a class="bdm-link" href="${h}"${cur(h)}>${esc(l)}</a></li>`).join('')}</ul>
+</details>`).join('\n');
+  return { button: `<button class="bdm-btn" type="button" aria-expanded="false" aria-controls="bdm" aria-label="Open menu"><span></span><span></span><span></span></button>
+<span class="nav-container" hidden><input type="checkbox" tabindex="-1" aria-hidden="true"></span>`,
+  // The panel sits outside the header: the sticky header would otherwise clip a fixed panel inside it.
+  panel: `<div class="bdm" id="bdm" role="dialog" aria-modal="true" aria-label="Menu" aria-hidden="true" inert>
+<div class="bdm-inner"><div class="bdm-grid">
+${cols}
+</div>
+<div class="bdm-foot"><nav class="bdm-more" aria-label="More">${menu.more.map(([l, h]) => `<a href="${h}"${cur(h)}>${esc(l)}</a>`).join('')}</nav>
+<p class="bdm-contact"><a href="tel:${menu.phone.replace(/\s/g, '')}">${esc(menu.phone)}</a> · <a href="mailto:${menu.email}">${esc(menu.email)}</a><br>${esc(menu.address)}</p></div>
+</div></div>` };
+}
 const CONSENT_V = hash(consentJs);
 
 // ---------- Shell for CRM pages and the blog ----------
@@ -181,6 +215,8 @@ write('_crm-page/index.html', sh);
 write('404.html', page404(sh));
 write('_static/bd-forms.js', formsJs);
 write('_static/bd-consent.js', consentJs);
+write('_static/bd-menu.css', menuCss);
+write('_static/bd-menu.js', menuJs);
 
 let assetsCopied = 0;
 for (const f of walk(ASSETS)) { const rel = relative(ASSETS, f); mkdirSync(dirname(join(OUT, rel)), { recursive: true }); copyFileSync(f, join(OUT, rel)); assetsCopied++; }
