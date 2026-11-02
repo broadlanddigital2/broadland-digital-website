@@ -162,31 +162,24 @@ const menu = JSON.parse(readFileSync(join(ROOT, 'content/menu.json'), 'utf8'));
 
 // The full-screen menu (content/menu.json), in place of the theme's checkbox menu. The current page and its section
 // are marked; header.js still looks for the old checkbox, so an inert one stays.
-// Each section's links (content/menu.json) in a band under the header, in place of the theme's cramped
-// header links; the header itself always shows the main sections (the home page's menu), the current one marked.
+// Header: the main sections, each with a dropdown of its pages (content/menu.json), the current section marked.
 const SECTION_OF_HEADER = { signage: 'signage', print: 'print', design: 'design', 'web-dev': 'web', 'liquid-wrapping': 'liquid-wrapping' };
-let homeMenu = '';
-function subNav(sectionClass, path) {
-  const sec = menu.sections.find((x) => x.class === sectionClass);
-  if (!sec) return '';
+const HEADER_ORDER = ['design', 'print', 'web', 'signage', 'liquid-wrapping'];
+function headerNav(path, currentClass) {
   const here = path === '/' ? '/' : path + '/';
   const cur = (h) => (h === here ? ' aria-current="page"' : '');
-  return `<nav class="bdsub ${sec.class}" aria-label="${esc(sec.title)}"><div class="container header-flex-wrapper bdsub-in">
-<a class="bdsub-title" href="${sec.href}"${cur(sec.href)}>${esc(sec.title)}.</a>
-<ul class="bdsub-links">${sec.links.map(([l, h]) => `<li><a href="${h}"${cur(h)}>${esc(l)}</a></li>`).join('')}</ul>
-</div></nav>`;
+  const items = HEADER_ORDER.map((c) => menu.sections.find((x) => x.class === c)).filter(Boolean).map((sec, i) => {
+    const id = `bdd-${sec.class}`;
+    const inSec = currentClass === sec.class || here === sec.href || sec.links.some(([, h]) => h === here);
+    return `<li class="bdd-item ${sec.class}"><a class="bdd-top" href="${sec.href}"${inSec ? ' aria-current="true"' : ''}>${esc(sec.title)}</a>`
+      + `<button class="bdd-toggle" type="button" aria-expanded="false" aria-controls="${id}" aria-label="${esc(sec.title)} pages"><svg width="10" height="6" viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></button>`
+      + `<div class="bdd-panel" id="${id}"><ul>${sec.links.map(([l, h]) => `<li><a href="${h}"${cur(h)}>${esc(l)}</a></li>`).join('')}</ul></div></li>`;
+  }).join('');
+  return `<ul id="menu-main" class="menu bdd">${items}</ul>`;
 }
 function sectionHeader(h, path) {
   const cls = (h.match(/id="masthead" class="site-header ([a-z-]+)"/) || [])[1] || '';
-  const sec = SECTION_OF_HEADER[cls];
-  // Main sections in the header on every page
-  if (homeMenu) h = h.replace(/<ul id="menu-[a-z-]+" class="menu">[\s\S]*?<\/ul>/, () => {
-    if (!sec) return homeMenu;
-    const href = menu.sections.find((x) => x.class === sec).href;
-    return homeMenu.replace(`href="${href}"`, `href="${href}" aria-current="true"`);
-  });
-  if (sec) h = h.replace(/(<div[^>]*id="spacing"[^>]*><\/div>)/, (m) => m + '\n' + subNav(sec, path));
-  return h;
+  return h.replace(/<ul id="menu-[a-z-]+" class="menu">[\s\S]*?<\/ul>/, () => headerNav(path, SECTION_OF_HEADER[cls]));
 }
 
 function megaMenu(path) {
@@ -235,16 +228,11 @@ function page404(sh) {
 }
 
 // ---------- Write ----------
-{ // the home page's header menu (links already made local) for every page's header
-  const home = transform(captured.get('/'), '/');
-  homeMenu = (home.match(/<ul id="menu-home" class="menu">[\s\S]*?<\/ul>/) || [''])[0];
-}
 rmSync(OUT, { recursive: true, force: true });
 const write = (rel, data) => { const f = join(OUT, rel); mkdirSync(dirname(f), { recursive: true }); writeFileSync(f, data); };
 for (const p of staticPaths) write(p === '/' ? 'index.html' : `${p.slice(1)}/index.html`, transform(captured.get(p), p));
 const sh = shell();
 write('_crm-page/index.html', sh);
-write('_crm-page-signage/index.html', sh.replace(/(<div[^>]*id="spacing"[^>]*><\/div>)/, (m) => m + '\n' + subNav('signage', '/_crm')));
 write('404.html', page404(sh));
 write('_static/bd-forms.js', formsJs);
 write('_static/bd-consent.js', consentJs);

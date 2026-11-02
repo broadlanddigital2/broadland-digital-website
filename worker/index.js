@@ -104,11 +104,9 @@ async function route(request, env) {
   if (blog) return blog;
 
   // A page published in the CRM wins, then the static pages, then old addresses.
-  // Signage pages from the CRM get the Signage links under the header.
-  const shellPath = key.startsWith('/signage-home') ? '/_crm-page-signage/' : SHELL;
-  const crm = await crmPageResponse(request, env, { feedKey: FEED_KEY, origin: ORIGIN, shellPath, trailingSlash: true });
+  const crm = await crmPageResponse(request, env, { feedKey: FEED_KEY, origin: ORIGIN, shellPath: SHELL, trailingSlash: true });
   if (crm) return crm;
-  if (key === '/_crm-page' || key === '/_crm-page-signage') return new Response('Not found', { status: 404 });
+  if (key === '/_crm-page') return new Response('Not found', { status: 404 });
   if (!STATIC.has(key) && redirects[key]) return redirect(redirects[key], url);
   // A permanent redirect to the "/" address (the static files would answer with a temporary one).
   if (STATIC.has(key) && key !== '/' && !path.endsWith('/')) return redirect(key + '/', url);
