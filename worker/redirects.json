@@ -27,6 +27,8 @@
  "/category/print": "/print-home",
  "/category/liquid-wrapping": "/liquid-wrapping-home",
  "/category/liquid-wrapping/shop": "/shop",
+ "/product/ttest": "/shop",
+ "/category/uncategorized": "/shop",
  "/litho-printing": "/print-home/litho-printing",
  "/print-finishing": "/print-home/print-finishing",
  "/building-signage-shop-signs": "/signage-home/building-signage-shop-signs",
