@@ -146,6 +146,8 @@ function transform(html, path) {
   }
   h = sectionHeader(h, path);
   h = breadcrumbs(h, path);
+  if (path === '/') h = homePage(h);
+  h = h.replace(/<\/head>/i, `<link rel="stylesheet" href="/_static/bd-pages.css?v=${PAGES_V}">\n</head>`);
   // header.js expects the theme's menu checkbox; landing pages have no menu, so give it an inert one.
   if (!/class="nav-container"/.test(h)) h = h.replace(/<\/header>/, '<span class="nav-container" hidden><input type="checkbox" tabindex="-1" aria-hidden="true"></span></header>');
   // Footer: ours in place of the theme's (same section colour)
@@ -169,6 +171,8 @@ const MENU_V = hash(Buffer.concat([menuCss, menuJs]));
 const menu = JSON.parse(readFileSync(join(ROOT, 'content/menu.json'), 'utf8'));
 const footerCss = readFileSync(join(ROOT, 'site/bd-footer.css'));
 const FOOTER_V = hash(footerCss);
+const pagesCss = readFileSync(join(ROOT, 'site/bd-pages.css'));
+const PAGES_V = hash(pagesCss);
 
 // The full-screen menu (content/menu.json), in place of the theme's checkbox menu. The current page and its section
 // are marked; header.js still looks for the old checkbox, so an inert one stays.
@@ -321,6 +325,51 @@ function breadcrumbs(h, path) {
     .replace(/<\/head>/i, `<script type="application/ld+json">${JSON.stringify(ld).replace(/</g, '\\u003c')}</script>\n</head>`);
 }
 
+// Home page: hero with the quote and call buttons and a picture collage, the five services as a grid, why us, and
+// the about text (from WordPress) with the rest behind "Read more". Wording in content/menu.json → home.
+function homePage(h) {
+  const tiles = {};
+  for (const m of h.matchAll(/<a href="([^"]+)" class="section [^"]*"[^>]*style="background-image: url\(([^)]+)\)"/g)) tiles[m[1].replace(/\/+$/, '')] = m[2].replace(/['"]/g, '');
+  const title = decode(((h.match(/<h1 class="banner-title">([\s\S]*?)<\/h1>/) || [])[1] || 'Creative solutions. Real results.').replace(/<[^>]+>/g, '')).trim();
+  const lead = decode(((h.match(/<div class="banner-subtitle">([\s\S]*?)<\/div>/) || [])[1] || '').replace(/<[^>]+>/g, '')).trim();
+  const about = (h.match(/<section class="container standard-padding home-content[^"]*">([\s\S]*?)<\/section>/) || [])[1] || '';
+  const paras = [...about.matchAll(/<p class="wp-block-paragraph">([\s\S]*?)<\/p>/g)].map((m) => m[1].trim()).filter(Boolean);
+  const H = menu.home;
+  const secs = HEADER_ORDER.map((c) => menu.sections.find((x) => x.class === c)).filter(Boolean);
+  const order = ['signage', 'print', 'design', 'web', 'liquid-wrapping'].map((c) => menu.sections.find((x) => x.class === c));
+  const img = (sec) => tiles[sec.href.replace(/\/+$/, '')] || '';
+  const [t1, ...t2] = title.split(/(?<=\.)\s+/);
+  const collage = ['signage', 'liquid-wrapping', 'print'].map((c) => menu.sections.find((x) => x.class === c)).map((sec) =>
+    `<a href="${sec.href}" tabindex="-1" aria-hidden="true"><img src="${img(sec)}" alt="" loading="eager"><span>${esc(sec.title)}</span></a>`).join('');
+  const cards = order.map((sec) => `<a class="bdh-card ${sec.class}" href="${sec.href}"><img src="${img(sec)}" alt="" loading="lazy">
+<h3>${esc(sec.title)}.</h3><p>${esc(sec.summary)}</p><span class="bdh-go"><i aria-hidden="true">→</i>Explore ${esc(sec.title.toLowerCase())}</span></a>`).join('\n');
+  const body = `<div class="bdh">
+<section class="bdh-hero"><div class="wrap">
+<div><span class="bdh-eyebrow">${esc(H.eyebrow)}</span>
+<h1><span>${esc(t1)}</span>${t2.length ? `<span>${esc(t2.join(' '))}</span>` : ''}</h1>
+${lead ? `<p class="bdh-lead">${esc(lead)}</p>` : ''}
+<div class="bdh-cta"><a class="bdh-btn bdh-btn--solid" href="/get-a-quote/">Get a free quote</a><a class="bdh-btn bdh-btn--ghost" href="tel:${menu.phone.replace(/\s/g, '')}">Call ${esc(menu.phone)}</a></div>
+<ul class="bdh-chips">${secs.map((sec) => `<li><a href="${sec.href}" style="--c:var(--c-${sec.class})">${esc(sec.title)}</a></li>`).join('')}</ul></div>
+<div class="bdh-collage">${collage}</div>
+</div></section>
+<section class="bdh-section" aria-labelledby="bdh-what"><div class="wrap">
+<div class="bdh-head"><h2 id="bdh-what">What we do.</h2><p>Signage, print, design, web and liquid wrapping under one roof in Norwich, so one call covers the whole job.</p></div>
+<div class="bdh-grid">${cards}</div>
+</div></section>
+<section class="bdh-section bdh-why" aria-labelledby="bdh-why"><div class="wrap">
+<div class="bdh-head"><h2 id="bdh-why">Why Broadland Digital.</h2></div>
+<div class="bdh-points">${H.points.map((pt, i) => `<div class="bdh-point"><b aria-hidden="true">${i + 1}</b><h3>${esc(pt.title)}</h3><p>${esc(pt.text)}</p></div>`).join('')}</div>
+</div></section>
+<section class="bdh-section bdh-about" aria-labelledby="bdh-about"><div class="wrap">
+<h2 id="bdh-about">About Broadland Digital.</h2>
+<div class="bdh-text">${paras.slice(0, 2).map((p) => `<p>${p}</p>`).join('')}
+${paras.length > 2 ? `<details><summary><span class="more">Read more</span><span class="less">Show less</span></summary>${paras.slice(2).map((p) => `<p>${p}</p>`).join('')}</details>` : ''}
+<ul class="bdh-guides">${H.guides.map(([l, h2]) => `<li><a href="${h2}">${esc(l)}</a></li>`).join('')}</ul></div>
+</div></section>
+</div>`;
+  return h.replace(/<div class="homepage">[\s\S]*?(?=<footer)/, body + '\n');
+}
+
 function megaMenu(path) {
   const here = path === '/' ? '/' : path + '/';
   const inSection = (sec) => here === sec.href || here.startsWith(sec.href) || sec.links.some(([, h]) => h === here);
@@ -377,6 +426,7 @@ write('_static/bd-forms.js', formsJs);
 write('_static/bd-consent.js', consentJs);
 write('_static/bd-menu.css', menuCss);
 write('_static/bd-footer.css', footerCss);
+write('_static/bd-pages.css', pagesCss);
 write('_static/bd-menu.js', menuJs);
 
 let assetsCopied = 0;

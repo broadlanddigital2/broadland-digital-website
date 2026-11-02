@@ -42,7 +42,8 @@
           "Compare sign types",
           "/signage-home/compare/"
         ]
-      ]
+      ],
+      "summary": "Shop and building signs, interior signs, large format print, exhibition stands and banners: designed, made and fitted."
     },
     {
       "title": "Print",
@@ -69,7 +70,8 @@
           "Promotional items",
           "/print-home/promotional-items/"
         ]
-      ]
+      ],
+      "summary": "Digital and litho print, finishing and promotional items, run in-house in Norwich."
     },
     {
       "title": "Design",
@@ -96,7 +98,8 @@
           "Promotional design",
           "/design-home/promotional-design/"
         ]
-      ]
+      ],
+      "summary": "Logos, design for print, signage design, promotional design and vehicle livery."
     },
     {
       "title": "Web Dev",
@@ -119,7 +122,8 @@
           "Web hosting",
           "/web-hosting/"
         ]
-      ]
+      ],
+      "summary": "Ecommerce and CMS websites, bespoke software systems and web hosting."
     },
     {
       "title": "Liquid Wrapping",
@@ -150,7 +154,8 @@
           "Shop",
           "/category/liquid-wrapping/shop/"
         ]
-      ]
+      ],
+      "summary": "Full and half liquid wraps, roofs, alloy wheels, dechroming and hydro dipping."
     }
   ],
   "more": [
@@ -255,6 +260,41 @@
         "name": "Consensus Media",
         "logo": "/brands/consensus-media-logo.svg"
       }
+    ]
+  },
+  "home": {
+    "eyebrow": "Signage · Print · Design · Web",
+    "points": [
+      {
+        "title": "Made in-house",
+        "text": "Most of our facilities are on site, so we keep control of quality and deadlines from first proof to finished job."
+      },
+      {
+        "title": "Design to installation",
+        "text": "Our in-house designers can create your artwork, or we can run your own files, then print, make and fit."
+      },
+      {
+        "title": "Based in Norwich",
+        "text": "Offices and workshops at Vulcan House, Norwich, working with businesses across Norfolk and Suffolk."
+      }
+    ],
+    "guides": [
+      [
+        "Guides & advice",
+        "/signage-home/guides-and-advice/"
+      ],
+      [
+        "Compare sign types",
+        "/signage-home/compare/"
+      ],
+      [
+        "Signage near you",
+        "/signage-home/locations/"
+      ],
+      [
+        "Blog",
+        "/blog"
+      ]
     ]
   }
 }
