@@ -1,11 +1,16 @@
-# Manual: saves the CRM seo-feed (the pages the worker serves live) as an artifact, for building and checking page
-# styles locally (tools/test/serve.mjs with CRM_FIXTURE=feed.json).
+# Manual: saves the CRM seo-feed (the pages the worker serves live) to the crm-feed-snapshot branch, for building and
+# checking page styles locally (tools/test/serve.mjs with CRM_FIXTURE=feed.json). Delete the branch when done.
 name: Fetch CRM feed
 on: workflow_dispatch
+permissions:
+  contents: write
 jobs:
   fetch:
     runs-on: ubuntu-latest
     steps:
-      - run: curl -sSf "https://dipjypzrfigkzuarlsov.supabase.co/functions/v1/seo-feed?key=c9a2ffbc-820c-45d0-a212-14f0f33a2f54" -o feed.json && ls -la feed.json
-      - uses: actions/upload-artifact@v4
-        with: { name: crm-feed, path: feed.json, retention-days: 3 }
+      - run: |
+          mkdir snap && cd snap && git init -q -b crm-feed-snapshot
+          curl -sSf "https://dipjypzrfigkzuarlsov.supabase.co/functions/v1/seo-feed?key=c9a2ffbc-820c-45d0-a212-14f0f33a2f54" -o feed.json
+          git -c user.name=ci -c user.email=ci@localhost add feed.json
+          git -c user.name=ci -c user.email=ci@localhost commit -qm "CRM feed snapshot"
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" crm-feed-snapshot
