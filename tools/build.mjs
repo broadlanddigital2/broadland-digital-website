@@ -144,6 +144,7 @@ function transform(html, path) {
     h = h.replace(/<div class="navbar">[\s\S]*?(<\/nav><!-- #site-navigation -->)/, () => m.button + '\n</nav><!-- #site-navigation -->')
       .replace(/<\/header>(<!-- #masthead -->)?/, (x) => x + '\n' + m.panel);
   }
+  h = sectionHeader(h, path);
   h = h.replace(/<\/head>/i, `<link rel="stylesheet" href="/_static/bd-menu.css?v=${MENU_V}">\n</head>`);
   h = h.replace(/<\/body>/i, `<script src="/_static/bd-menu.js?v=${MENU_V}" defer></script>\n</body>`);
   // Our form script, after the theme's scripts
@@ -161,6 +162,33 @@ const menu = JSON.parse(readFileSync(join(ROOT, 'content/menu.json'), 'utf8'));
 
 // The full-screen menu (content/menu.json), in place of the theme's checkbox menu. The current page and its section
 // are marked; header.js still looks for the old checkbox, so an inert one stays.
+// Each section's links (content/menu.json) in a band under the header, in place of the theme's cramped
+// header links; the header itself always shows the main sections (the home page's menu), the current one marked.
+const SECTION_OF_HEADER = { signage: 'signage', print: 'print', design: 'design', 'web-dev': 'web', 'liquid-wrapping': 'liquid-wrapping' };
+let homeMenu = '';
+function subNav(sectionClass, path) {
+  const sec = menu.sections.find((x) => x.class === sectionClass);
+  if (!sec) return '';
+  const here = path === '/' ? '/' : path + '/';
+  const cur = (h) => (h === here ? ' aria-current="page"' : '');
+  return `<nav class="bdsub ${sec.class}" aria-label="${esc(sec.title)}"><div class="container header-flex-wrapper bdsub-in">
+<a class="bdsub-title" href="${sec.href}"${cur(sec.href)}>${esc(sec.title)}.</a>
+<ul class="bdsub-links">${sec.links.map(([l, h]) => `<li><a href="${h}"${cur(h)}>${esc(l)}</a></li>`).join('')}</ul>
+</div></nav>`;
+}
+function sectionHeader(h, path) {
+  const cls = (h.match(/id="masthead" class="site-header ([a-z-]+)"/) || [])[1] || '';
+  const sec = SECTION_OF_HEADER[cls];
+  // Main sections in the header on every page
+  if (homeMenu) h = h.replace(/<ul id="menu-[a-z-]+" class="menu">[\s\S]*?<\/ul>/, () => {
+    if (!sec) return homeMenu;
+    const href = menu.sections.find((x) => x.class === sec).href;
+    return homeMenu.replace(`href="${href}"`, `href="${href}" aria-current="true"`);
+  });
+  if (sec) h = h.replace(/(<div[^>]*id="spacing"[^>]*><\/div>)/, (m) => m + '\n' + subNav(sec, path));
+  return h;
+}
+
 function megaMenu(path) {
   const here = path === '/' ? '/' : path + '/';
   const inSection = (sec) => here === sec.href || here.startsWith(sec.href) || sec.links.some(([, h]) => h === here);
@@ -207,11 +235,16 @@ function page404(sh) {
 }
 
 // ---------- Write ----------
+{ // the home page's header menu (links already made local) for every page's header
+  const home = transform(captured.get('/'), '/');
+  homeMenu = (home.match(/<ul id="menu-home" class="menu">[\s\S]*?<\/ul>/) || [''])[0];
+}
 rmSync(OUT, { recursive: true, force: true });
 const write = (rel, data) => { const f = join(OUT, rel); mkdirSync(dirname(f), { recursive: true }); writeFileSync(f, data); };
 for (const p of staticPaths) write(p === '/' ? 'index.html' : `${p.slice(1)}/index.html`, transform(captured.get(p), p));
 const sh = shell();
 write('_crm-page/index.html', sh);
+write('_crm-page-signage/index.html', sh.replace(/(<div[^>]*id="spacing"[^>]*><\/div>)/, (m) => m + '\n' + subNav('signage', '/_crm')));
 write('404.html', page404(sh));
 write('_static/bd-forms.js', formsJs);
 write('_static/bd-consent.js', consentJs);
