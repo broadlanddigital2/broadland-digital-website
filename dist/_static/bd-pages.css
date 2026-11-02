@@ -119,3 +119,13 @@
 @media (max-width:991px){.page .section-two-content{grid-template-columns:repeat(2,minmax(0,1fr))!important;display:grid!important}}
 @media (max-width:575px){.page .section-two-content{grid-template-columns:1fr!important;gap:18px}}
 @media (prefers-reduced-motion:reduce){.page .section-two-content>li,.page .section-two-content>li>img{transition:none}}
+
+/* ---------- Body text size (the theme used 20px everywhere, phones included) ---------- */
+p{font-size:18px;line-height:1.65}
+.page .section-one-content,.excerpt,.section-one-content li,.section-two-content .excerpt{font-size:18px;line-height:1.65}
+.page p[style*="font-size:24px"],.page p[style*="font-size: 24px"]{font-size:21px!important;line-height:1.5}
+.bd-legal p,.bd-legal li,.bd-legal td,.bd-legal th{font-size:17px!important;line-height:1.65}
+@media (max-width:767px){
+  p,.page .section-one-content,.excerpt,.section-one-content li{font-size:17px}
+  .page p[style*="font-size:24px"],.page p[style*="font-size: 24px"]{font-size:19px!important}
+}

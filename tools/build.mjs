@@ -147,6 +147,8 @@ function transform(html, path) {
   h = sectionHeader(h, path);
   h = breadcrumbs(h, path);
   if (path === '/') h = homePage(h);
+  // Long legal pages: slightly smaller text (site/bd-pages.css .bd-legal)
+  if (['/privacy-policy', '/returns', '/refund_returns'].includes(path)) h = h.replace(/class="category page\b/, 'class="category page bd-legal');
   h = h.replace(/<\/head>/i, `<link rel="stylesheet" href="/_static/bd-pages.css?v=${PAGES_V}">\n</head>`);
   // header.js expects the theme's menu checkbox; landing pages have no menu, so give it an inert one.
   if (!/class="nav-container"/.test(h)) h = h.replace(/<\/header>/, '<span class="nav-container" hidden><input type="checkbox" tabindex="-1" aria-hidden="true"></span></header>');
