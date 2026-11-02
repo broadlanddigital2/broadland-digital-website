@@ -1,8 +1,11 @@
 /**
  * POST /api/forms — every form on the site (contact, quote, guide download, product order) goes into the CRM as a
  * Broadland Digital lead (Sales → Leads, source "Website"). The CRM's inbound-webform-email function files it with the
- * "Broadland Digital Web Forms" channel's public key and emails enquiries@broadlanddigital.co.uk, so no mail service
- * is needed here.
+ * "Broadland Digital Web Forms" channel's public key and emails enquiries@broadlanddigital.co.uk.
+ *
+ * Boxly (until the CRM's Meta app is approved): each enquiry is also emailed to the Boxly inbox (BOXLY_EMAIL in
+ * wrangler.jsonc) through SendGrid (secret SENDGRID_API_KEY), in the same format the old Contact Form 7 email used,
+ * so Boxly keeps creating its leads. Remove BOXLY_EMAIL to stop.
  */
 const CRM_FORMS_URL = 'https://dipjypzrfigkzuarlsov.supabase.co/functions/v1/inbound-webform-email';
 const FORM_KEY = 'b7d1a0c4-5e2f-4c8b-9a61-3f0d2e7b4c19'; // channel_integrations.public_key, Broadland Digital Web Forms
@@ -18,7 +21,7 @@ const SUBJECTS = {
   order: (d) => `Website order enquiry: ${d.product || d.where}`,
 };
 
-export async function handleForms(request) {
+export async function handleForms(request, env = {}) {
   if (request.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
   // Only the site's own pages may post (stops the form being used from elsewhere).
   const origin = request.headers.get('origin');
@@ -49,17 +52,47 @@ export async function handleForms(request) {
     `\nSent from: ${d.pageTitle || 'website'}${d.pageUrl ? ' (' + d.pageUrl + ')' : ''}`,
   ].filter(Boolean).join('\n');
 
-  const r = await fetch(CRM_FORMS_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ form_key: FORM_KEY, subject: SUBJECTS[d.kind](d), details, email: d.email, name: d.name, page_url: d.pageUrl }),
-  }).catch((e) => ({ ok: false, status: 0, text: async () => String(e) }));
-  if (!r.ok) {
-    console.error('CRM lead not created', r.status, (await r.text().catch(() => '')).slice(0, 500));
-    return json({ error: 'Sorry, your message could not be sent just now.' }, 502);
-  }
+  const [crm, boxly] = await Promise.all([
+    fetch(CRM_FORMS_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ form_key: FORM_KEY, subject: SUBJECTS[d.kind](d), details, email: d.email, name: d.name, page_url: d.pageUrl }),
+    }).then(async (r) => { if (!r.ok) console.error('CRM lead not created', r.status, (await r.text().catch(() => '')).slice(0, 500)); return r.ok; })
+      .catch((e) => { console.error('CRM lead not created', String(e)); return false; }),
+    sendToBoxly(env, d),
+  ]);
+  // The enquiry is safe if either the CRM or Boxly has it.
+  if (!crm && !boxly) return json({ error: 'Sorry, your message could not be sent just now.' }, 502);
   const message = d.kind === 'quote' ? 'Thank you for your quote request. We will be in contact shortly to discuss it.'
     : d.kind === 'guide' ? 'Thank you. We will email you a link to the guide shortly.'
     : 'Thank you, your message has been sent. We will be in touch shortly.';
   return json({ ok: true, message });
+}
+
+// The old site's Contact Form 7 email to Boxly, field for field ("From: name <email>", "Contact No:", "Message Body:"),
+// sent from enquiries@broadlanddigital.co.uk with the customer as Reply-To.
+async function sendToBoxly(env, d) {
+  const to = String(env.BOXLY_EMAIL || '').trim();
+  if (!to) return false;
+  if (!env.SENDGRID_API_KEY) { console.error('Boxly copy not sent: SENDGRID_API_KEY is not set on the worker'); return false; }
+  const extra = [d.service ? `Service: ${d.service}` : '', d.product ? `Product: ${d.product}` : '', d.pageUrl ? `Page: ${d.pageUrl}` : ''].filter(Boolean).join('\n');
+  const text = `From: ${d.name} <${d.email}>\nContact No: ${d.phone}\nSubject: New Enquiry from ${d.name}\n\nMessage Body:\n${d.message || SUBJECTS[d.kind](d)}${extra ? '\n\n' + extra : ''}\n`;
+  try {
+    const r = await fetch('https://api.sendgrid.com/v3/mail/send', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${env.SENDGRID_API_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        personalizations: [{ to: [{ email: to }] }],
+        from: { email: env.BOXLY_FROM_EMAIL || 'enquiries@broadlanddigital.co.uk', name: 'Broadland Digital' },
+        reply_to: { email: d.email, name: d.name },
+        subject: `New Enquiry from ${d.name}`,
+        content: [{ type: 'text/plain', value: text }],
+      }),
+    });
+    if (!r.ok) console.error('Boxly copy not sent', r.status, (await r.text().catch(() => '')).slice(0, 500));
+    return r.ok;
+  } catch (e) {
+    console.error('Boxly copy not sent', String(e));
+    return false;
+  }
 }

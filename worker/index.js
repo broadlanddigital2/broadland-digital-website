@@ -64,7 +64,7 @@ async function route(request, env) {
   const url = new URL(request.url);
   let path = decodeURIComponent(url.pathname);
 
-  if (path === '/api/forms') return handleForms(request);
+  if (path === '/api/forms') return handleForms(request, env);
   if (path.startsWith('/_static/')) return env.ASSETS.fetch(request);
 
   // Uploads: from dist/ when copied in, otherwise from the old WordPress site while it is still running elsewhere.

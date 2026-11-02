@@ -32,7 +32,9 @@ the same header and footer.
   The old WordPress post addresses `/guides/<slug>` redirect to `/blog/<slug>`.
 - **Forms** (contact, quote, guide download, product orders, the footer form) post to `/api/forms`, which files them
   in the CRM as Broadland Digital leads (channel "Broadland Digital Web Forms"; the CRM emails
-  enquiries@broadlanddigital.co.uk) (`worker/forms.js`).
+  enquiries@broadlanddigital.co.uk) (`worker/forms.js`). Until the CRM's Meta app is approved, each enquiry is also
+  emailed to Boxly (`BOXLY_EMAIL` in `wrangler.jsonc`) in the old Contact Form 7 format, through SendGrid: the worker
+  needs the secret `SENDGRID_API_KEY`. Delete `BOXLY_EMAIL` to stop.
 - **Sitemap and llms.txt** add the CRM's pages and posts to the static ones; AI crawler visits are reported to the CRM
   (Marketing → SEO tracking) from the live domain only.
 

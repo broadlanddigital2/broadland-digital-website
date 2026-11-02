@@ -15,7 +15,10 @@
   "vars": {
     // Where /wp-content/uploads files not yet copied into the repo are fetched from. Point it at the old WordPress
     // host's own address (e.g. its temporary domain) before broadlanddigital.co.uk is moved to this worker.
-    "OLD_SITE_ORIGIN": "https://broadlanddigital.co.uk"
+    "OLD_SITE_ORIGIN": "https://broadlanddigital.co.uk",
+    // Every website enquiry is also emailed here (Boxly's inbox, as the old contact form did) until the CRM's Meta app
+    // is approved. Delete this line to stop. Needs the secret SENDGRID_API_KEY (Settings → Variables and Secrets).
+    "BOXLY_EMAIL": "8420d20d-9c4a-4a5e-ae76-424a97a3e249@webform.boxly.ai"
   },
   "observability": { "enabled": true },
   "keep_vars": true
