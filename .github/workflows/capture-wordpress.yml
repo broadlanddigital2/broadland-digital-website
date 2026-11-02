@@ -1,0 +1,36 @@
+# Copies the live WordPress site (every page and product as WordPress serves it, the theme's CSS, scripts and fonts,
+# and the images and PDFs) into source/wordpress, source/wordpress-assets and site/public, rebuilds dist/ and commits.
+# Run from Actions → Capture WordPress site → Run workflow while the old site is online. Also runs when this file or
+# tools/capture changes.
+name: Capture WordPress site
+on:
+  workflow_dispatch:
+    inputs:
+      origin:
+        description: "Old WordPress site address"
+        required: false
+        default: "https://broadlanddigital.co.uk"
+  push:
+    branches: [main]
+    paths: [.github/workflows/capture-wordpress.yml, tools/capture/**]
+permissions:
+  contents: write
+concurrency: { group: capture, cancel-in-progress: false }
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: Capture
+        run: node tools/capture/capture.mjs "${{ inputs.origin || 'https://broadlanddigital.co.uk' }}"
+      - name: Rebuild and commit
+        run: |
+          node tools/build.mjs
+          git config user.name "github-actions[bot]"
+          git config user.email "41898299+github-actions[bot]@users.noreply.github.com"
+          git add source site/public dist worker
+          git diff --cached --quiet || git commit -m "Capture the WordPress site"
+          git pull --rebase origin main
+          git push
