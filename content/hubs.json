@@ -1,0 +1,113 @@
+{
+  "_about": "The five section hub pages (tools/build.mjs → hubPage). Intro, steps and FAQs are drafted from each hub's existing WordPress wording (and, for Signage, the CRM's signage scope). Resources (CRM guides, comparisons, areas and matching blog posts) are added live by the worker (worker/hub-resources.js). Edit freely; keep FAQ answers factual.",
+  "signage": {
+    "path": "/signage-home",
+    "heading": "Signs designed, made and fitted in Norwich.",
+    "intro": [
+      "Broadland Digital designs, makes and fits signs for businesses across Norfolk and Suffolk, from our offices and workshops in Norwich.",
+      "Shop fascias, building and interior signs, window graphics, banners and exhibition displays are produced in-house on our own print, CNC, laser and vinyl equipment, so we control the quality and the timings from proof to fitting."
+    ],
+    "keepWordPressText": false,
+    "servicesTitle": "Signage solutions.",
+    "steps": [
+      ["Tell us what you need", "Send photos, rough sizes and the wording, or call us. We can visit to survey the site where needed."],
+      ["Design and proof", "We prepare a design proof for you to approve, using your artwork or created by our designers."],
+      ["Made in-house", "Your signs are printed, cut and made in our Norwich workshop."],
+      ["Fitted or delivered", "Our team fits your signs, or you collect or we deliver them, ready to put up."]
+    ],
+    "faqs": [
+      ["Do you design the signs as well as make them?", "Yes. You can send your own artwork or our in-house designers can create it, and you approve a proof before anything is made."],
+      ["Do you fit the signs?", "Yes. We fit signs as well as making them, and can survey the site first so sizes, fixings and access are right."],
+      ["What should I send for a quote?", "Photos of where the sign will go, approximate sizes, the wording or logo, and when you need it. Use the quote form or call 01603 407786."],
+      ["Can I see materials before I order?", "Yes. You're welcome to visit our Norwich workshop at Vulcan House to see materials and finishes."],
+      ["Do shop signs need planning permission?", "Some do, depending on size, illumination and location. Our guide to planning consent for shop signs explains when advertisement consent is needed."]
+    ]
+  },
+  "print": {
+    "path": "/print-home",
+    "heading": "Digital and litho print, finished in-house.",
+    "intro": [
+      "From business cards and leaflets to brochures, posters and large format, Broadland Digital prints for businesses in Norwich and across Norfolk.",
+      "Digital print suits short runs, quick turnarounds and personalised print; litho suits longer runs. We offer standard and custom sizes and finishes including lamination, spot UV, embossing and foil blocking."
+    ],
+    "keepWordPressText": true,
+    "servicesTitle": "Print services.",
+    "steps": [
+      ["Send your brief or files", "Tell us what you need printed, the quantity and the finish, or send your artwork."],
+      ["Artwork and proof", "We check your files, or our designers create them, and send a proof to approve."],
+      ["Printed and finished", "Your job is printed digitally or litho and finished in-house."],
+      ["Ready to collect or delivered", "Collect from our Norwich office or have it delivered."]
+    ],
+    "faqs": [
+      ["Should I choose digital or litho print?", "Digital is best for short runs, quick turnarounds and personalised items; litho suits larger quantities. We'll recommend the right one for your job."],
+      ["Can you print custom sizes?", "Yes. As well as standard sizes, we can work with you on custom sizes tailored to your job."],
+      ["What finishes do you offer?", "Finishes include lamination, spot UV varnish, embossing and foil blocking, plus a choice of binding options."],
+      ["Can you design my print too?", "Yes. Our in-house designers can create your artwork, or we can print from your own files."]
+    ]
+  },
+  "design": {
+    "path": "/design-home",
+    "heading": "Design that makes your business stand out.",
+    "intro": [
+      "From logos and brand identities to print, signage, promotional design and vehicle livery, our designers take your idea from concept to finished artwork.",
+      "We work closely with you at every stage, and because print, signage and web are under the same roof, your designs are produced exactly as intended."
+    ],
+    "keepWordPressText": true,
+    "servicesTitle": "Design services.",
+    "steps": [
+      ["Brief", "Tell us about your business, your audience and what the design needs to do."],
+      ["Concepts", "We create design ideas for you to review."],
+      ["Refine", "We refine the chosen design with your feedback until it's right."],
+      ["Final artwork", "You receive print-ready artwork, or we produce it for you: print, signs, vehicles or web."]
+    ],
+    "faqs": [
+      ["What can you design?", "Logos, design for print, signage, promotional material and vehicle livery, as well as designs for websites and social media."],
+      ["Will I see the design before it's produced?", "Yes. You review and approve the design before anything is printed, made or published."],
+      ["Can you produce the design for me as well?", "Yes. Print, signage, vehicle graphics and web are all done in-house, so we can take your design all the way to the finished product."]
+    ]
+  },
+  "web": {
+    "path": "/web-dev-home",
+    "heading": "Websites, ecommerce and bespoke software.",
+    "intro": [
+      "Our in-house web developers and designers in Norwich build everything from straightforward CMS websites to ecommerce stores and bespoke systems.",
+      "We build with platforms including WordPress, Magento and Laravel, host websites, and advise on the right solution for your business now and as it grows."
+    ],
+    "keepWordPressText": true,
+    "servicesTitle": "Web services.",
+    "steps": [
+      ["Discovery", "We talk through your business, your customers and what the website or system needs to do."],
+      ["Design", "We design the site around your brand and your users, for you to review."],
+      ["Build", "Our developers build it on the right platform: CMS, ecommerce or bespoke."],
+      ["Launch and support", "We launch, host if you'd like, and support the site afterwards."]
+    ],
+    "faqs": [
+      ["What platforms do you build on?", "We build with platforms including WordPress, Magento and Laravel, and choose the right one for your project."],
+      ["Can you host my website?", "Yes. We offer web hosting alongside our website builds."],
+      ["Can you build a bespoke system?", "Yes. As well as websites and online shops, we build bespoke software systems, including ones that work with your other business systems."],
+      ["Can I visit to discuss my project?", "Yes. Call 01603 407786 or visit our Norwich office at Vulcan House."]
+    ]
+  },
+  "liquid-wrapping": {
+    "path": "/liquid-wrapping-home",
+    "heading": "Change your vehicle's colour with a peelable liquid wrap.",
+    "intro": [
+      "A liquid wrap is sprayed on like a respray but can be peeled off at any point, making it a cost effective alternative to a vinyl wrap.",
+      "Choose from hundreds of colours and finishes, a full or part wrap, roofs, alloy wheels or dechroming, with packages to suit any budget."
+    ],
+    "keepWordPressText": true,
+    "servicesTitle": "Liquid wrapping services.",
+    "steps": [
+      ["Choose your colour", "Pick from hundreds of colours and finishes, or ask us for advice."],
+      ["Choose a package", "Budget, standard, premium or ultra, for a full wrap, part wrap or details."],
+      ["Preparation and spraying", "We prepare your vehicle and apply the liquid wrap in our Norwich workshop."],
+      ["Collect and enjoy", "Your vehicle is ready to collect; the wrap can be peeled off later if you change your mind."]
+    ],
+    "faqs": [
+      ["Can a liquid wrap be removed?", "Yes. A liquid wrap is peelable, so it can be removed at any point if required."],
+      ["How does it compare with a vinyl wrap?", "Liquid wrapping is generally a more cost effective way to change your vehicle's colour than a conventional vinyl wrap."],
+      ["Does it protect the paintwork?", "Once dry, liquid wrap forms a flexible, weather-resistant coating that helps protect the surface underneath from scratches, chips and UV."],
+      ["What can you wrap?", "Full vehicles, part wraps, roofs, alloy wheels and trim (dechroming), and we also offer hydro dipping."]
+    ]
+  }
+}

@@ -147,6 +147,7 @@ function transform(html, path) {
   h = sectionHeader(h, path);
   h = breadcrumbs(h, path);
   if (path === '/') h = homePage(h);
+  if (hubByPath.has(path)) h = hubPage(h, path);
   // Long legal pages: slightly smaller text (site/bd-pages.css .bd-legal)
   if (['/privacy-policy', '/returns', '/refund_returns'].includes(path)) h = h.replace(/class="category page\b/, 'class="category page bd-legal');
   h = h.replace(/<\/head>/i, `<link rel="stylesheet" href="/_static/bd-pages.css?v=${PAGES_V}">\n</head>`);
@@ -370,6 +371,70 @@ ${paras.length > 2 ? `<details><summary><span class="more">Read more</span><span
 </div></section>
 </div>`;
   return h.replace(/<div class="homepage">[\s\S]*?(?=<footer)/, body + '\n');
+}
+
+// Section hubs (content/hubs.json): hero with breadcrumbs and buttons, intro (with the WordPress wording behind
+// "Read more"), the section's pages as cards, how it works, resources from the CRM (filled in live by the worker:
+// worker/hub-resources.js), FAQs (with FAQPage schema) and a closing call to action.
+const hubs = JSON.parse(readFileSync(join(ROOT, 'content/hubs.json'), 'utf8'));
+const hubByPath = new Map(Object.entries(hubs).filter(([k]) => !k.startsWith('_')).map(([cls, v]) => [v.path, { cls, ...v }]));
+function hubPage(h, path) {
+  const hub = hubByPath.get(path);
+  const sec = menu.sections.find((x) => x.class === hub.cls);
+  let heroImg = '';
+  for (const m of (captured.get('/') || '').matchAll(/<a href="([^"]+)" class="section [^"]*"[^>]*style="background-image: url\(([^)]+)\)"/g)) {
+    if (m[1].replace(/^https?:\/\/[^/]+/, '').replace(/\/+$/, '') === sec.href.replace(/\/+$/, '')) heroImg = m[2].replace(/['"]/g, '').replace(/^https?:\/\/(www\.)?broadlanddigital\.co\.uk/, '');
+  }
+  // the hub's own page cards (picture, title, link) from the theme's list
+  const cards = [...h.matchAll(/<li class="px-3">\s*<img[^>]*src="([^"]+)"[^>]*\/?>\s*<a href="([^"]*)">([\s\S]*?)<\/a>/g)]
+    .map((m) => ({ img: m[1], href: m[2], title: decode(m[3]).trim() })).filter((c) => c.href);
+  const linked = new Set(cards.map((c) => c.href.replace(/\/+$/, '')));
+  const more = sec.links.filter(([, hh]) => !linked.has(hh.replace(/\/+$/, '')));
+  // the WordPress wording, kept behind "Read more"
+  let wpText = '';
+  if (hub.keepWordPressText) {
+    const raw = (h.match(/<div\s+class="section-one-content[^"]*">([\s\S]*?)<\/div>\s*<\/section>/) || [])[1] || '';
+    wpText = raw.replace(/<a [^>]*ub-expand-toggle-button[^>]*>[\s\S]*?<\/a>/g, '').replace(/<\/?div[^>]*>/g, '').replace(/<br\s*\/?>\s*(<br\s*\/?>)?/g, '')
+      .replace(/<p[^>]*>\s*<\/p>/g, '').replace(/\sstyle="[^"]*"/g, '').replace(/<!--[\s\S]*?-->/g, '').trim();
+  }
+  const t = trail(path);
+  const crumbs = `<nav class="bdc" aria-label="Breadcrumb"><ol>${t.map((c, i) => i === t.length - 1 ? `<li><span aria-current="page">${esc(c.name)}</span></li>` : `<li><a href="${c.path === '/' ? '/' : c.path + '/'}">${esc(c.name)}</a></li>`).join('')}</ol></nav>`;
+  const tel = menu.phone.replace(/\s/g, '');
+  const faqLd = { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: hub.faqs.map(([q, a]) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })) };
+  const body = `<div class="bdhub ${hub.cls}">
+<section class="bdhub-hero"><div class="wrap">
+<div class="bdhub-hero-text">${crumbs}
+<span class="bdhub-eyebrow">${esc(sec.title)}</span>
+<h1>${esc(hub.heading)}</h1>
+<p class="bdhub-lead">${esc(sec.summary)}</p>
+<div class="bdhub-cta"><a class="bdhub-btn bdhub-btn--solid" href="/get-a-quote/">Get a free quote</a><a class="bdhub-btn bdhub-btn--ghost" href="tel:${tel}">Call ${esc(menu.phone)}</a></div></div>
+${heroImg ? `<figure class="bdhub-hero-img"><img src="${heroImg}" alt="" fetchpriority="high"></figure>` : ''}
+</div></section>
+<section class="bdhub-intro"><div class="wrap">
+<h2>${esc(sec.title)} at Broadland Digital.</h2>
+<div class="bdhub-text">${hub.intro.map((p) => `<p>${esc(p)}</p>`).join('')}
+${wpText ? `<details class="bdhub-more"><summary><span class="more">Read more</span><span class="less">Show less</span></summary><div class="bdhub-wp">${wpText}</div></details>` : ''}</div>
+</div></section>
+<section class="bdhub-services" aria-labelledby="bdhub-services-h"><div class="wrap">
+<div class="bdhub-head"><h2 id="bdhub-services-h">${esc(hub.servicesTitle)}</h2><a class="bdhub-textlink" href="/get-a-quote/">Not sure what you need? Ask us →</a></div>
+<div class="bdhub-cards">${cards.map((c) => `<a class="bdhub-card" href="${c.href}"><span class="bdhub-card-img"><img src="${c.img}" alt="" loading="lazy"></span><span class="bdhub-card-title">${esc(c.title)}</span></a>`).join('')}</div>
+${more.length ? `<div class="bdhub-also"><span>Also in ${esc(sec.title)}:</span><ul>${more.map(([l, hh]) => `<li><a href="${hh}">${esc(l)}</a></li>`).join('')}</ul></div>` : ''}
+</div></section>
+<section class="bdhub-steps" aria-labelledby="bdhub-steps-h"><div class="wrap">
+<div class="bdhub-head"><h2 id="bdhub-steps-h">How it works.</h2></div>
+<ol>${hub.steps.map(([a, b]) => `<li><h3>${esc(a)}</h3><p>${esc(b)}</p></li>`).join('')}</ol>
+</div></section>
+<section class="bdhub-res" data-bd-resources="${hub.cls}" hidden aria-labelledby="bdhub-res-h"><div class="wrap"><div class="bdhub-head"><h2 id="bdhub-res-h">Guides &amp; resources.</h2></div><div class="bdhub-res-body"></div></div></section>
+<section class="bdhub-faq" aria-labelledby="bdhub-faq-h"><div class="wrap">
+<h2 id="bdhub-faq-h">Questions.</h2>
+<div class="bdhub-faqs">${hub.faqs.map(([q, a]) => `<details><summary>${esc(q)}</summary><p>${esc(a)}</p></details>`).join('')}</div>
+</div></section>
+<section class="bdhub-band"><div class="wrap"><div><h2>Ready to talk about your project?</h2><p>Tell us what you need and we'll come back to you, usually the same working day.</p></div>
+<div class="bdhub-cta"><a class="bdhub-btn bdhub-btn--solid" href="/get-a-quote/">Get a free quote</a><a class="bdhub-btn bdhub-btn--ghost" href="tel:${tel}">Call ${esc(menu.phone)}</a></div></div></section>
+</div>
+`;
+  return h.replace(/<div[^>]*class="category page[^"]*"[^>]*>[\s\S]*?(?=<footer)/, body)
+    .replace(/<\/head>/i, `<script type="application/ld+json">${JSON.stringify(faqLd).replace(/</g, '\\u003c')}</script>\n</head>`);
 }
 
 function megaMenu(path) {

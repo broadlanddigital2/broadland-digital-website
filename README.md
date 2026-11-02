@@ -16,6 +16,7 @@ the same header and footer.
 | `site/bd-forms.js` | The footer's enquiry form and the theme's own forms (quote, guide, product): checks each field with a clear message, then sends them to `/api/forms` (in place of Contact Form 7). |
 | `site/bd-consent.js` | The cookie banner (in place of CookieYes). Google Analytics/Ads and Linkbot ("Analytics & marketing") and the chat bot and reviews widget ("Chat & reviews") only load once a visitor agrees; the choice is kept for a year in the `bd_consent` cookie and can be changed from "Cookie settings" in the footer. |
 | `content/menu.json` | The header links, the full-screen (hamburger) menu and the footer (enquiry form wording, contact details, link columns, legal and social links). Built into every page with `site/bd-menu.*` and `site/bd-footer.css`. |
+| `content/hubs.json` | The five section hubs (Signage, Print, Design, Web Dev, Liquid Wrapping): heading, intro, how it works and FAQs. Their "Guides & resources" (the CRM's guides, comparisons, areas and matching blog posts) are added live by `worker/hub-resources.js`. |
 | `content/site.json` | Redirects for old addresses; the CRM's page addresses. |
 | `content/wordpress.json` | The WordPress export as data (product names, dates), used for the sitemap and the CRM form notes. |
 | `tools/build.mjs` | Builds `dist/`: takes out WordPress, WooCommerce, Stripe, reCAPTCHA and WP Rocket scripts, makes links local, turns "Add to basket" into "Enquire now", points the forms at the CRM. |

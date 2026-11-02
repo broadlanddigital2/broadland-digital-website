@@ -9,6 +9,7 @@ import { handleForms } from './forms.js';
 import { crmPageResponse, addCrmPagesToSitemap, llmsTxt } from './crm-pages.js';
 import { blogResponse, addPostsToSitemap } from './crm-blog.js';
 import { trackAi } from './ai-visibility.js';
+import { withHubResources } from './hub-resources.js';
 import redirects from './redirects.json' with { type: 'json' };
 import staticPaths from './static-paths.json' with { type: 'json' };
 
@@ -16,6 +17,7 @@ const FEED_KEY = 'c9a2ffbc-820c-45d0-a212-14f0f33a2f54'; // seo_sites.feed_key f
 const ORIGIN = 'https://broadlanddigital.co.uk';
 const SHELL = '/_crm-page/';
 const STATIC = new Set(staticPaths);
+const HUBS = new Set(['/signage-home', '/print-home', '/design-home', '/web-dev-home', '/liquid-wrapping-home']);
 
 const BLOG = {
   feedUrl: 'https://dipjypzrfigkzuarlsov.supabase.co/functions/v1/seo-blog',
@@ -111,7 +113,10 @@ async function route(request, env) {
   // A permanent redirect to the "/" address (the static files would answer with a temporary one).
   if (STATIC.has(key) && key !== '/' && !path.endsWith('/')) return redirect(key + '/', url);
   if (!STATIC.has(key) && (/^\/product\/.+-\d+$/.test(key) || key.startsWith('/product-category/'))) return redirect('/shop', url);
-  return env.ASSETS.fetch(request);
+  const res = await env.ASSETS.fetch(request);
+  // Section hubs: guides, comparisons, areas and blog posts from the CRM, added live
+  if (HUBS.has(key) && request.method === 'GET') return withHubResources(res, { feedKey: FEED_KEY, blog: BLOG });
+  return res;
 }
 
 export default {
