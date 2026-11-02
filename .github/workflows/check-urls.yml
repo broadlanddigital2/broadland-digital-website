@@ -1,4 +1,4 @@
-# Temporary: compares every address in the live WordPress site's sitemaps with the new site (preview address).
+# Temporary (re-run): compares every address in the live WordPress site's sitemaps with the new site (preview address).
 name: Check URLs against live site
 on:
   push:
