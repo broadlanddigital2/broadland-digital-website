@@ -75,6 +75,27 @@ function withForms(pageHtml, shell) {
   return pageHtml.replace(/<div class="crmseo-shortcode"[^>]*><\/div>/g, form ? `<div class="crmseo-shortcode bdf bdf-inline"><div class="bdf-wrap">${form}<div class="bdf-done" role="status"><h3>Thank you<span class="bdf-done-name"></span>.</h3><p>We've received your enquiry and will be in touch shortly.</p><button type="button" class="bdf-again">Send another enquiry</button></div></div></div>` : '');
 }
 
+// The site's breadcrumbs (Home / Section / … / page), white, at the top of the page's hero (as on the static pages),
+// in place of the CRM's own trail under the hero picture. Styles: site/bd-pages.css (.crm-main).
+const SECTIONS = { 'signage-home': 'Signage', 'print-home': 'Print', 'design-home': 'Design', 'web-dev-home': 'Web Dev', 'liquid-wrapping-home': 'Liquid Wrapping' };
+function heroCrumbs(html, path, name) {
+  // pages without a CRM trail (e.g. the locations list) get Home / Section / page
+  const m = html.match(/<(nav|div)\b[^>]*class="crumb wrap"[^>]*>([\s\S]*?)<\/\1>/)
+    || ['', '', `<span aria-current="page">${esc(String(name || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim())}</span>`];
+  const tidy = (t) => t.replace(/<[^>]+>/g, '').replace(/\s*↗\s*/g, '').replace(/&amp;/g, '&').replace(/&#0?39;|&rsquo;/g, '’').trim();
+  const items = [];
+  for (const a of m[2].matchAll(/<a\b[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/g)) items.push({ href: a[1], name: tidy(a[2]) });
+  const last = tidy((m[2].match(/aria-current="page"[^>]*>([\s\S]*?)<\//) || [])[1] ?? m[2].replace(/[\s\S]*<\/a>/, '').replace(/^\s*\/\s*/, ''));
+  const seg = path.split('/')[1] || '';
+  const slash = (h) => (h === '/' || /[?#]/.test(h) || h.endsWith('/') ? h : h + '/');
+  if (SECTIONS[seg] && !items.some((i) => i.href.replace(/\/+$/, '') === '/' + seg)) items.unshift({ href: '/' + seg, name: SECTIONS[seg] });
+  items.unshift({ href: '/', name: 'Home' });
+  const nav = `<nav class="bdc" aria-label="Breadcrumb"><ol>${items.map((i) => `<li><a href="${slash(i.href)}">${esc(i.name)}</a></li>`).join('')}${last ? `<li><span aria-current="page">${esc(last)}</span></li>` : ''}</ol></nav>`;
+  const out = m[0] ? html.replace(m[0], '') : html;
+  const hero = out.match(/<div class="(?:research-hero wrap|hero-title|sector-hero[^"]*)">/);
+  return hero ? out.replace(hero[0], hero[0] + nav) : html;
+}
+
 function fill(shell, inner) {
   return shell.replace(/(<div[^>]*data-crm-blog="slot"[^>]*>)\s*<\/div>/i, (_m, open) => open + inner + '</div>');
 }
@@ -107,7 +128,7 @@ export async function crmPageResponse(request, env, opts) {
   if (!shellRes.ok) return null;
   const shell = await shellRes.text();
   const bar = preview ? `<div style="position:sticky;top:84px;z-index:40;padding:10px 16px;background:#ffd84d;color:#111;font:600 14px/1.4 system-ui,sans-serif;text-align:center">Preview from the CRM — not published${preview.note ? ' · ' + esc(preview.note) : ''}</div>` : '';
-  const inner = bar + withForms(String(page.html || ''), shell);
+  const inner = bar + withForms(heroCrumbs(String(page.html || ''), path, String(page.title || '').replace(/\s*[|–]\s*Broadland Digital.*$/i, '') || page.h1), shell);
   const html = setHead(fill(shell, inner), {
     title: page.metaTitle || page.title, description: page.metaDescription, url: opts.origin + (page.path || path) + (opts.trailingSlash && (page.path || path) !== '/' ? '/' : ''),
     image: page.image || '', schema: page.schema || null, noindex: !!preview, css, vars,
