@@ -162,24 +162,27 @@ const menu = JSON.parse(readFileSync(join(ROOT, 'content/menu.json'), 'utf8'));
 
 // The full-screen menu (content/menu.json), in place of the theme's checkbox menu. The current page and its section
 // are marked; header.js still looks for the old checkbox, so an inert one stays.
-// Header: the main sections, each with a dropdown of its pages (content/menu.json), the current section marked.
+// Header: the main sections as plain links (the full menu has every page), the current section marked; then the
+// phone number and a Get a quote button where the theme had a basket icon (there's no basket: orders are enquiries).
 const SECTION_OF_HEADER = { signage: 'signage', print: 'print', design: 'design', 'web-dev': 'web', 'liquid-wrapping': 'liquid-wrapping' };
 const HEADER_ORDER = ['design', 'print', 'web', 'signage', 'liquid-wrapping'];
 function headerNav(path, currentClass) {
   const here = path === '/' ? '/' : path + '/';
-  const cur = (h) => (h === here ? ' aria-current="page"' : '');
-  const items = HEADER_ORDER.map((c) => menu.sections.find((x) => x.class === c)).filter(Boolean).map((sec, i) => {
-    const id = `bdd-${sec.class}`;
+  const items = HEADER_ORDER.map((c) => menu.sections.find((x) => x.class === c)).filter(Boolean).map((sec) => {
     const inSec = currentClass === sec.class || here === sec.href || sec.links.some(([, h]) => h === here);
-    return `<li class="bdd-item ${sec.class}"><a class="bdd-top" href="${sec.href}"${inSec ? ' aria-current="true"' : ''}>${esc(sec.title)}</a>`
-      + `<button class="bdd-toggle" type="button" aria-expanded="false" aria-controls="${id}" aria-label="${esc(sec.title)} pages"><svg width="10" height="6" viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></button>`
-      + `<div class="bdd-panel" id="${id}"><ul>${sec.links.map(([l, h]) => `<li><a href="${h}"${cur(h)}>${esc(l)}</a></li>`).join('')}</ul></div></li>`;
+    return `<li><a href="${sec.href}"${inSec ? ' aria-current="true"' : ''}>${esc(sec.title)}</a></li>`;
   }).join('');
-  return `<ul id="menu-main" class="menu bdd">${items}</ul>`;
+  return `<ul id="menu-main" class="menu bdh-links">${items}</ul>`;
+}
+const PHONE_ICON = '<svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1z"/></svg>';
+function headerActions() {
+  return `<div class="bdh-actions"><a class="bdh-phone" href="tel:${menu.phone.replace(/\s/g, '')}" aria-label="Call ${esc(menu.phone)}">${PHONE_ICON}<span>${esc(menu.phone)}</span></a>`
+    + `<a class="bdh-quote" href="/get-a-quote/"><span class="bdh-long">Get a quote</span><span class="bdh-short">Quote</span></a></div>`;
 }
 function sectionHeader(h, path) {
   const cls = (h.match(/id="masthead" class="site-header ([a-z-]+)"/) || [])[1] || '';
-  return h.replace(/<ul id="menu-[a-z-]+" class="menu">[\s\S]*?<\/ul>/, () => headerNav(path, SECTION_OF_HEADER[cls]));
+  return h.replace(/<ul id="menu-[a-z-]+" class="menu">[\s\S]*?<\/ul>/, () => headerNav(path, SECTION_OF_HEADER[cls]))
+    .replace(/<a href="[^"]*">\s*<img class="ms-4" src="[^"]*cart-shopping-light\.svg[^"]*"[^>]*>\s*<\/a>/, headerActions);
 }
 
 function megaMenu(path) {

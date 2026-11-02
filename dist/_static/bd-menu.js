@@ -2,30 +2,6 @@
 // open, the page behind doesn't scroll. On phones each section is a fold-out (<details>); on wider screens they're
 // all open.
 (function () {
-  // Header dropdowns: hover opens them on desktop (CSS); the arrow buttons open them by click, tap or keyboard.
-  var items = document.querySelectorAll('.bdd-item');
-  function closeAll(except) { items.forEach(function (li) { if (li !== except) { li.classList.remove('open'); var b = li.querySelector('.bdd-toggle'); if (b) b.setAttribute('aria-expanded', 'false'); } }); }
-  items.forEach(function (li) {
-    var b = li.querySelector('.bdd-toggle');
-    b.addEventListener('click', function (e) {
-      e.stopPropagation();
-      var open = !li.classList.contains('open');
-      closeAll(li);
-      li.classList.toggle('open', open);
-      b.setAttribute('aria-expanded', open ? 'true' : 'false');
-      if (open) { var first = li.querySelector('.bdd-panel a'); if (first && e.detail === 0) first.focus(); }
-    });
-    li.addEventListener('focusout', function (e) { if (!li.contains(e.relatedTarget)) { li.classList.remove('open'); b.setAttribute('aria-expanded', 'false'); } });
-  });
-  document.addEventListener('click', function (e) { if (!e.target.closest('.bdd-item')) closeAll(); });
-  document.addEventListener('keydown', function (e) {
-    if (e.key !== 'Escape') return;
-    var open = document.querySelector('.bdd-item.open');
-    if (open) { closeAll(); open.querySelector('.bdd-toggle').focus(); }
-  });
-})();
-
-(function () {
   var btn = document.querySelector('.bdm-btn');
   var menu = document.getElementById('bdm');
   if (!btn || !menu) return;

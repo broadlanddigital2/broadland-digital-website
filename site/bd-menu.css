@@ -41,29 +41,28 @@ body.bdm-lock #masthead .main-navigation>.menu,body.bdm-lock #masthead .main-nav
 .bdm-contact a{color:#fff;text-decoration:none}
 .bdm-contact a:hover{text-decoration:underline}
 
-/* Header: the main sections, each with a dropdown of its pages (content/menu.json). */
+/* Header: section links, phone number, Get a quote, menu button. */
 .site-header .site-branding{flex-shrink:0;margin-right:32px}
 .site-header .main-navigation{display:flex;align-items:center;min-width:0}
-.site-header ul.bdd{display:flex;align-items:center;float:none}
-.site-header ul.bdd>li.bdd-item{position:relative;display:flex;align-items:center;margin-right:30px}
-.site-header ul.bdd>li.bdd-item:last-child{margin-right:0}
-.bdd-top{color:#fff;text-decoration:none;padding:6px 0;border-bottom:2px solid transparent}
-.bdd-top[aria-current]{border-bottom-color:currentColor}
-.bdd-toggle{display:inline-flex;align-items:center;justify-content:center;width:22px;height:30px;margin-left:2px;padding:0;border:0;background:none;color:#fff;cursor:pointer}
-.bdd-toggle svg{transition:transform .2s}
-.bdd-item.open .bdd-toggle svg{transform:rotate(180deg)}
-.bdd-toggle:focus-visible,.bdd-top:focus-visible{outline:2px solid #fff;outline-offset:3px}
-.bdd-panel{--c:#fff;position:absolute;top:100%;left:-20px;z-index:1002;min-width:270px;padding:12px 0 0;display:none}
-.bdd-item.signage .bdd-panel{--c:#713FFF}.bdd-item.print .bdd-panel{--c:#DB5461}.bdd-item.design .bdd-panel{--c:#EA7317}.bdd-item.web .bdd-panel{--c:#439A86}.bdd-item.liquid-wrapping .bdd-panel{--c:#F9C846}
-.bdd-panel ul{display:block!important;float:none!important;margin:0;padding:10px 0;list-style:none;background:#1f2125;border-top:3px solid var(--c);box-shadow:0 14px 36px rgba(0,0,0,.35)}
-.bdd-panel li{margin:0!important;letter-spacing:0!important}
-.bdd-panel a{display:block;padding:10px 22px;color:#d9dadc!important;text-decoration:none;font-family:azo-sans-web,Arial,sans-serif;font-size:15px;line-height:1.3;white-space:nowrap}
-.bdd-panel a:hover,.bdd-panel a:focus-visible{background:rgba(255,255,255,.07);color:#fff!important;box-shadow:inset 3px 0 0 var(--c);outline:none}
-.bdd-panel a[aria-current]{color:#fff!important;font-weight:600}
-.bdd-item.open .bdd-panel{display:block}
-@media (hover:hover){.bdd-item:hover .bdd-panel{display:block}.bdd-item:hover .bdd-toggle svg{transform:rotate(180deg)}}
-.bdd-item:last-child .bdd-panel{left:auto;right:-20px}
-@media (max-width:1099px){.site-header .main-navigation>.menu{display:none}}
+.site-header ul.bdh-links{display:flex;align-items:center;float:none}
+.site-header ul.bdh-links li:not(:last-of-type){margin-right:30px}
+.site-header ul.bdh-links a{color:#fff;text-decoration:none;padding:6px 0;border-bottom:2px solid transparent}
+.site-header ul.bdh-links a:hover,.site-header ul.bdh-links a[aria-current]{border-bottom-color:currentColor}
+.bdh-actions{display:flex;align-items:center;gap:20px;margin-left:36px}
+.bdh-phone{display:inline-flex;align-items:center;gap:8px;color:#fff!important;text-decoration:none;font-family:azo-sans-web,Arial,sans-serif;font-size:16px;font-weight:600;white-space:nowrap}
+.bdh-phone:hover span{text-decoration:underline;text-underline-offset:4px}
+.bdh-quote{display:inline-flex;align-items:center;background:#fff;color:#2a2d32!important;text-decoration:none;border:2px solid #fff;border-radius:30px;padding:9px 22px;
+  font-family:azo-sans-web,Arial,sans-serif;font-size:15px;font-weight:600;white-space:nowrap;transition:background .15s,color .15s}
+.bdh-quote:hover{background:transparent;color:#fff!important}
+.site-header.signage .bdh-quote{color:#713FFF!important}.site-header.print .bdh-quote{color:#DB5461!important}.site-header.design .bdh-quote{color:#EA7317!important}
+.site-header.web-dev .bdh-quote{color:#439A86!important}.site-header.liquid-wrapping .bdh-quote{color:#2a2d32!important}
+.site-header .bdh-quote:hover{color:#fff!important}
+.bdh-phone:focus-visible,.bdh-quote:focus-visible,.site-header ul.bdh-links a:focus-visible{outline:2px solid #fff;outline-offset:3px}
+.bdh-short{display:none}
+@media (max-width:1399px){.bdh-phone span{display:none}.bdh-phone{width:40px;height:40px;justify-content:center;border:2px solid rgba(255,255,255,.6);border-radius:50%}}
+@media (max-width:1199px){.site-header .main-navigation>.menu{display:none}}
+@media (max-width:400px){.site-header .custom-logo{width:112px!important;height:auto}.site-header .site-branding{margin-right:10px}.bdh-phone{width:36px!important;height:36px!important}.bdh-quote{padding:7px 12px!important;font-size:13px!important}.bdm-btn{margin-left:4px!important;width:40px}.bdh-actions{gap:8px!important}}
+@media (max-width:575px){.bdh-actions{gap:10px;margin-left:0}.bdh-long{display:none}.bdh-short{display:inline}.bdh-quote{padding:8px 14px;font-size:14px}.bdm-btn{margin-left:8px}}
 
 @media (max-width:1199px){
   .bdm-inner{padding:170px 50px 50px}
