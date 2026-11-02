@@ -71,6 +71,8 @@
     "/category/web-dev": "/web-dev-home",
     "/category/print": "/print-home",
     "/category/liquid-wrapping": "/liquid-wrapping-home",
-    "/category/liquid-wrapping/shop": "/shop"
+    "/category/liquid-wrapping/shop": "/shop",
+    "/product/ttest": "/shop",
+    "/category/uncategorized": "/shop"
   }
 }

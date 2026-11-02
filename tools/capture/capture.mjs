@@ -12,8 +12,6 @@ const ROOT = new URL('../..', import.meta.url).pathname;
 const UA = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130 Safari/537.36';
 const wp = JSON.parse(readFileSync(join(ROOT, 'content/wordpress.json'), 'utf8'));
 const extra = JSON.parse(readFileSync(join(ROOT, 'tools/capture/extra-pages.json'), 'utf8'));
-const paths = [...new Set([...wp.pages.map((p) => p.path), ...wp.products.map((p) => p.path), ...extra])];
-
 const get = async (url, tries = 3) => {
   for (let i = 0; i < tries; i++) {
     try {
@@ -27,6 +25,33 @@ const get = async (url, tries = 3) => {
 };
 const save = (file, data) => { mkdirSync(dirname(file), { recursive: true }); writeFileSync(file, data); };
 const local = (u) => { try { const x = new URL(u, ORIGIN + '/'); return /(^|\.)broadlanddigital\.co\.uk$/.test(x.host) || x.origin === ORIGIN ? x : null; } catch { return null; } };
+
+// Every address in the live sitemaps (pages, products, shop and blog categories, posts), plus the export's pages.
+const SKIP = new Set(['/cart', '/checkout', '/my-account', '/sample-page', '/product/ttest']);
+async function sitemapPaths() {
+  const out = [];
+  const idx = await get(ORIGIN + '/sitemap_index.xml');
+  if (!idx) return out;
+  for (const sm of [...(await idx.text()).matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1])) {
+    const r = await get(sm);
+    if (!r) continue;
+    for (const m of (await r.text()).matchAll(/<loc>([^<]+)<\/loc>/g)) {
+      const u = local(m[1]);
+      if (u && !u.pathname.startsWith('/wp-content/') && !/\.(kml|xml)$/.test(u.pathname)) out.push(u.pathname.replace(/\/+$/, '') || '/');
+    }
+  }
+  return out;
+}
+const fromSitemaps = await sitemapPaths();
+console.log(`${fromSitemaps.length} addresses in the live sitemaps`);
+const paths = [...new Set([...wp.pages.map((p) => p.path), ...wp.products.map((p) => p.path), ...extra, ...fromSitemaps])].filter((p) => !SKIP.has(p));
+
+// Files at the top of the site that search engines read (Rank Math's local SEO file).
+for (const f of ['/locations.kml']) {
+  const r = await get(ORIGIN + f);
+  if (r) save(join(ROOT, 'site/public', f), Buffer.from(await r.arrayBuffer()));
+}
+
 
 // 1. Pages
 const pages = {};
