@@ -18,7 +18,8 @@ the same header and footer.
 | `content/site.json` | Redirects for old addresses; the CRM's page addresses. |
 | `content/wordpress.json` | The WordPress export as data (product names, dates), used for the sitemap and the CRM form notes. |
 | `tools/build.mjs` | Builds `dist/`: takes out WordPress, WooCommerce, Stripe, reCAPTCHA and WP Rocket scripts, makes links local, turns "Add to basket" into "Enquire now", points the forms at the CRM. |
-| `tools/capture/` | Captures the WordPress site (run by Actions → Capture WordPress site). |
+| `tools/capture/` | Captures the WordPress site: every address in its sitemaps (run by Actions → Capture WordPress site). |
+| `.github/workflows/check-urls.yml` | Actions → Check URLs against live site: tests every live sitemap address on the new site. |
 | `worker/` | The server side (below). |
 
 ## What comes from the CRM
@@ -57,7 +58,7 @@ Deploy command: `npx wrangler deploy`.
 2. Check the `*.workers.dev` preview (it is marked `noindex`). The theme's fonts (Adobe Fonts kit `qbw1hzk`) are
    registered to broadlanddigital.co.uk, so on the preview address the headings fall back to a standard font.
 3. Add the routes `broadlanddigital.co.uk/*` and `www.broadlanddigital.co.uk/*` to this Worker (www redirects to the
-   bare domain). Old WordPress addresses with trailing slashes, `-2` pages, `/privacy`, `/cart` and the like redirect
+   bare domain). Addresses are the same as WordPress's, ending in "/" (`/signage-home/`); the CRM's pages too. Old `-2` pages, `/privacy`, `/cart` and the like redirect
    (`worker/redirects.json`, built from `content/site.json`).
 4. Turn off the CRM SEO Pages plugin on the old WordPress site, or retire the site.
 

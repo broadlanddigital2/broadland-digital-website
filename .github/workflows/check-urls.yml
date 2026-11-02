@@ -1,6 +1,8 @@
-# Temporary (re-run): compares every address in the live WordPress site's sitemaps with the new site (preview address).
+# Checks every address in the live WordPress site's sitemaps against the new site (the preview address): each should
+# open (200) or redirect to a page that does. Run from Actions → Check URLs against live site → Run workflow.
 name: Check URLs against live site
 on:
+  workflow_dispatch:
   push:
     branches: [main]
     paths: [.github/workflows/check-urls.yml]

@@ -14,7 +14,7 @@ import staticPaths from './static-paths.json' with { type: 'json' };
 
 const FEED_KEY = 'c9a2ffbc-820c-45d0-a212-14f0f33a2f54'; // seo_sites.feed_key for Broadland Digital (public, read-only)
 const ORIGIN = 'https://broadlanddigital.co.uk';
-const SHELL = '/_crm-page';
+const SHELL = '/_crm-page/';
 const STATIC = new Set(staticPaths);
 
 const BLOG = {
@@ -56,7 +56,9 @@ const BLOG = {
 const MAIN_PAGES = [['/', 'Home'], ['/signage-home', 'Signage'], ['/print-home', 'Print'], ['/design-home', 'Design'], ['/web-dev-home', 'Web development'],
   ['/liquid-wrapping-home', 'Liquid wrapping'], ['/shop', 'Shop'], ['/blog', 'Blog'], ['/contact-us', 'Contact us'], ['/get-a-quote', 'Get a quote']];
 
-const redirect = (to, url) => Response.redirect(new URL(to + url.search, url.origin).toString(), 301);
+// Redirects go to the page's own address: with the trailing slash, except the blog (its posts have none).
+const withSlash = (to) => (to === '/' || to.endsWith('/') || /\.[a-z0-9]{2,5}$/i.test(to) || /^\/blog(\/|$)/.test(to) || to.includes('#') ? to : to + '/');
+const redirect = (to, url) => Response.redirect(new URL(withSlash(to) + url.search, url.origin).toString(), 301);
 
 async function route(request, env) {
   const url = new URL(request.url);
@@ -78,8 +80,9 @@ async function route(request, env) {
     return new Response(up.body, { status: 200, headers: h });
   }
 
-  // Old WordPress habits: trailing slashes, ?p=/?page_id= links and the like.
-  if (path.length > 1 && path.endsWith('/')) return redirect(path.replace(/\/+$/, ''), url);
+  // Page addresses end in "/" as they did on WordPress (dist/ is served with force-trailing-slash); "key" is the
+  // address without it, for the lookups below.
+  const key = path.replace(/\/+$/, '') || '/';
   if (path === '/' && (url.searchParams.has('p') || url.searchParams.has('page_id'))) return Response.redirect(url.origin + '/', 301);
   if (path === '/sitemap_index.xml' || /^\/[a-z_-]+-sitemap\d*\.xml$/.test(path)) return Response.redirect(url.origin + '/sitemap.xml', 301);
 
@@ -95,19 +98,19 @@ async function route(request, env) {
   }
 
   // The WordPress blog lived at /guides/<slug>; the CRM's blog is at /blog.
-  const guide = path.match(/^\/guides\/([a-z0-9-]+)$/);
+  const guide = key.match(/^\/guides\/([a-z0-9-]+)$/);
   if (guide) return redirect('/blog/' + guide[1], url);
   const blog = await blogResponse(request, env, BLOG);
   if (blog) return blog;
 
   // A page published in the CRM wins, then the static pages, then old addresses.
-  const crm = await crmPageResponse(request, env, { feedKey: FEED_KEY, origin: ORIGIN, shellPath: SHELL });
+  const crm = await crmPageResponse(request, env, { feedKey: FEED_KEY, origin: ORIGIN, shellPath: SHELL, trailingSlash: true });
   if (crm) return crm;
-  if (path === SHELL) return new Response('Not found', { status: 404 });
-  if (!STATIC.has(path) && redirects[path]) return redirect(redirects[path], url);
-  if (/^\/product\/.+-\d+$/.test(path) || path.startsWith('/product-category/')) {
-    if (!STATIC.has(path)) return redirect('/shop', url);
-  }
+  if (key === '/_crm-page') return new Response('Not found', { status: 404 });
+  if (!STATIC.has(key) && redirects[key]) return redirect(redirects[key], url);
+  // A permanent redirect to the "/" address (the static files would answer with a temporary one).
+  if (STATIC.has(key) && key !== '/' && !path.endsWith('/')) return redirect(key + '/', url);
+  if (!STATIC.has(key) && (/^\/product\/.+-\d+$/.test(key) || key.startsWith('/product-category/'))) return redirect('/shop', url);
   return env.ASSETS.fetch(request);
 }
 

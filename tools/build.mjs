@@ -38,7 +38,8 @@ for (const f of walk(SRC).filter((f) => f.endsWith('index.html'))) {
 }
 // A page the CRM plugin drew is a CRM page: the worker serves those live. One of them becomes the shell.
 const crmPages = [...captured].filter(([, h]) => h.includes('crmseo-main')).map(([p]) => p);
-const staticPaths = new Set([...captured.keys()].filter((p) => !crmPages.includes(p)));
+// The blog (/blog, and the old /guides/<post> addresses) is served live from the CRM by the worker.
+const staticPaths = new Set([...captured.keys()].filter((p) => !crmPages.includes(p) && p !== '/blog' && !p.startsWith('/guides/')));
 
 // ---------- Assets ----------
 const assetVersion = new Map();
@@ -89,9 +90,11 @@ function localPath(href) {
     if (/^\/(wp-content\/(themes|plugins|cache)|wp-includes)\//.test(path)) return (assetUrl(path) || base) + (frag ? '#' + frag : '');
     return href;
   }
+  // Page links keep WordPress's trailing slash (the site's addresses end in "/", as they always have).
+  const slash = path.endsWith('/');
   let p = path.replace(/\/+$/, '') || '/';
   if (p !== '/' && !staticPaths.has(p) && !crmPages.includes(p) && !extra.crmPaths.includes(p) && !extra.extraPaths.includes(p) && !/^\/(blog|api)(\/|$)/.test(p)) brokenLinks.add(p);
-  return p + (query ? '?' + query : '') + (frag ? '#' + frag : '');
+  return (p === '/' ? '/' : p + (slash || !/^\/(blog|api)(\/|$)/.test(p) ? '/' : '')) + (query ? '?' + query : '') + (frag ? '#' + frag : '');
 }
 
 function transform(html, path) {
@@ -183,8 +186,8 @@ if (existsSync(join(ROOT, 'site/public'))) for (const f of walk(join(ROOT, 'site
 
 // Sitemap (the worker adds the CRM's pages and blog posts), robots.txt
 const indexable = [...staticPaths].filter((p) => !/thank-you|quote-requested/.test(p) && !/<meta name="robots" content="[^"]*noindex/.test(captured.get(p))).sort();
-write('sitemap.xml', `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${indexable.map((p) => `<url><loc>${ORIGIN}${p === '/' ? '/' : p}</loc>${lastmod.get(p) ? `<lastmod>${lastmod.get(p).slice(0, 10)}</lastmod>` : ''}</url>`).join('\n')}\n</urlset>\n`);
-write('robots.txt', `User-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /_crm-page\n\nSitemap: ${ORIGIN}/sitemap.xml\n`);
+write('sitemap.xml', `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${indexable.map((p) => `<url><loc>${ORIGIN}${p === '/' ? '/' : p + '/'}</loc>${lastmod.get(p) ? `<lastmod>${lastmod.get(p).slice(0, 10)}</lastmod>` : ''}</url>`).join('\n')}\n</urlset>\n`);
+write('robots.txt', `User-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /_crm-page/\n\nSitemap: ${ORIGIN}/sitemap.xml\n`);
 
 // Redirects: content/site.json, plus old links to "/x" where the page is "/x-2" (or moved under a parent).
 const redirects = { ...extra.redirects };

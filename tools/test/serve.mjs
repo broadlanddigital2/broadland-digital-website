@@ -20,7 +20,9 @@ globalThis.fetch = async (input, init = {}) => {
 const file = (p) => { const f = join(DIST, p); return existsSync(f) && statSync(f).isFile() ? f : null; };
 const ASSETS = { async fetch(req) {
   const u = new URL(req.url); const p = decodeURIComponent(u.pathname);
-  const f = file(p) || file(p + '.html') || file(join(p, 'index.html'));
+  // force-trailing-slash, as on Cloudflare: "/x" → "/x/", "/x/" → x/index.html
+  if (!p.endsWith('/') && !file(p) && file(join(p, 'index.html'))) return new Response(null, { status: 307, headers: { Location: p + '/' + u.search } });
+  const f = file(p) || (p.endsWith('/') ? file(join(p, 'index.html')) : null);
   if (f && !(p.endsWith('/index.html'))) return new Response(readFileSync(f), { headers: { 'Content-Type': TYPES[extname(f)] || 'application/octet-stream' } });
   return new Response(readFileSync(join(DIST, '404.html')), { status: 404, headers: { 'Content-Type': TYPES['.html'] } });
 } };

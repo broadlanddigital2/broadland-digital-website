@@ -87,6 +87,8 @@ export async function crmPageResponse(request, env, opts) {
     const feed = await getFeed(opts.feedKey);
     page = feed?.pages.get(path);
     if (!page) return null;
+    // Same address style as the rest of the site: "/signage-home/signage-norwich/".
+    if (opts.trailingSlash && path !== '/' && !url.pathname.endsWith('/')) return Response.redirect(`${url.origin}${path}/${url.search}`, 301);
     css = feed.css;
     vars = typeof feed.vars === 'string' && !/[{}<>]/.test(feed.vars) ? feed.vars : '';
   }
@@ -96,7 +98,7 @@ export async function crmPageResponse(request, env, opts) {
   const bar = preview ? `<div style="position:sticky;top:84px;z-index:40;padding:10px 16px;background:#ffd84d;color:#111;font:600 14px/1.4 system-ui,sans-serif;text-align:center">Preview from the CRM — not published${preview.note ? ' · ' + esc(preview.note) : ''}</div>` : '';
   const inner = bar + withForms(String(page.html || ''), shell);
   const html = setHead(fill(shell, inner), {
-    title: page.metaTitle || page.title, description: page.metaDescription, url: opts.origin + (page.path || path),
+    title: page.metaTitle || page.title, description: page.metaDescription, url: opts.origin + (page.path || path) + (opts.trailingSlash && (page.path || path) !== '/' ? '/' : ''),
     image: page.image || '', schema: page.schema || null, noindex: !!preview, css, vars,
   });
   return new Response(request.method === 'HEAD' ? null : html, {
@@ -109,7 +111,7 @@ export async function addCrmPagesToSitemap(xml, opts) {
   const feed = await getFeed(opts.feedKey);
   if (!feed) return xml;
   const have = new Set([...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]));
-  const urls = [...feed.pages.values()].map((p) => opts.origin + p.path).filter((u) => !have.has(u))
+  const urls = [...feed.pages.values()].map((p) => opts.origin + p.path + (p.path === '/' ? '' : '/')).filter((u) => !have.has(u))
     .map((u) => `<url><loc>${esc(u)}</loc></url>`);
   return urls.length ? xml.replace('</urlset>', urls.join('\n') + '\n</urlset>') : xml;
 }

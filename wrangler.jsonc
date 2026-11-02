@@ -10,7 +10,7 @@
     // styles and scripts go straight to the files.
     "run_worker_first": ["/*", "!/_static/*"],
     "not_found_handling": "404-page",
-    "html_handling": "drop-trailing-slash"
+    "html_handling": "force-trailing-slash"
   },
   "vars": {
     // Where /wp-content/uploads files not yet copied into the repo are fetched from. Point it at the old WordPress
