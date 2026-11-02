@@ -1,0 +1,34 @@
+# Temporary: compares every address in the live WordPress site's sitemaps with the new site (preview address).
+name: Check URLs against live site
+on:
+  push:
+    branches: [main]
+    paths: [.github/workflows/check-urls.yml]
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Compare
+        run: |
+          OLD=https://broadlanddigital.co.uk; NEW=https://broadland-digital-website.justin-b8f.workers.dev
+          UA="Mozilla/5.0 (compatible; url-check)"
+          curl -sSL -A "$UA" $OLD/sitemap_index.xml -o index.xml; echo "sitemap index:"; grep -o '<loc>[^<]*' index.xml | cut -c6-
+          : > urls.txt
+          for sm in $(grep -o '<loc>[^<]*' index.xml | cut -c6-); do curl -sSL -A "$UA" "$sm" | grep -o '<loc>[^<]*' | cut -c6- | grep -v '/wp-content/' >> urls.txt; done
+          # robots/sitemap of the CRM plugin too
+          curl -sSL -A "$UA" "$OLD/crm-seo-sitemap.xml" 2>/dev/null | grep -o '<loc>[^<]*' | cut -c6- >> urls.txt || true
+          sort -u urls.txt -o urls.txt; echo "TOTAL $(wc -l < urls.txt)"
+          while read u; do
+            p="${u#$OLD}"
+            r=$(curl -s -o /dev/null -A "$UA" -w "%{http_code} %{redirect_url}" "$NEW$p")
+            code=${r%% *}; to=${r#* }
+            if [ "$code" = "301" ] || [ "$code" = "302" ] || [ "$code" = "308" ]; then
+              f=$(curl -s -o /dev/null -L -A "$UA" -w "%{http_code} %{url_effective}" "$NEW$p")
+              echo "REDIRECT $p -> ${f#* } (${f%% *})"
+            else
+              echo "S$code $p"
+            fi
+          done < urls.txt | sort > results.txt
+          echo "---- summary"; cut -d' ' -f1 results.txt | sort | uniq -c
+          echo "---- not 200 / not redirect to 200"; grep -v '^S200 ' results.txt | grep -v '(200)$' || true
+          echo "---- redirects"; grep '^REDIRECT' results.txt | grep -v -E ' -> https://[^ ]+'"'"'?\1' | head -200
