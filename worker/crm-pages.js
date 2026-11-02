@@ -47,6 +47,16 @@ function setHead(html, { title, description, url, image, schema, noindex, css, v
   meta('property', 'og:description', description);
   meta('property', 'og:url', url);
   if (image) meta('property', 'og:image', image);
+  // The same social and search tags the WordPress plugin printed on these pages.
+  meta('property', 'og:locale', 'en_US');
+  meta('property', 'og:type', 'article');
+  meta('property', 'og:site_name', 'Broadland Digital');
+  meta('property', 'article:publisher', 'https://www.facebook.com/broadlanddigital');
+  meta('name', 'twitter:card', 'summary_large_image');
+  meta('name', 'twitter:title', title);
+  meta('name', 'twitter:description', description);
+  if (image) meta('name', 'twitter:image', image);
+  if (!noindex) meta('name', 'robots', 'index, follow');
   html = html.replace(/<link[^>]*rel="canonical"[^>]*>/i, `<link rel="canonical" href="${esc(url)}">`);
   const head = [
     noindex ? '<meta name="robots" content="noindex, nofollow">' : '',
