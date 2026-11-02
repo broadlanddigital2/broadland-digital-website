@@ -56,6 +56,29 @@ footer.bdf .bdf-social a:hover{color:var(--bg)!important}
 /* The same form inside a CRM page */
 .bdf.bdf-inline{padding:32px;border-radius:14px;margin:24px 0}
 
+/* Group brands (as on the other group sites): always on charcoal so every logo reads */
+.bdf-brands{margin-top:56px;padding:28px;border-radius:14px;background:#24272b}
+.bdf-brands h3{font-family:azo-sans-web,Arial,sans-serif;font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#fff;opacity:.75;margin:0 0 18px}
+.bdf-brand-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));border-top:1px solid #474c50;border-left:1px solid #474c50}
+.bdf-brand-grid>*{min-height:120px;display:flex;align-items:center;justify-content:center;padding:22px;border-right:1px solid #474c50;border-bottom:1px solid #474c50;transition:background .2s}
+footer.bdf .bdf-brand-grid a:hover,footer.bdf .bdf-brand-grid a:focus-visible{background:#30353a}
+.bdf-brand-grid img{display:block;width:100%;max-width:190px;max-height:70px;object-fit:contain}
+.bdf-brand-grid img.sq{width:84px;height:84px;max-height:84px}
+@media (max-width:899px){.bdf-brand-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:575px){.bdf-brands{padding:20px}.bdf-brand-grid{grid-template-columns:1fr 1fr}.bdf-brand-grid>*{min-height:96px;padding:16px}}
+
+/* Breadcrumbs above each page's title (in the theme's banner) */
+.bdc{flex:0 0 100%;width:100%;max-width:100%;color:#fff;margin:0 0 22px;font-family:azo-sans-web,Arial,sans-serif;font-size:14px;line-height:1.5}
+.bdc ol{display:flex;flex-wrap:wrap;align-items:center;list-style:none;margin:0;padding:0}
+.bdc li{display:inline-flex;align-items:center;color:inherit;opacity:.85}
+.bdc li+li::before{content:"/";margin:0 10px;opacity:.6}
+.bdc a{color:inherit!important;text-decoration:none;border-bottom:1px solid transparent}
+.bdc a:hover{border-bottom-color:currentColor}
+.bdc a:focus-visible{outline:2px solid currentColor;outline-offset:2px}
+.bdc [aria-current]{font-weight:700;opacity:1}
+.bdc li:last-child{opacity:1}
+@media (max-width:575px){.bdc{font-size:13px;margin-bottom:12px}.bdc li+li::before{margin:0 7px}}
+
 /* Links */
 .bdf-links{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:32px;margin-top:80px;padding-top:44px;border-top:1px solid var(--line)}
 .bdf-links h3{font-family:azo-sans-web,Arial,sans-serif;font-size:15px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--fg);margin:0 0 14px}

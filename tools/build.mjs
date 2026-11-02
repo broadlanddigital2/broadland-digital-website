@@ -145,6 +145,7 @@ function transform(html, path) {
       .replace(/<\/header>(<!-- #masthead -->)?/, (x) => x + '\n' + m.panel);
   }
   h = sectionHeader(h, path);
+  h = breadcrumbs(h, path);
   // header.js expects the theme's menu checkbox; landing pages have no menu, so give it an inert one.
   if (!/class="nav-container"/.test(h)) h = h.replace(/<\/header>/, '<span class="nav-container" hidden><input type="checkbox" tabindex="-1" aria-hidden="true"></span></header>');
   // Footer: ours in place of the theme's (same section colour)
@@ -234,11 +235,90 @@ ${field('message', 'How can we help?', 'rows="4" maxlength="6000" placeholder="W
 </div>
 </div>
 <nav class="bdf-links" aria-label="Footer">${cols}</nav>
+<section class="bdf-brands" aria-labelledby="bdf-brands-title"><h3 id="bdf-brands-title">Group brands</h3><div class="bdf-brand-grid">${f.brands.map((b) => {
+    const img = `<img src="${b.logo}" alt="${esc(b.name)}" loading="lazy"${b.square ? ' class="sq"' : ''}>`;
+    return b.current ? `<a href="/" aria-current="true" aria-label="${esc(b.name)} home page">${img}</a>`
+      : b.href ? `<a href="${b.href}" target="_blank" rel="noopener" aria-label="${esc(b.name)} website (opens in a new tab)">${img}</a>` : `<div>${img}</div>`;
+  }).join('')}</div></section>
 <div class="bdf-bottom"><span>© ${new Date().getFullYear()} Broadland Digital Ltd. All rights reserved.</span>
 <nav aria-label="Legal">${f.legal.map(([l, h]) => `<a href="${h}">${esc(l)}</a>`).join('')}<a href="#cookie-settings" data-bd-cookie-settings>Cookie settings</a></nav>
-<span>Sister company: <a href="${f.sister[1]}" target="_blank" rel="noopener">${esc(f.sister[0])}</a> (${esc(f.sister[2]).toLowerCase()})</span>
 <div class="bdf-social">${f.social.map(([l, h]) => `<a href="${h}" target="_blank" rel="noopener" aria-label="Broadland Digital on ${l}">${ICON[l] || l}</a>`).join('')}</div></div>
 </div></footer>`;
+}
+
+// Breadcrumbs: a trail above each page's title (Home / Signage / Vehicle graphics / Van graphics) and the same trail
+// as BreadcrumbList schema. Parents come from the address, WordPress's page parents, the hub that lists a page, and the
+// menu (content/menu.json); names from the menu, else the page's own title.
+const wpParent = new Map(wp.pages.filter((p) => p.parent).map((p) => [p.path, p.parent]));
+// (the brochure page links to everything, so it's never a parent)
+for (const p of wp.pages) for (const sec of p.sections || []) if (sec.kind === 'cards' && /-home$/.test(p.path)) for (const it of sec.items || []) {
+  const h = String(it.href || '').replace(/\/+$/, '');
+  if (h && h.startsWith('/') && h !== p.path && !wpParent.has(h)) wpParent.set(h, p.path);
+}
+const slugify = (t) => t.toLowerCase().replace(/&/g, 'and').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+const catName = new Map(wp.products.flatMap((p) => p.categories).map((c) => [slugify(c), c]));
+const menuName = new Map();
+const menuParent = new Map();
+for (const sec of menu.sections) {
+  menuName.set(sec.href.replace(/\/+$/, ''), sec.title);
+  for (const [l, h] of sec.links) { const k = h.replace(/\/+$/, ''); if (!menuName.has(k)) menuName.set(k, l); if (k !== sec.href.replace(/\/+$/, '')) menuParent.set(k, sec.href.replace(/\/+$/, '')); }
+}
+const decode = (t) => t.replace(/&amp;|&#0?38;/g, '&').replace(/&#8211;|&ndash;/g, '–').replace(/&#8217;|&rsquo;/g, '’').replace(/&nbsp;/g, ' ').replace(/&#(\d+);/g, (_m, n) => String.fromCharCode(+n));
+function pageName(p) {
+  if (p === '/') return 'Home';
+  const pg = p.match(/\/page\/(\d+)$/);
+  if (pg) return `Page ${pg[1]}`;
+  if (p === '/shop' || p === '/category') return 'Shop';
+  const bc = extra.breadcrumbs || {};
+  if (bc.names && bc.names[p]) return bc.names[p];
+  if (menuName.has(p)) return menuName.get(p);
+  const html = captured.get(p) || '';
+  // Shop categories: the WooCommerce category's own name (from the products), blog categories: from the address.
+  if (p.startsWith('/category/')) { const n = catName.get(p.split('/').pop()); if (n) return n; }
+  if (p.startsWith('/posts/')) { const w = p.split('/').pop().replace(/-/g, ' '); return w === 'web dev' ? 'Web Dev' : w.charAt(0).toUpperCase() + w.slice(1); }
+  const h1 = (html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/) || [])[1];
+  const t = h1 ? decode(h1.replace(/<br\s*\/?>/gi, ' ').replace(/<[^>]+>/g, '')).replace(/\s+/g, ' ').trim().replace(/\.$/, '') : '';
+  if (t && t !== 'Our Shop') return t;
+  const title = (html.match(/<title>([\s\S]*?)<\/title>/) || [])[1] || p.split('/').pop().replace(/-/g, ' ');
+  return decode(title).split(/ [-|–] /)[0].trim();
+}
+const known = (p) => p === '/' || staticPaths.has(p) || p === '/shop';
+function trail(path) {
+  if (path === '/') return [];
+  const chain = [path];
+  let cur = path;
+  for (let i = 0; i < 8; i++) {
+    let parent = null;
+    if (/\/page\/\d+$/.test(cur)) parent = cur.replace(/\/page\/\d+$/, '');
+    else if (cur.startsWith('/product/')) parent = productParent(cur);
+    else if (cur.startsWith('/category/')) { const up = cur.split('/').slice(0, -1).join('/'); parent = up === '/category' ? '/shop' : up; }
+    else if ((extra.breadcrumbs || {}).parents?.[cur]) parent = extra.breadcrumbs.parents[cur];
+    else {
+      const up = cur.split('/').slice(0, -1).join('/');
+      parent = (up && known(up)) ? up : (menuParent.get(cur) || wpParent.get(cur) || null);
+    }
+    if (!parent || parent === '/' || chain.includes(parent) || !known(parent)) break;
+    chain.unshift(parent); cur = parent;
+  }
+  return ['/', ...chain].map((p) => ({ path: p, name: pageName(p) }));
+}
+function productParent(p) {
+  const prod = wp.products.find((x) => x.path === p);
+  const cats = prod ? prod.categories : [];
+  if (cats.includes('Vehicle Graphics') && known('/category/signage/vehicle-graphics')) return '/category/signage/vehicle-graphics';
+  if (cats.includes('Liquid Wrapping') && known('/category/liquid-wrapping')) return '/category/liquid-wrapping';
+  return '/shop';
+}
+function breadcrumbs(h, path) {
+  const t = trail(path);
+  const hero = /(<section[^>]*class="[^"]*\bbanner\b[^"]*"[^>]*>\s*<div[^>]*class="container[^"]*"[^>]*>)/;
+  if (t.length < 2 || !hero.test(h)) return h;
+  const url = (p) => ORIGIN + (p === '/' ? '/' : p + '/');
+  const nav = `<nav class="bdc" aria-label="Breadcrumb"><ol>${t.map((c, i) => i === t.length - 1
+    ? `<li><span aria-current="page">${esc(c.name)}</span></li>` : `<li><a href="${c.path === '/' ? '/' : c.path + '/'}">${esc(c.name)}</a></li>`).join('')}</ol></nav>`;
+  const ld = { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: t.map((c, i) => ({ '@type': 'ListItem', position: i + 1, name: c.name, item: url(c.path) })) };
+  return h.replace(hero, (m) => m + '\n' + nav)
+    .replace(/<\/head>/i, `<script type="application/ld+json">${JSON.stringify(ld).replace(/</g, '\\u003c')}</script>\n</head>`);
 }
 
 function megaMenu(path) {

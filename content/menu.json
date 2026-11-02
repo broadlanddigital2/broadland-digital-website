@@ -227,11 +227,34 @@
         "/returns/"
       ]
     ],
-    "sister": [
-      "Race Car Graphics UK",
-      "https://racecargraphics.uk/",
-      "Vehicle graphics and livery"
-    ],
-    "maps": "https://www.google.com/maps/search/?api=1&query=Broadland+Digital+Vulcan+House+Vulcan+Road+North+Norwich+NR6+6AQ"
+    "maps": "https://www.google.com/maps/search/?api=1&query=Broadland+Digital+Vulcan+House+Vulcan+Road+North+Norwich+NR6+6AQ",
+    "brands": [
+      {
+        "name": "Broadland Digital",
+        "logo": "/wp-content/uploads/2023/03/Broadland_Digital_Logo.svg",
+        "href": "/",
+        "current": true
+      },
+      {
+        "name": "Race Car Graphics UK",
+        "logo": "/brands/rcg-logo.png",
+        "href": "https://racecargraphics.uk/"
+      },
+      {
+        "name": "Auto Opulence",
+        "logo": "/brands/auto-opulence-logo-white.svg",
+        "href": "https://autoopulence.co.uk/"
+      },
+      {
+        "name": "Norwich Web Works",
+        "logo": "/brands/norwich-web-works-logo.png",
+        "href": "https://norwichwebworks.co.uk/",
+        "square": true
+      },
+      {
+        "name": "Consensus Media",
+        "logo": "/brands/consensus-media-logo.svg"
+      }
+    ]
   }
 }

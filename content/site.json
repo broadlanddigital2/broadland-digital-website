@@ -75,5 +75,45 @@
     "/product/ttest": "/shop",
     "/category/uncategorized": "/shop",
     "/category/liquid-wrapping/shop/plasti-dip-spray-wrap": "/category/liquid-wrapping/shop/full-dip-liquid-wrap"
+  },
+  "breadcrumbs": {
+    "_about": "Breadcrumb names and parents where the page's own title or address doesn't give a good trail.",
+    "names": {
+      "/race-car-graphics": "Race car graphics",
+      "/liquid-wrapping-home/plasti-dip-wrapping": "Plasti Dip liquid wrapping",
+      "/laravel-ecommerce": "Laravel ecommerce",
+      "/norwich": "Our Norwich HQ",
+      "/posts/news-and-info": "News",
+      "/liquid-wrapping-home/full-liquid-wrapping": "Full liquid wrap",
+      "/wall-graphics-and-wall-wraps": "Wall graphics & wall wraps",
+      "/vehicle-wraps-2": "Vehicle wraps",
+      "/woocommerce": "WooCommerce",
+      "/contact-us": "Contact us",
+      "/privacy-policy": "Privacy policy",
+      "/van-graphics": "Van graphics",
+      "/liquid-wrapping-home/budget-liquid-wrapping-2": "Budget liquid wrapping",
+      "/liquid-wrapping-home/premium-liquid-wrapping-2": "Premium liquid wrapping",
+      "/liquid-wrapping-home/standard-spray-wrapping-2": "Standard spray wrapping",
+      "/liquid-wrapping-home/ultra-liquid-wrapping-2": "Ultra liquid wrapping",
+      "/liquid-wrapping-home/paint-protection": "Paint protection",
+      "/magento-ecommerce": "Magento ecommerce",
+      "/category/uncategorized": "Other",
+      "/category/liquid-wrapping/shop": "Products"
+    },
+    "parents": {
+      "/van-graphics": "/vehicle-graphics",
+      "/vehicle-wraps-2": "/vehicle-graphics",
+      "/race-car-graphics": "/vehicle-graphics",
+      "/signage-home/car-graphics": "/vehicle-graphics",
+      "/wall-graphics-and-wall-wraps": "/signage-home",
+      "/laravel-ecommerce": "/web-dev-home/ecommerce-websites",
+      "/woocommerce": "/web-dev-home/ecommerce-websites",
+      "/magento-ecommerce": "/web-dev-home/ecommerce-websites",
+      "/posts/design": "/posts/news-and-info",
+      "/posts/guides": "/posts/news-and-info",
+      "/posts/liquid-wrapping": "/posts/news-and-info",
+      "/posts/signage": "/posts/news-and-info",
+      "/posts/web-dev": "/posts/news-and-info"
+    }
   }
 }
