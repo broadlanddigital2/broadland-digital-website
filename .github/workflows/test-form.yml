@@ -1,0 +1,20 @@
+# Temporary: sends one test enquiry through the live preview's /api/forms to check it reaches the CRM.
+name: Test enquiry form
+on:
+  push:
+    branches: [main]
+    paths: [.github/workflows/test-form.yml]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Post a test enquiry
+        run: |
+          for host in broadland-digital-website.justin-b8f.workers.dev; do
+            echo "== $host"
+            curl -sS -o body.txt -w "HTTP %{http_code}\n" -X POST "https://$host/api/forms" \
+              -H "Content-Type: application/json" -H "Origin: https://$host" \
+              -d '{"form":"contact","name":"TEST Claude","email":"justin@broadlanddigital.co.uk","phone":"01603 407786","message":"Test enquiry from the new website (automated check) - please ignore.","page_url":"https://'$host'/contact-us","page_title":"Contact us | Broadland Digital"}'
+            cat body.txt; echo
+            curl -sS -o /dev/null -w "home page HTTP %{http_code}\n" "https://$host/"
+          done
