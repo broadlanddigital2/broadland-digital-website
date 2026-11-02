@@ -1,0 +1,96 @@
+/* Broadland Digital footer and enquiry form (built from content/menu.json; replaces the theme's footer).
+   Background follows the page's section colour, as the theme's did. */
+.bdf{--bg:#2a2d32;--fg:#fff;--soft:rgba(255,255,255,.78);--line:rgba(255,255,255,.22);--field:rgba(255,255,255,.08);--err:#ffd2d2;--errbg:rgba(176,0,32,.35);
+  background:var(--bg)!important;color:var(--fg);font-family:azo-sans-web,Arial,sans-serif;padding:90px 0 36px}
+.bdf.signage{--bg:#713FFF}.bdf.print{--bg:#DB5461}.bdf.design{--bg:#EA7317}.bdf.web-dev{--bg:#439A86}
+.bdf.liquid-wrapping{--bg:#F9C846;--fg:#2a2d32;--soft:rgba(42,45,50,.8);--line:rgba(42,45,50,.25);--field:rgba(255,255,255,.45);--err:#7a0010;--errbg:rgba(255,255,255,.7)}
+.bdf a,footer.bdf .bdf-contact a,footer.bdf .bdf-note a,footer.bdf .bdf-summary a,footer.bdf .bdf-done a,footer.bdf .bdf-links h3 a,footer.bdf .bdf-social a{color:var(--fg)!important}
+footer.bdf .bdf-links li a,footer.bdf .bdf-bottom a{color:var(--soft)!important}
+footer.bdf .bdf-links li a:hover,footer.bdf .bdf-bottom a:hover{color:var(--fg)!important}
+footer.bdf .bdf-social a:hover{color:var(--bg)!important}
+.bdf .container{max-width:1366px;padding-left:100px;padding-right:100px}
+.bdf-top{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.3fr);gap:80px;align-items:start}
+.bdf-h{font-family:"Adelle",adelle,Georgia,serif;font-weight:800;font-size:clamp(34px,3.6vw,52px);line-height:1.05;color:var(--fg);margin:0 0 18px;letter-spacing:-.01em}
+.bdf-intro p{font-size:18px;line-height:1.6;color:var(--soft);margin:0 0 28px;max-width:440px}
+.bdf-contact{list-style:none;margin:0;padding:0;display:grid;gap:14px}
+.bdf-contact li{display:flex;gap:12px;align-items:flex-start;font-size:17px;line-height:1.45}
+.bdf-contact svg{flex-shrink:0;margin-top:3px}
+.bdf-contact a{text-decoration:none}.bdf-contact a:hover{text-decoration:underline;text-underline-offset:4px}
+.bdf-contact .bdf-big{font-size:22px;font-weight:700}
+
+/* Form */
+.bdf-form{display:grid;grid-template-columns:1fr 1fr;gap:18px 22px}
+.bdf-field{display:flex;flex-direction:column;gap:7px;min-width:0}
+.bdf-field.wide{grid-column:1/-1}
+.bdf-field label{font-size:14px;font-weight:600;letter-spacing:.02em;color:var(--fg)}
+.bdf-field label small{font-weight:400;color:var(--soft)}
+.bdf-field input,.bdf-field textarea{width:100%;font:inherit;font-size:16px;color:var(--fg);background:var(--field);border:1px solid var(--line);border-radius:8px;padding:13px 15px;
+  transition:border-color .15s,box-shadow .15s,background .15s;-webkit-appearance:none;appearance:none}
+.bdf-field textarea{min-height:120px;resize:vertical}
+.bdf-field input::placeholder,.bdf-field textarea::placeholder{color:var(--soft);opacity:.75}
+.bdf-field input:focus,.bdf-field textarea:focus{outline:none;border-color:var(--fg);box-shadow:0 0 0 3px color-mix(in srgb,var(--fg) 25%,transparent)}
+.bdf-field input[aria-invalid="true"],.bdf-field textarea[aria-invalid="true"]{border-color:var(--err);box-shadow:0 0 0 1px var(--err)}
+.bdf-err{display:none;align-items:center;gap:6px;font-size:14px;font-weight:600;color:var(--err)}
+.bdf-err:not(:empty){display:flex}
+.bdf-err:not(:empty)::before{content:"!";display:inline-flex;align-items:center;justify-content:center;width:17px;height:17px;border-radius:50%;background:var(--err);color:var(--bg);font-size:12px;font-weight:800;flex-shrink:0}
+.bdf-hp{position:absolute!important;left:-9999px!important;width:1px;height:1px;overflow:hidden}
+.bdf-actions{grid-column:1/-1;display:flex;flex-wrap:wrap;align-items:center;gap:18px 24px}
+.bdf-send{display:inline-flex;align-items:center;gap:10px;background:var(--fg);color:var(--bg);border:2px solid var(--fg);border-radius:30px;padding:12px 30px;
+  font:inherit;font-size:16px;font-weight:700;cursor:pointer;transition:background .15s,color .15s}
+.bdf-send:hover{background:transparent;color:var(--fg)}
+.bdf-send:focus-visible{outline:3px solid var(--fg);outline-offset:3px}
+.bdf-send[disabled]{opacity:.7;cursor:progress}
+.bdf-send .bdf-spin{display:none;width:16px;height:16px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:bdfspin .7s linear infinite}
+.bdf-form.sending .bdf-spin{display:inline-block}
+@keyframes bdfspin{to{transform:rotate(360deg)}}
+.bdf-note{font-size:13px;line-height:1.5;color:var(--soft);margin:0;flex:1;min-width:220px}
+.bdf-summary{grid-column:1/-1;display:none;padding:12px 16px;border-radius:8px;background:var(--errbg);color:var(--fg);font-size:15px;line-height:1.45}
+.bdf-summary:not(:empty){display:block}
+.bdf-summary a{font-weight:700}
+.bdf-done{display:none;padding:28px;border-radius:12px;background:var(--field);border:1px solid var(--line)}
+.bdf-done h3{font-family:"Adelle",adelle,Georgia,serif;font-size:28px;margin:0 0 10px;color:var(--fg)}
+.bdf-done p{margin:0 0 18px;color:var(--soft);font-size:17px;line-height:1.55}
+.bdf-done button{background:none;border:0;padding:0;color:var(--fg);font:inherit;font-weight:700;text-decoration:underline;text-underline-offset:4px;cursor:pointer}
+.bdf-wrap.done .bdf-form{display:none}.bdf-wrap.done .bdf-done{display:block}
+
+/* The same form inside a CRM page */
+.bdf.bdf-inline{padding:32px;border-radius:14px;margin:24px 0}
+
+/* Links */
+.bdf-links{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:32px;margin-top:80px;padding-top:44px;border-top:1px solid var(--line)}
+.bdf-links h3{font-family:azo-sans-web,Arial,sans-serif;font-size:15px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--fg);margin:0 0 14px}
+.bdf-links h3 a{text-decoration:none}
+.bdf-links ul{list-style:none;margin:0;padding:0}
+.bdf-links li{margin:0 0 9px;font-size:15px;line-height:1.4}
+.bdf-links li a{color:var(--soft);text-decoration:none}
+.bdf-links a:hover{color:var(--fg);text-decoration:underline;text-underline-offset:4px}
+.bdf-bottom{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:14px 30px;margin-top:44px;padding-top:24px;border-top:1px solid var(--line);font-size:13px;color:var(--soft)}
+.bdf-bottom nav{display:flex;flex-wrap:wrap;gap:6px 18px}
+.bdf-bottom a{color:var(--soft);text-decoration:none}.bdf-bottom a:hover{color:var(--fg);text-decoration:underline}
+.bdf-social{display:flex;gap:10px}
+.bdf-social a{display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:50%;border:1px solid var(--line);color:var(--fg)}
+.bdf-social a:hover{background:var(--fg);color:var(--bg)}
+.bdf a:focus-visible{outline:2px solid var(--fg);outline-offset:3px}
+
+@media (max-width:1199px){
+  .bdf .container{padding-left:50px;padding-right:50px}
+  .bdf-top{gap:50px}
+  .bdf-links{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media (max-width:899px){
+  .bdf{padding:60px 0 30px}
+  .bdf-top{grid-template-columns:1fr;gap:36px}
+}
+@media (max-width:575px){
+  .bdf .container{padding-left:22px;padding-right:22px}
+  .bdf-form{grid-template-columns:1fr}
+  .bdf-links{grid-template-columns:1fr 1fr;gap:26px 18px;margin-top:50px}
+  .bdf-bottom{flex-direction:column;align-items:flex-start}
+}
+
+/* The theme's forms on pages (quote, guide, product): clearer error messages from bd-forms.js */
+.wpcf7-form .wpcf7-not-valid-tip{display:block;margin-top:6px;font-size:14px;font-weight:600;color:#b00020}
+.wpcf7-form .wpcf7-not-valid{border-color:#b00020!important}
+.wpcf7-form .wpcf7-response-output{margin:16px 0 0;padding:12px 16px;border-radius:8px;font-size:15px}
+.wpcf7-form.invalid .wpcf7-response-output{border:1px solid #b00020;background:#fff1f2;color:#7a0010}
+.wpcf7-form.sent .wpcf7-response-output{border:1px solid #1d7a45;background:#effaf3;color:#145c33}

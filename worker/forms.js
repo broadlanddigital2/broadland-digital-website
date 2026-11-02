@@ -38,9 +38,13 @@ export async function handleForms(request, env = {}) {
     marketing: b.marketing === 'yes', consent: b.consent === 'yes',
   };
   d.where = d.pageTitle || 'Website';
-  if (!d.name) return json({ error: 'Please enter your name.' }, 400);
-  if (!EMAIL.test(d.email)) return json({ error: 'Please enter a valid email address.' }, 400);
-  if (d.kind !== 'guide' && !d.phone && !d.message) return json({ error: 'Please add a phone number or a message.' }, 400);
+  // Same checks as the page (site/bd-forms.js); "field" tells the page which field to mark.
+  const bad = (field, error) => json({ error, field }, 400);
+  if (d.name.length < 2) return bad('name', 'Please tell us your name.');
+  if (!EMAIL.test(d.email)) return bad('email', 'That email address doesn’t look right — please check it.');
+  const digits = d.phone.replace(/\D/g, '');
+  if (d.kind !== 'guide' && !d.phone) return bad('phone', 'Please enter a phone number so we can call you back.');
+  if (d.phone && (/[a-z]/i.test(d.phone) || digits.length < 10 || digits.length > 13)) return bad('phone', 'Please enter a full UK phone number, e.g. 01603 407786.');
 
   const [first, ...rest] = d.name.split(/\s+/);
   const details = [

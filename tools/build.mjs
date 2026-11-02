@@ -126,18 +126,18 @@ function transform(html, path) {
     .replace(/<input[^>]+name="_wpcf7[^"]*"[^>]*>/g, '');
   // Shop: orders become enquiries (lead in the CRM) instead of WooCommerce checkout.
   const title = productTitle.get(path) || '';
-  h = h.replace(/<a href="\/cart\?add-to-cart=\d+[^"]*">\s*<button class="([^"]*)">\s*ADD TO BASKET\s*<\/button>\s*<\/a>/gi, (_m, cls) => {
+  h = h.replace(/<a href="\/cart\/?\?add-to-cart=\d+[^"]*">\s*<button class="([^"]*)">\s*ADD TO BASKET\s*<\/button>\s*<\/a>/gi, (_m, cls) => {
     const price = (h.match(/class="price[^"]*">\s*£<b>([\d.,]+)<\/b>/) || [])[1];
-    return `<a href="#wpcf7-f21-o1" data-enquire="${esc(title + (price ? ` (£${price})` : ''))}"><button type="button" class="${cls}">ENQUIRE NOW</button></a>`;
+    return `<a href="#enquiry" data-enquire="${esc(title + (price ? ` (£${price})` : ''))}"><button type="button" class="${cls}">ENQUIRE NOW</button></a>`;
   });
-  h = h.replace(/href="\/cart\?add-to-cart=\d+[^"]*"/g, `href="${path}"`).replace(/href="\/cart"/g, 'href="/shop"').replace(/href="\/(checkout|my-account)"/g, 'href="/contact-us"');
+  h = h.replace(/href="\/cart\/?\?add-to-cart=\d+[^"]*"/g, `href="${path}/"`).replace(/href="\/cart\/?"/g, 'href="/shop/"').replace(/href="\/(checkout|my-account)\/?"/g, 'href="/contact-us/"');
   h = h.replace(/<div[^>]*class="klarna-container"[^>]*>[\s\S]*?<\/div>/g, '');
   // Cookie consent first in <head>; "Cookie settings" in the footer's bottom line
   h = h.replace(/<head>/i, `<head>\n<script src="/_static/bd-consent.js?v=${CONSENT_V}"></script>`);
   // Browser-tab icon: the logo on the header's charcoal (site/public/favicon.*)
   h = h.replace(/<link[^>]+rel=["'](?:shortcut )?icon["'][^>]*>\s*|<link[^>]+apple-touch-icon[^>]*>\s*/gi, '')
     .replace(/<\/head>/i, '<link rel="icon" href="/favicon.ico" sizes="48x48">\n<link rel="icon" href="/favicon.svg" type="image/svg+xml">\n<link rel="apple-touch-icon" href="/apple-touch-icon.png">\n</head>');
-  h = h.replace(/(<section class="footer-bottom">[\s\S]*?)(<\/section>)/, '$1 | <a class="text-white" href="#cookie-settings" data-bd-cookie-settings>Cookie settings</a>$2');
+
   // Menu: the theme's checkbox menu is replaced (content/menu.json)
   if (/<div class="navbar">/.test(h)) {
     const m = megaMenu(path);
@@ -145,6 +145,13 @@ function transform(html, path) {
       .replace(/<\/header>(<!-- #masthead -->)?/, (x) => x + '\n' + m.panel);
   }
   h = sectionHeader(h, path);
+  // header.js expects the theme's menu checkbox; landing pages have no menu, so give it an inert one.
+  if (!/class="nav-container"/.test(h)) h = h.replace(/<\/header>/, '<span class="nav-container" hidden><input type="checkbox" tabindex="-1" aria-hidden="true"></span></header>');
+  // Footer: ours in place of the theme's (same section colour)
+  h = h.replace(/<footer\b([^>]*)>[\s\S]*?<\/footer>/, (_m, attrs) => footerHtml((attrs.match(/class="([^"]*)"/) || [])[1] || ''));
+  h = h.replace(/<\/head>/i, `<link rel="stylesheet" href="/_static/bd-footer.css?v=${FOOTER_V}">\n</head>`);
+  // Phone fields were number inputs (no spaces, arrows): proper phone fields
+  h = h.replace(/(<input[^>]*name="your-phone"[^>]*)type="number"/g, '$1type="tel" inputmode="tel"').replace(/type="number"([^>]*name="your-phone")/g, 'type="tel" inputmode="tel"$1');
   h = h.replace(/<\/head>/i, `<link rel="stylesheet" href="/_static/bd-menu.css?v=${MENU_V}">\n</head>`);
   h = h.replace(/<\/body>/i, `<script src="/_static/bd-menu.js?v=${MENU_V}" defer></script>\n</body>`);
   // Our form script, after the theme's scripts
@@ -159,6 +166,8 @@ const menuCss = readFileSync(join(ROOT, 'site/bd-menu.css'));
 const menuJs = readFileSync(join(ROOT, 'site/bd-menu.js'));
 const MENU_V = hash(Buffer.concat([menuCss, menuJs]));
 const menu = JSON.parse(readFileSync(join(ROOT, 'content/menu.json'), 'utf8'));
+const footerCss = readFileSync(join(ROOT, 'site/bd-footer.css'));
+const FOOTER_V = hash(footerCss);
 
 // The full-screen menu (content/menu.json), in place of the theme's checkbox menu. The current page and its section
 // are marked; header.js still looks for the old checkbox, so an inert one stays.
@@ -183,6 +192,53 @@ function sectionHeader(h, path) {
   const cls = (h.match(/id="masthead" class="site-header ([a-z-]+)"/) || [])[1] || '';
   return h.replace(/<ul id="menu-[a-z-]+" class="menu">[\s\S]*?<\/ul>/, () => headerNav(path, SECTION_OF_HEADER[cls]))
     .replace(/<a href="[^"]*">\s*<img class="ms-4" src="[^"]*cart-shopping-light\.svg[^"]*"[^>]*>\s*<\/a>/, headerActions);
+}
+
+// Footer (content/menu.json → footer): enquiry form, contact details, every section's links, legal and social links.
+// Its colour follows the page's section, as the theme's footer did.
+const FOOTER_CLASSES = ['signage', 'print', 'design', 'web-dev', 'liquid-wrapping'];
+const ICON = {
+  phone: '<svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1z"/></svg>',
+  mail: '<svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" d="M3 5h18v14H3zM3 6l9 7 9-7"/></svg>',
+  pin: '<svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2a7 7 0 0 0-7 7c0 5.2 7 13 7 13s7-7.8 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg>',
+  Facebook: '<svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M14 8.5V6.8c0-.8.5-1 1-1h2.3V2.1L14.2 2C10.8 2 10 4.5 10 6.2v2.3H7.6V12H10v10h4V12h3l.4-3.5z"/></svg>',
+  Instagram: '<svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="17.5" cy="6.5" r="1.3" fill="currentColor"/></svg>',
+};
+function footerHtml(cls) {
+  const f = menu.footer;
+  const field = (name, label, attrs, wide, hint = '') => `<div class="bdf-field${wide ? ' wide' : ''}"><label for="bdf-${name}">${label}${hint ? ` <small>${hint}</small>` : ''}</label>`
+    + (name === 'message' ? `<textarea id="bdf-${name}" name="${name}" ${attrs} aria-describedby="bdf-${name}-err"></textarea>` : `<input id="bdf-${name}" name="${name}" ${attrs} aria-describedby="bdf-${name}-err">`)
+    + `<span class="bdf-err" id="bdf-${name}-err" aria-live="polite"></span></div>`;
+  const cols = menu.sections.map((sec) => `<div><h3><a href="${sec.href}">${esc(sec.title)}</a></h3><ul>${sec.links.map(([l, h]) => `<li><a href="${h}">${esc(l)}</a></li>`).join('')}</ul></div>`).join('')
+    + `<div><h3>Broadland Digital</h3><ul>${f.company.map(([l, h]) => `<li><a href="${h}">${esc(l)}</a></li>`).join('')}</ul></div>`;
+  return `<footer class="bdf ${FOOTER_CLASSES.includes(cls) ? cls : ''}"><div class="container">
+<div class="bdf-top">
+<div class="bdf-intro"><h2 class="bdf-h">${esc(f.heading)}</h2><p>${esc(f.intro)}</p>
+<ul class="bdf-contact">
+<li>${ICON.phone}<a class="bdf-big" href="tel:${menu.phone.replace(/\s/g, '')}">${esc(menu.phone)}</a></li>
+<li>${ICON.mail}<a href="mailto:${menu.email}">${esc(menu.email)}</a></li>
+<li>${ICON.pin}<a href="${esc(f.maps)}" target="_blank" rel="noopener">Broadland Digital, ${esc(menu.address)}</a></li>
+</ul></div>
+<div class="bdf-wrap" id="enquiry">
+<form class="bdf-form" data-bd-form="contact" novalidate aria-label="Enquiry form">
+${field('name', 'Name', 'type="text" autocomplete="name" required maxlength="120"')}
+${field('phone', 'Phone', 'type="tel" inputmode="tel" autocomplete="tel" required maxlength="40" placeholder="e.g. 07700 900123"')}
+${field('email', 'Email', 'type="email" inputmode="email" autocomplete="email" required maxlength="254" placeholder="name@company.co.uk"', true)}
+${field('message', 'How can we help?', 'rows="4" maxlength="6000" placeholder="What you need, rough sizes or quantities, and when you need it"', true, '(optional)')}
+<div class="bdf-hp" aria-hidden="true"><label for="bdf-website">Leave this empty</label><input id="bdf-website" name="website" tabindex="-1" autocomplete="off"></div>
+<div class="bdf-summary" role="alert"></div>
+<div class="bdf-actions"><button class="bdf-send" type="submit"><span class="bdf-spin" aria-hidden="true"></span><span class="bdf-label">Send enquiry</span></button>
+<p class="bdf-note">We'll only use your details to reply to your enquiry. See our <a href="/privacy-policy/">privacy policy</a>.</p></div>
+</form>
+<div class="bdf-done" role="status"><h3>Thank you<span class="bdf-done-name"></span>.</h3><p>We've received your enquiry and will be in touch shortly, usually the same working day. If it's urgent, call us on <a href="tel:${menu.phone.replace(/\s/g, '')}">${esc(menu.phone)}</a>.</p><button type="button" class="bdf-again">Send another enquiry</button></div>
+</div>
+</div>
+<nav class="bdf-links" aria-label="Footer">${cols}</nav>
+<div class="bdf-bottom"><span>© ${new Date().getFullYear()} Broadland Digital Ltd. All rights reserved.</span>
+<nav aria-label="Legal">${f.legal.map(([l, h]) => `<a href="${h}">${esc(l)}</a>`).join('')}<a href="#cookie-settings" data-bd-cookie-settings>Cookie settings</a></nav>
+<span>Sister company: <a href="${f.sister[1]}" target="_blank" rel="noopener">${esc(f.sister[0])}</a> (${esc(f.sister[2]).toLowerCase()})</span>
+<div class="bdf-social">${f.social.map(([l, h]) => `<a href="${h}" target="_blank" rel="noopener" aria-label="Broadland Digital on ${l}">${ICON[l] || l}</a>`).join('')}</div></div>
+</div></footer>`;
 }
 
 function megaMenu(path) {
@@ -240,6 +296,7 @@ write('404.html', page404(sh));
 write('_static/bd-forms.js', formsJs);
 write('_static/bd-consent.js', consentJs);
 write('_static/bd-menu.css', menuCss);
+write('_static/bd-footer.css', footerCss);
 write('_static/bd-menu.js', menuJs);
 
 let assetsCopied = 0;

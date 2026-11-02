@@ -79,7 +79,7 @@ const note = (u) => {
   const x = local(String(u).trim().replace(/&#0?38;|&amp;/g, '&'));
   if (!x) return;
   if (x.pathname.startsWith('/wp-content/uploads/')) uploads.add(decodeURIComponent(x.pathname));
-  else if (/^\/(wp-content\/(themes|plugins|cache\/min)|wp-includes)\//.test(x.pathname) && /\.(css|js|svg|png|jpe?g|gif|webp|woff2?|ttf|otf|eot|ico)$/i.test(x.pathname)) assets.add(x.origin + x.pathname + x.search);
+  else if (/^\/(wp-content\/(themes|plugins|cache\/min)|wp-includes)\//.test(x.pathname) && /\.(css|js|svg|png|jpe?g|gif|webp|woff2?|ttf|otf|eot|ico|pdf)$/i.test(x.pathname)) assets.add(x.origin + x.pathname + x.search);
 };
 for (const html of Object.values(pages)) {
   for (const m of html.matchAll(/\b(?:href|src|data-src|data-lazy-src|poster|content)=["']([^"']+)["']/g)) note(m[1]);

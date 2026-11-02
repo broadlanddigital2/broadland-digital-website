@@ -69,9 +69,10 @@ function setHead(html, { title, description, url, image, schema, noindex, css, v
 
 // The CRM's "fixed" blocks carry a WordPress shortcode (the contact form): the site's own enquiry form goes there.
 function withForms(pageHtml, shell) {
-  const form = (shell.match(/<div class="wpcf7[^"]*"[^>]*>[\s\S]*?<\/form>\s*<\/div>/) || [''])[0]
-    .replace(/wpcf7-f(\d+)-o1/g, 'wpcf7-f$1-o2');
-  return pageHtml.replace(/<div class="crmseo-shortcode"[^>]*><\/div>/g, form ? `<div class="crmseo-shortcode">${form}</div>` : '');
+  // A second copy of the footer's enquiry form, with its own ids.
+  const form = (shell.match(/<form class="bdf-form"[\s\S]*?<\/form>/) || [''])[0]
+    .replace(/\b(id|for|aria-describedby)="bdf-([a-z-]+)"/g, '$1="bdf2-$2"');
+  return pageHtml.replace(/<div class="crmseo-shortcode"[^>]*><\/div>/g, form ? `<div class="crmseo-shortcode bdf bdf-inline"><div class="bdf-wrap">${form}<div class="bdf-done" role="status"><h3>Thank you<span class="bdf-done-name"></span>.</h3><p>We've received your enquiry and will be in touch shortly.</p><button type="button" class="bdf-again">Send another enquiry</button></div></div></div>` : '');
 }
 
 function fill(shell, inner) {
