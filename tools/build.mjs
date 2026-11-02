@@ -357,7 +357,6 @@ function homePage(h) {
 <div><span class="bdh-eyebrow">${esc(H.eyebrow)}</span>
 <h1><span>${esc(t1)}</span>${t2.length ? `<span>${esc(t2.join(' '))}</span>` : ''}</h1>
 ${lead ? `<p class="bdh-lead">${esc(lead)}</p>` : ''}
-<button class="bdh-ask" type="button" data-site-search hidden>${SEARCH_ICON}<span>Search or ask us anything… <em>e.g. “Do I need planning for a shop sign?”</em></span></button>
 <div class="bdh-cta"><a class="bdh-btn bdh-btn--solid" href="/get-a-quote/">Get a free quote</a><a class="bdh-btn bdh-btn--ghost" href="tel:${menu.phone.replace(/\s/g, '')}">Call ${esc(menu.phone)}</a></div>
 <ul class="bdh-chips">${secs.map((sec) => `<li><a href="${sec.href}" style="--c:var(--c-${sec.class})">${esc(sec.title)}</a></li>`).join('')}</ul></div>
 <div class="bdh-collage">${collage}</div>

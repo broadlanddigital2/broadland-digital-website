@@ -174,11 +174,11 @@ p{font-size:18px;line-height:1.65}
 .bdhub-tiles.n4>.bdhub-tile:last-child,.bdhub-tiles.n7>.bdhub-tile:last-child{grid-column:span 2}
 .bdhub-tile{--g:color-mix(in srgb,var(--c) 62%,#140c30);position:relative;display:flex;align-items:flex-end;border-radius:20px;overflow:hidden;color:#fff!important;text-decoration:none!important;background:#2a2d32;isolation:isolate}
 .bdhub-tile img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-2;transition:transform .6s ease}
-.bdhub-tile::after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(20,12,48,0) 12%,color-mix(in srgb,var(--g) 78%,transparent) 50%,color-mix(in srgb,var(--g) 96%,transparent) 100%);transition:opacity .3s}
+.bdhub-tile::after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(20,12,48,0) 40%,color-mix(in srgb,var(--g) 45%,transparent) 65%,color-mix(in srgb,var(--g) 82%,transparent) 100%);transition:opacity .3s}
 .bdhub-tile:hover img{transform:scale(1.06)}
 .bdhub-tile-in{display:flex;flex-direction:column;gap:8px;padding:24px;width:100%}
 .bdhub-tile-title{font-family:"Adelle",adelle,Georgia,serif;font-weight:800;font-size:24px;line-height:1.15;text-shadow:0 1px 12px rgba(0,0,0,.25)}
-.bdhub-tile-desc{font-size:15px;line-height:1.45;opacity:.92;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.bdhub-tile-desc{text-shadow:0 1px 8px rgba(0,0,0,.35);font-size:15px;line-height:1.45;opacity:.92;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .bdhub-tile-go{display:flex;align-items:center;justify-content:space-between;font-weight:700;font-size:15px;border-top:1px solid rgba(255,255,255,.35);padding-top:12px;margin-top:4px}
 .bdhub-tile-go i{font-style:normal;display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;background:#fff;color:var(--g);transition:transform .2s}
 .bdhub-tile:hover .bdhub-tile-go i{transform:translateX(4px)}
@@ -305,14 +305,6 @@ p{font-size:18px;line-height:1.65}
 @media(max-width:1100px){.bdq .wrap{padding:0 50px}.bdq-main .wrap{grid-template-columns:1fr}.bdq-side{grid-template-columns:1fr 1fr}.bdq-offer{grid-column:1/-1}}
 @media(max-width:700px){.bdq .wrap{padding:0 20px}.bdq-hero{padding:140px 0 120px}.bdq-lead{font-size:18px}.bdq-card{padding:24px 20px}.bdq-grid{grid-template-columns:1fr}.bdq-side{grid-template-columns:1fr}.bdq-step legend{font-size:21px}}
 
-/* Homepage: search / ask bar (opens the CRM site search; hidden until it loads) */
-.bdh-ask{display:flex;align-items:center;gap:14px;width:100%;max-width:620px;margin:0 0 26px;padding:16px 22px;border:2px solid rgba(255,255,255,.35);border-radius:40px;background:rgba(255,255,255,.12);color:#fff;font:inherit;font-size:17px;text-align:left;cursor:text;transition:background .15s,border-color .15s;backdrop-filter:blur(6px)}
-.bdh-ask[hidden]{display:none}
-.bdh-ask:hover{background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.7)}
-.bdh-ask:focus-visible{outline:3px solid #fff;outline-offset:3px}
-.bdh-ask svg{flex-shrink:0;width:20px;height:20px}
-.bdh-ask em{font-style:normal;opacity:.7}
-@media(max-width:700px){.bdh-ask{font-size:15px;padding:13px 18px}.bdh-ask em{display:none}}
 
 /* CRM pages (guides, comparisons, locations, services, sectors: worker/crm-pages.js fills .crm-main). Each page brings
    its own CRM design CSS (.crmseo-d …); these rules (one class more specific) give them the hubs' look: hero with
@@ -369,10 +361,10 @@ p{font-size:18px;line-height:1.65}
 .crm-main .crmseo-d .location-grid h3{margin:0 0 8px}
 .crm-main .crmseo-d :is(.grid,.location-grid) .card:has(img){--g:color-mix(in srgb,var(--c) 62%,#140c30);position:relative;display:flex;flex-direction:column;justify-content:flex-end;min-height:360px;padding:24px;border:0;border-radius:20px;overflow:hidden;isolation:isolate;background:#2a2d32;color:#fff}
 .crm-main .crmseo-d :is(.grid,.location-grid) .card:has(img) img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-2;transition:transform .6s ease}
-.crm-main .crmseo-d :is(.grid,.location-grid) .card:has(img)::after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(20,12,48,0) 12%,color-mix(in srgb,var(--g) 78%,transparent) 50%,color-mix(in srgb,var(--g) 96%,transparent) 100%)}
+.crm-main .crmseo-d :is(.grid,.location-grid) .card:has(img)::after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(20,12,48,0) 40%,color-mix(in srgb,var(--g) 45%,transparent) 65%,color-mix(in srgb,var(--g) 82%,transparent) 100%)}
 .crm-main .crmseo-d :is(.grid,.location-grid) .card:has(img):hover img{transform:scale(1.06)}
-.crm-main .crmseo-d :is(.grid,.location-grid) .card:has(img) :is(h3,h3 a,a){color:#fff;text-decoration:none;font-size:23px;line-height:1.2;margin:0 0 8px}
-.crm-main .crmseo-d :is(.grid,.location-grid) .card:has(img) p{color:rgba(255,255,255,.9);font-size:15px;line-height:1.45;margin:0;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.crm-main .crmseo-d :is(.grid,.location-grid) .card:has(img) :is(h3,h3 a,a){text-shadow:0 1px 12px rgba(0,0,0,.35);color:#fff;text-decoration:none;font-size:23px;line-height:1.2;margin:0 0 8px}
+.crm-main .crmseo-d :is(.grid,.location-grid) .card:has(img) p{text-shadow:0 1px 8px rgba(0,0,0,.35);color:rgba(255,255,255,.92);font-size:15px;line-height:1.45;margin:0;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .crm-main .crmseo-d :is(.grid,.location-grid) .card:has(img)>a:has(h3)::after,.crm-main .crmseo-d :is(.grid,.location-grid) .card:has(img) h3 a::after{content:"";position:absolute;inset:0;z-index:1}
 .crm-main .crmseo-d :is(.grid,.location-grid) .card:has(img):focus-within{outline:3px solid var(--c);outline-offset:3px}
 .crm-main .crmseo-d :is(.grid,.location-grid) .card:has(img) a:hover{opacity:1}
