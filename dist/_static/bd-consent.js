@@ -35,6 +35,8 @@
     if (enabled[cat]) return;
     enabled[cat] = true;
     if (cat === 'analytics') gtag('consent', 'update', { ad_storage: 'granted', ad_user_data: 'granted', ad_personalization: 'granted', analytics_storage: 'granted' });
+    // CRM site search (crm.racecargraphics.uk/embed/site-search.js): keeps its visitor ID between visits only with analytics consent
+    if (cat === 'analytics') { window.__crmBotTracking = true; try { window.dispatchEvent(new CustomEvent('rcg-enquiry-bot-consent', { detail: { tracking: true } })); } catch (e) { /* old browser */ } }
     var list = document.querySelectorAll('script[type="text/plain"][data-bd-consent="' + cat + '"]');
     for (var i = 0; i < list.length; i++) {
       var old = list[i], s = document.createElement('script');
@@ -45,33 +47,36 @@
   }
   function apply(choice) { CATS.forEach(function (c) { if (choice[c.id]) enable(c.id); }); }
 
-  var CSS = '.bdc{position:fixed;left:20px;bottom:20px;z-index:2147483000;max-width:420px;background:#2a2d32;color:#fff;padding:26px 26px 22px;'
+  var CSS = '.bdcc{position:fixed;left:20px;bottom:20px;z-index:2147483000;max-width:420px;background:#2a2d32;color:#fff;padding:26px 26px 22px;'
     + 'box-shadow:0 10px 40px rgba(0,0,0,.35);font:15px/1.55 azo-sans-web,Arial,sans-serif}'
-    + '.bdc h2{font:700 20px/1.2 azo-sans-web,Arial,sans-serif;margin:0 0 10px;color:#fff;letter-spacing:0}.bdc p{margin:0 0 16px!important;color:#e6e6e8;font-size:15px!important;line-height:1.55!important;font-family:azo-sans-web,Arial,sans-serif}'
-    + '.bdc a{color:#fff;text-decoration:underline}.bdc-btns{display:flex;flex-wrap:wrap;gap:10px}'
-    + '.bdc button{font:600 14px azo-sans-web,Arial,sans-serif;border-radius:24px;padding:9px 20px;cursor:pointer;border:2px solid #fff;background:transparent;color:#fff}'
-    + '.bdc button.bdc-yes{background:#713fff;border-color:#713fff}.bdc button:hover{opacity:.85}.bdc button:focus-visible{outline:3px solid #b79cff;outline-offset:2px}'
-    + '.bdc-cats{margin:4px 0 16px;border-top:1px solid #ffffff33}.bdc-cat{padding:12px 0;border-bottom:1px solid #ffffff33}'
-    + '.bdc-cat label{display:flex;justify-content:space-between;align-items:center;gap:12px;font-weight:700}.bdc-cat small{display:block;line-height:1.5;color:#cfd0d4;font-size:13px;margin-top:4px}'
-    + '.bdc-cat input{width:20px;height:20px;accent-color:#713fff}.bdc-always{font-size:12px;font-weight:400;color:#cfd0d4}'
-    + '@media(max-width:520px){.bdc{left:10px;right:10px;bottom:10px;max-width:none;padding:20px}}';
+    + '.bdcc h2{font:700 20px/1.2 azo-sans-web,Arial,sans-serif;margin:0 0 10px;color:#fff;letter-spacing:0}.bdcc p{margin:0 0 16px!important;color:#e6e6e8;font-size:15px!important;line-height:1.55!important;font-family:azo-sans-web,Arial,sans-serif}'
+    + '.bdcc a{color:#fff;text-decoration:underline}.bdcc-btns{display:flex;flex-wrap:wrap;gap:10px}'
+    + '.bdcc button{font:600 14px azo-sans-web,Arial,sans-serif;border-radius:24px;padding:9px 20px;cursor:pointer;border:2px solid #fff;background:transparent;color:#fff}'
+    + '.bdcc button.bdcc-yes{background:#713fff;border-color:#713fff}.bdcc button:hover{opacity:.85}.bdcc button:focus-visible{outline:3px solid #b79cff;outline-offset:2px}'
+    + '.bdcc-cats{margin:4px 0 16px;border-top:1px solid #ffffff33}.bdcc-cat{padding:12px 0;border-bottom:1px solid #ffffff33}'
+    + '.bdcc-cat label{display:flex;justify-content:space-between;align-items:center;gap:12px;font-weight:700}.bdcc-cat small{display:block;line-height:1.5;color:#cfd0d4;font-size:13px;margin-top:4px}'
+    + '.bdcc-cat input{width:20px;height:20px;accent-color:#713fff}.bdcc-always{font-size:12px;font-weight:400;color:#cfd0d4}'
+    + '@media(max-width:520px){.bdcc{left:10px;right:10px;bottom:10px;max-width:none;padding:20px}}';
 
   var box;
   function close() { if (box) { box.remove(); box = null; } }
-  function save(choice) { write(choice); apply(choice); close(); }
+  function save(choice) {
+    write(choice); apply(choice); close();
+    if (!choice.analytics) { window.__crmBotTracking = false; try { window.dispatchEvent(new CustomEvent('rcg-enquiry-bot-consent', { detail: { tracking: false } })); } catch (e) { /* old browser */ } }
+  }
   function show(settings) {
     close();
     var current = read() || {};
-    if (!document.getElementById('bdc-css')) { var st = document.createElement('style'); st.id = 'bdc-css'; st.textContent = CSS; document.head.appendChild(st); }
+    if (!document.getElementById('bdcc-css')) { var st = document.createElement('style'); st.id = 'bdcc-css'; st.textContent = CSS; document.head.appendChild(st); }
     box = document.createElement('div');
-    box.className = 'bdc';
+    box.className = 'bdcc';
     box.setAttribute('role', 'dialog');
-    box.setAttribute('aria-labelledby', 'bdc-title');
-    box.innerHTML = '<h2 id="bdc-title">We value your privacy</h2>'
+    box.setAttribute('aria-labelledby', 'bdcc-title');
+    box.innerHTML = '<h2 id="bdcc-title">We value your privacy</h2>'
       + '<p>We use essential cookies to make this site work. With your permission we would also like to use analytics and marketing cookies, and to load our chat assistant and reviews. See our <a href="/privacy-policy">privacy policy</a>.</p>'
-      + (settings ? '<div class="bdc-cats"><div class="bdc-cat"><label>Essential <span class="bdc-always">Always on</span></label><small>Needed for the site and its forms to work.</small></div>'
-        + CATS.map(function (c) { return '<div class="bdc-cat"><label for="bdc-' + c.id + '">' + c.name + '<input type="checkbox" id="bdc-' + c.id + '"' + (current[c.id] ? ' checked' : '') + '></label><small>' + c.text + '</small></div>'; }).join('') + '</div>' : '')
-      + '<div class="bdc-btns">' + (settings ? '<button type="button" class="bdc-yes" data-a="save">Save my choices</button>' : '<button type="button" class="bdc-yes" data-a="all">Accept all</button>')
+      + (settings ? '<div class="bdcc-cats"><div class="bdcc-cat"><label>Essential <span class="bdcc-always">Always on</span></label><small>Needed for the site and its forms to work.</small></div>'
+        + CATS.map(function (c) { return '<div class="bdcc-cat"><label for="bdcc-' + c.id + '">' + c.name + '<input type="checkbox" id="bdcc-' + c.id + '"' + (current[c.id] ? ' checked' : '') + '></label><small>' + c.text + '</small></div>'; }).join('') + '</div>' : '')
+      + '<div class="bdcc-btns">' + (settings ? '<button type="button" class="bdcc-yes" data-a="save">Save my choices</button>' : '<button type="button" class="bdcc-yes" data-a="all">Accept all</button>')
       + '<button type="button" data-a="none">Reject all</button>' + (settings ? '' : '<button type="button" data-a="settings">Settings</button>') + '</div>';
     box.addEventListener('click', function (e) {
       var a = e.target.getAttribute && e.target.getAttribute('data-a');
@@ -79,7 +84,7 @@
       else if (a === 'none') { var had = read(); save({ analytics: false, functional: false }); if (had && (had.analytics || had.functional)) location.reload(); }
       else if (a === 'settings') show(true);
       else if (a === 'save') {
-        var c = {}; CATS.forEach(function (x) { c[x.id] = !!box.querySelector('#bdc-' + x.id).checked; });
+        var c = {}; CATS.forEach(function (x) { c[x.id] = !!box.querySelector('#bdcc-' + x.id).checked; });
         var prev = read(); save(c);
         if (prev && CATS.some(function (x) { return prev[x.id] && !c[x.id]; })) location.reload();
       }

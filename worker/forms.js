@@ -34,6 +34,7 @@ export async function handleForms(request, env = {}) {
     kind: SUBJECTS[b.form] ? b.form : 'contact',
     name: clean(b.name, 120), email: clean(b.email, 254).toLowerCase(), phone: clean(b.phone, 40),
     service: clean(b.service, 120), product: clean(b.product, 200), message: clean(b.message, 6000),
+    company: clean(b.company, 120), timescale: clean(b.timescale, 60), budget: clean(b.budget, 60),
     pageUrl: clean(b.page_url, 500), pageTitle: clean(b.page_title, 200).replace(/\s*\|\s*Broadland Digital$/i, ''),
     marketing: b.marketing === 'yes', consent: b.consent === 'yes',
   };
@@ -50,7 +51,9 @@ export async function handleForms(request, env = {}) {
   const details = [
     `First name: ${first}`, rest.length ? `Last name: ${rest.join(' ')}` : '',
     `Email: ${d.email}`, d.phone ? `Phone: ${d.phone}` : '',
+    d.company ? `Company: ${d.company}` : '',
     d.service ? `Service: ${d.service}` : '', d.product ? `Product: ${d.product}` : '',
+    d.timescale ? `Timescale: ${d.timescale}` : '', d.budget ? `Budget: ${d.budget}` : '',
     d.kind === 'guide' ? `Keep me up to date on news and offers: ${d.marketing ? 'Yes' : 'No'}` : '',
     d.message ? `\nMessage:\n${d.message}` : '',
     `\nSent from: ${d.pageTitle || 'website'}${d.pageUrl ? ' (' + d.pageUrl + ')' : ''}`,
@@ -79,7 +82,7 @@ async function sendToBoxly(env, d) {
   const to = String(env.BOXLY_EMAIL || '').trim();
   if (!to) return false;
   if (!env.SENDGRID_API_KEY) { console.error('Boxly copy not sent: SENDGRID_API_KEY is not set on the worker'); return false; }
-  const extra = [d.service ? `Service: ${d.service}` : '', d.product ? `Product: ${d.product}` : '', d.pageUrl ? `Page: ${d.pageUrl}` : ''].filter(Boolean).join('\n');
+  const extra = [d.company ? `Company: ${d.company}` : '', d.service ? `Service: ${d.service}` : '', d.timescale ? `Timescale: ${d.timescale}` : '', d.budget ? `Budget: ${d.budget}` : '', d.product ? `Product: ${d.product}` : '', d.pageUrl ? `Page: ${d.pageUrl}` : ''].filter(Boolean).join('\n');
   const text = `From: ${d.name} <${d.email}>\nContact No: ${d.phone}\nSubject: New Enquiry from ${d.name}\n\nMessage Body:\n${d.message || SUBJECTS[d.kind](d)}${extra ? '\n\n' + extra : ''}\n`;
   try {
     const r = await fetch('https://api.sendgrid.com/v3/mail/send', {

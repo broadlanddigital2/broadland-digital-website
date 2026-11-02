@@ -38,6 +38,7 @@
     var label = btn.querySelector('.bdf-label');
     var fields = ['name', 'email', 'phone', 'message'].map(function (n) { return form.querySelector('[name="' + n + '"]'); }).filter(Boolean);
     var shown = {};
+    var sendLabel = label.textContent;
 
     function show(input, msg) {
       var err = document.getElementById(input.getAttribute('aria-describedby').split(' ')[0]);
@@ -67,8 +68,9 @@
       if (form.dataset.product) data.product = form.dataset.product;
       btn.disabled = true; form.classList.add('sending'); label.textContent = 'Sending…';
       send(data).then(function (res) {
-        btn.disabled = false; form.classList.remove('sending'); label.textContent = 'Send enquiry';
+        btn.disabled = false; form.classList.remove('sending'); label.textContent = sendLabel;
         if (res.ok) {
+          if (form.dataset.next) { location.assign(form.dataset.next); return; }
           var first = (data.name || '').split(' ')[0];
           wrap.querySelector('.bdf-done-name').textContent = first ? ', ' + first : '';
           wrap.classList.add('done');
@@ -165,4 +167,7 @@
   // ?product=… in the address does the same.
   var q = new URLSearchParams(location.search).get('product');
   if (q) { var f = document.querySelector('.bdf-form') || document.querySelector('form[data-bd-form]'); if (f) { f.dataset.product = q; var t = f.querySelector('textarea'); if (t) t.value = 'I would like to order: ' + q + '\n'; } }
+  // Quote page: ?service=signage (from a section's "Get a free quote") ticks that service.
+  var svc = new URLSearchParams(location.search).get('service');
+  if (svc) { var chip = document.querySelector('.bdq-chips input[data-key="' + svc.replace(/[^a-z-]/g, '') + '"]'); if (chip) chip.checked = true; }
 })();

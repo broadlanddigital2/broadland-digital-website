@@ -58,10 +58,16 @@ body.bdm-lock #masthead .main-navigation>.menu,body.bdm-lock #masthead .main-nav
 .site-header.web-dev .bdh-quote{color:#439A86!important}.site-header.liquid-wrapping .bdh-quote{color:#2a2d32!important}
 .site-header .bdh-quote:hover{color:#fff!important}
 .bdh-phone:focus-visible,.bdh-quote:focus-visible,.site-header ul.bdh-links a:focus-visible{outline:2px solid #fff;outline-offset:3px}
+.bdh-search{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;flex-shrink:0;padding:0;border:2px solid rgba(255,255,255,.6);border-radius:50%;background:transparent;color:#fff;cursor:pointer;transition:background .15s,border-color .15s}
+.bdh-search[hidden]{display:none}
+.bdh-search span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.bdh-search:hover{background:rgba(255,255,255,.16);border-color:#fff}
+.bdh-search:focus-visible{outline:2px solid #fff;outline-offset:3px}
+.site-header.liquid-wrapping .bdh-search{color:#fff}
 .bdh-short{display:none}
 @media (max-width:1399px){.bdh-phone span{display:none}.bdh-phone{width:40px;height:40px;justify-content:center;border:2px solid rgba(255,255,255,.6);border-radius:50%}}
 @media (max-width:1199px){.site-header .main-navigation>.menu{display:none}}
-@media (max-width:400px){.site-header .custom-logo{width:112px!important;height:auto}.site-header .site-branding{margin-right:10px}.bdh-phone{width:36px!important;height:36px!important}.bdh-quote{padding:7px 12px!important;font-size:13px!important}.bdm-btn{margin-left:4px!important;width:40px}.bdh-actions{gap:8px!important}}
+@media (max-width:400px){.bdh-search{width:36px;height:36px}.site-header .custom-logo{width:112px!important;height:auto}.site-header .site-branding{margin-right:10px}.bdh-phone{width:36px!important;height:36px!important}.bdh-quote{padding:7px 12px!important;font-size:13px!important}.bdm-btn{margin-left:4px!important;width:40px}.bdh-actions{gap:8px!important}}
 @media (max-width:575px){.bdh-actions{gap:10px;margin-left:0}.bdh-long{display:none}.bdh-short{display:inline}.bdh-quote{padding:8px 14px;font-size:14px}.bdm-btn{margin-left:8px}}
 
 @media (max-width:1199px){

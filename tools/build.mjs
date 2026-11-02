@@ -148,13 +148,14 @@ function transform(html, path) {
   h = breadcrumbs(h, path);
   if (path === '/') h = homePage(h);
   if (hubByPath.has(path)) h = hubPage(h, path);
+  if (path === '/get-a-quote') h = quotePage(h);
   // Long legal pages: slightly smaller text (site/bd-pages.css .bd-legal)
   if (['/privacy-policy', '/returns', '/refund_returns'].includes(path)) h = h.replace(/class="category page\b/, 'class="category page bd-legal');
   h = h.replace(/<\/head>/i, `<link rel="stylesheet" href="/_static/bd-pages.css?v=${PAGES_V}">\n</head>`);
   // header.js expects the theme's menu checkbox; landing pages have no menu, so give it an inert one.
   if (!/class="nav-container"/.test(h)) h = h.replace(/<\/header>/, '<span class="nav-container" hidden><input type="checkbox" tabindex="-1" aria-hidden="true"></span></header>');
   // Footer: ours in place of the theme's (same section colour)
-  h = h.replace(/<footer\b([^>]*)>[\s\S]*?<\/footer>/, (_m, attrs) => footerHtml((attrs.match(/class="([^"]*)"/) || [])[1] || ''));
+  h = h.replace(/<footer\b([^>]*)>[\s\S]*?<\/footer>/, (_m, attrs) => footerHtml((attrs.match(/class="([^"]*)"/) || [])[1] || '', { form: path !== '/get-a-quote' }));
   h = h.replace(/<\/head>/i, `<link rel="stylesheet" href="/_static/bd-footer.css?v=${FOOTER_V}">\n</head>`);
   // Phone fields were number inputs (no spaces, arrows): proper phone fields
   h = h.replace(/(<input[^>]*name="your-phone"[^>]*)type="number"/g, '$1type="tel" inputmode="tel"').replace(/type="number"([^>]*name="your-phone")/g, 'type="tel" inputmode="tel"$1');
@@ -162,6 +163,7 @@ function transform(html, path) {
   h = h.replace(/<\/body>/i, `<script src="/_static/bd-menu.js?v=${MENU_V}" defer></script>\n</body>`);
   // Our form script, after the theme's scripts
   h = h.replace(/<\/body>/i, `<script src="/_static/bd-forms.js?v=${FORMS_V}" defer></script>\n</body>`);
+  h = h.replace(/<\/body>/i, SITE_SEARCH + '\n</body>');
   return h;
 }
 
@@ -192,8 +194,12 @@ function headerNav(path, currentClass) {
   return `<ul id="menu-main" class="menu bdh-links">${items}</ul>`;
 }
 const PHONE_ICON = '<svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1z"/></svg>';
+const SEARCH_ICON = '<svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M15.5 15.5L21 21" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>';
+// CRM site search + AI assistant (Marketing → Site search; key in the CRM's site_search_configs). It opens from
+// [data-site-search] elements (shown once it has loaded), "/" or Ctrl/Cmd+K.
+const SITE_SEARCH = '<script src="https://crm.racecargraphics.uk/embed/site-search.js" data-key="cb26807045182484b558ce3a" defer></script>';
 function headerActions() {
-  return `<div class="bdh-actions"><a class="bdh-phone" href="tel:${menu.phone.replace(/\s/g, '')}" aria-label="Call ${esc(menu.phone)}">${PHONE_ICON}<span>${esc(menu.phone)}</span></a>`
+  return `<div class="bdh-actions"><button class="bdh-search" type="button" data-site-search hidden aria-label="Search the site or ask a question">${SEARCH_ICON}<span>Search</span></button><a class="bdh-phone" href="tel:${menu.phone.replace(/\s/g, '')}" aria-label="Call ${esc(menu.phone)}">${PHONE_ICON}<span>${esc(menu.phone)}</span></a>`
     + `<a class="bdh-quote" href="/get-a-quote/"><span class="bdh-long">Get a quote</span><span class="bdh-short">Quote</span></a></div>`;
 }
 function sectionHeader(h, path) {
@@ -212,15 +218,15 @@ const ICON = {
   Facebook: '<svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M14 8.5V6.8c0-.8.5-1 1-1h2.3V2.1L14.2 2C10.8 2 10 4.5 10 6.2v2.3H7.6V12H10v10h4V12h3l.4-3.5z"/></svg>',
   Instagram: '<svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="17.5" cy="6.5" r="1.3" fill="currentColor"/></svg>',
 };
-function footerHtml(cls) {
+function footerHtml(cls, opts = {}) {
   const f = menu.footer;
   const field = (name, label, attrs, wide, hint = '') => `<div class="bdf-field${wide ? ' wide' : ''}"><label for="bdf-${name}">${label}${hint ? ` <small>${hint}</small>` : ''}</label>`
     + (name === 'message' ? `<textarea id="bdf-${name}" name="${name}" ${attrs} aria-describedby="bdf-${name}-err"></textarea>` : `<input id="bdf-${name}" name="${name}" ${attrs} aria-describedby="bdf-${name}-err">`)
     + `<span class="bdf-err" id="bdf-${name}-err" aria-live="polite"></span></div>`;
   const cols = menu.sections.map((sec) => `<div><h3><a href="${sec.href}">${esc(sec.title)}</a></h3><ul>${sec.links.map(([l, h]) => `<li><a href="${h}">${esc(l)}</a></li>`).join('')}</ul></div>`).join('')
     + `<div><h3>Broadland Digital</h3><ul>${f.company.map(([l, h]) => `<li><a href="${h}">${esc(l)}</a></li>`).join('')}</ul></div>`;
-  return `<footer class="bdf ${FOOTER_CLASSES.includes(cls) ? cls : ''}"><div class="container">
-<div class="bdf-top">
+  return `<footer class="bdf ${FOOTER_CLASSES.includes(cls) ? cls : ''}${opts.form === false ? ' bdf-noform' : ''}"><div class="container">
+${opts.form === false ? '' : `<div class="bdf-top">
 <div class="bdf-intro"><h2 class="bdf-h">${esc(f.heading)}</h2><p>${esc(f.intro)}</p>
 <ul class="bdf-contact">
 <li>${ICON.phone}<a class="bdf-big" href="tel:${menu.phone.replace(/\s/g, '')}">${esc(menu.phone)}</a></li>
@@ -240,7 +246,7 @@ ${field('message', 'How can we help?', 'rows="4" maxlength="6000" placeholder="W
 </form>
 <div class="bdf-done" role="status"><h3>Thank you<span class="bdf-done-name"></span>.</h3><p>We've received your enquiry and will be in touch shortly, usually the same working day. If it's urgent, call us on <a href="tel:${menu.phone.replace(/\s/g, '')}">${esc(menu.phone)}</a>.</p><button type="button" class="bdf-again">Send another enquiry</button></div>
 </div>
-</div>
+</div>`}
 <nav class="bdf-links" aria-label="Footer">${cols}</nav>
 <section class="bdf-brands" aria-labelledby="bdf-brands-title"><h3 id="bdf-brands-title">Group brands</h3><div class="bdf-brand-grid">${f.brands.map((b) => {
     const img = `<img src="${b.logo}" alt="${esc(b.name)}" loading="lazy"${b.square ? ' class="sq"' : ''}>`;
@@ -351,6 +357,7 @@ function homePage(h) {
 <div><span class="bdh-eyebrow">${esc(H.eyebrow)}</span>
 <h1><span>${esc(t1)}</span>${t2.length ? `<span>${esc(t2.join(' '))}</span>` : ''}</h1>
 ${lead ? `<p class="bdh-lead">${esc(lead)}</p>` : ''}
+<button class="bdh-ask" type="button" data-site-search hidden>${SEARCH_ICON}<span>Search or ask us anything… <em>e.g. “Do I need planning for a shop sign?”</em></span></button>
 <div class="bdh-cta"><a class="bdh-btn bdh-btn--solid" href="/get-a-quote/">Get a free quote</a><a class="bdh-btn bdh-btn--ghost" href="tel:${menu.phone.replace(/\s/g, '')}">Call ${esc(menu.phone)}</a></div>
 <ul class="bdh-chips">${secs.map((sec) => `<li><a href="${sec.href}" style="--c:var(--c-${sec.class})">${esc(sec.title)}</a></li>`).join('')}</ul></div>
 <div class="bdh-collage">${collage}</div>
@@ -378,6 +385,14 @@ ${paras.length > 2 ? `<details><summary><span class="more">Read more</span><span
 // worker/hub-resources.js), FAQs (with FAQPage schema) and a closing call to action.
 const hubs = JSON.parse(readFileSync(join(ROOT, 'content/hubs.json'), 'utf8'));
 const hubByPath = new Map(Object.entries(hubs).filter(([k]) => !k.startsWith('_')).map(([cls, v]) => [v.path, { cls, ...v }]));
+// A card's one-line description: the first sentence of the linked page's meta description.
+function cardDesc(href) {
+  const key = href.replace(/^https?:\/\/[^/]+/, '').replace(/\/+$/, '') || '/';
+  const page = captured.get(key) || captured.get(key + '/') || '';
+  const d = decode(((page.match(/<meta name="description" content="([^"]*)"/) || [])[1] || '')).trim();
+  const first = (d.match(/^.*?[.!?](?=\s|$)/) || [d])[0];
+  return first.length > 150 ? first.slice(0, 147).replace(/\s+\S*$/, '') + '…' : first;
+}
 function hubPage(h, path) {
   const hub = hubByPath.get(path);
   const sec = menu.sections.find((x) => x.class === hub.cls);
@@ -387,7 +402,8 @@ function hubPage(h, path) {
   }
   // the hub's own page cards (picture, title, link) from the theme's list
   const cards = [...h.matchAll(/<li class="px-3">\s*<img[^>]*src="([^"]+)"[^>]*\/?>\s*<a href="([^"]*)">([\s\S]*?)<\/a>/g)]
-    .map((m) => ({ img: m[1], href: m[2], title: decode(m[3]).trim() })).filter((c) => c.href);
+    .map((m) => ({ img: m[1], href: m[2], title: decode(m[3]).trim() })).filter((c) => c.href)
+    .map((c) => ({ ...c, desc: cardDesc(c.href) }));
   const linked = new Set(cards.map((c) => c.href.replace(/\/+$/, '')));
   const more = sec.links.filter(([, hh]) => !linked.has(hh.replace(/\/+$/, '')));
   // the WordPress wording, kept behind "Read more"
@@ -407,7 +423,7 @@ function hubPage(h, path) {
 <span class="bdhub-eyebrow">${esc(sec.title)}</span>
 <h1>${esc(hub.heading)}</h1>
 <p class="bdhub-lead">${esc(sec.summary)}</p>
-<div class="bdhub-cta"><a class="bdhub-btn bdhub-btn--solid" href="/get-a-quote/">Get a free quote</a><a class="bdhub-btn bdhub-btn--ghost" href="tel:${tel}">Call ${esc(menu.phone)}</a></div></div>
+<div class="bdhub-cta"><a class="bdhub-btn bdhub-btn--solid" href="/get-a-quote/?service=${hub.cls}">Get a free quote</a><a class="bdhub-btn bdhub-btn--ghost" href="tel:${tel}">Call ${esc(menu.phone)}</a></div></div>
 ${heroImg ? `<figure class="bdhub-hero-img"><img src="${heroImg}" alt="" fetchpriority="high"></figure>` : ''}
 </div></section>
 <section class="bdhub-intro"><div class="wrap">
@@ -416,8 +432,8 @@ ${heroImg ? `<figure class="bdhub-hero-img"><img src="${heroImg}" alt="" fetchpr
 ${wpText ? `<details class="bdhub-more"><summary><span class="more">Read more</span><span class="less">Show less</span></summary><div class="bdhub-wp">${wpText}</div></details>` : ''}</div>
 </div></section>
 <section class="bdhub-services" aria-labelledby="bdhub-services-h"><div class="wrap">
-<div class="bdhub-head"><h2 id="bdhub-services-h">${esc(hub.servicesTitle)}</h2><a class="bdhub-textlink" href="/get-a-quote/">Not sure what you need? Ask us →</a></div>
-<div class="bdhub-cards">${cards.map((c) => `<a class="bdhub-card" href="${c.href}"><span class="bdhub-card-img"><img src="${c.img}" alt="" loading="lazy"></span><span class="bdhub-card-title">${esc(c.title)}</span></a>`).join('')}</div>
+<div class="bdhub-head"><h2 id="bdhub-services-h">${esc(hub.servicesTitle)}</h2><a class="bdhub-textlink" href="/get-a-quote/?service=${hub.cls}">Not sure what you need? Ask us →</a></div>
+<div class="bdhub-tiles n${cards.length}">${cards.map((c) => `<a class="bdhub-tile" href="${c.href}"><img src="${c.img}" alt="" loading="lazy"><span class="bdhub-tile-in"><span class="bdhub-tile-title">${esc(c.title)}</span>${c.desc ? `<span class="bdhub-tile-desc">${esc(c.desc)}</span>` : ''}<span class="bdhub-tile-go">View service <i aria-hidden="true">→</i></span></span></a>`).join('')}</div>
 ${more.length ? `<div class="bdhub-also"><span>Also in ${esc(sec.title)}:</span><ul>${more.map(([l, hh]) => `<li><a href="${hh}">${esc(l)}</a></li>`).join('')}</ul></div>` : ''}
 </div></section>
 <section class="bdhub-steps" aria-labelledby="bdhub-steps-h"><div class="wrap">
@@ -430,11 +446,72 @@ ${more.length ? `<div class="bdhub-also"><span>Also in ${esc(sec.title)}:</span>
 <div class="bdhub-faqs">${hub.faqs.map(([q, a]) => `<details><summary>${esc(q)}</summary><p>${esc(a)}</p></details>`).join('')}</div>
 </div></section>
 <section class="bdhub-band"><div class="wrap"><div><h2>Ready to talk about your project?</h2><p>Tell us what you need and we'll come back to you, usually the same working day.</p></div>
-<div class="bdhub-cta"><a class="bdhub-btn bdhub-btn--solid" href="/get-a-quote/">Get a free quote</a><a class="bdhub-btn bdhub-btn--ghost" href="tel:${tel}">Call ${esc(menu.phone)}</a></div></div></section>
+<div class="bdhub-cta"><a class="bdhub-btn bdhub-btn--solid" href="/get-a-quote/?service=${hub.cls}">Get a free quote</a><a class="bdhub-btn bdhub-btn--ghost" href="tel:${tel}">Call ${esc(menu.phone)}</a></div></div></section>
 </div>
 `;
   return h.replace(/<div[^>]*class="category page[^"]*"[^>]*>[\s\S]*?(?=<footer)/, body)
     .replace(/<\/head>/i, `<script type="application/ld+json">${JSON.stringify(faqLd).replace(/</g, '\\u003c')}</script>\n</head>`);
+}
+
+// Get a quote (/get-a-quote): one quote form for every service (service chips, project details, contact details),
+// what happens next, contact details and the van-wrap offer the old page led with. Posts to /api/forms as a
+// "quote" lead, then goes to the old thank-you page (kept for conversion tracking).
+function quotePage(h) {
+  const tel = menu.phone.replace(/\s/g, '');
+  const vanImg = (h.match(/quote-banner[^>]*url\('([^']+)'\)/) || [])[1] || '';
+  const crumbs = (h.match(/<nav class="bdc"[\s\S]*?<\/nav>/) || [''])[0];
+  const field = (name, label, attrs, wide, hint = '') => `<div class="bdf-field${wide ? ' wide' : ''}"><label for="bdq-${name}">${label}${hint ? ` <small>${hint}</small>` : ''}</label>`
+    + (name === 'message' ? `<textarea id="bdq-${name}" name="${name}" ${attrs} aria-describedby="bdq-${name}-err"></textarea>`
+      : name === 'timescale' ? `<select id="bdq-${name}" name="${name}" ${attrs} aria-describedby="bdq-${name}-err"><option value="">Choose…</option>${['As soon as possible', 'Within 2 weeks', 'Within a month', '1–3 months', 'Just planning ahead'].map((o) => `<option>${o}</option>`).join('')}</select>`
+      : `<input id="bdq-${name}" name="${name}" ${attrs} aria-describedby="bdq-${name}-err">`)
+    + `<span class="bdf-err" id="bdq-${name}-err" aria-live="polite"></span></div>`;
+  const services = [...menu.sections.map((x) => [x.class, x.title]), ['other', 'Something else']];
+  const body = `<div class="bdq">
+<section class="bdq-hero"><div class="wrap">${crumbs}
+<span class="bdq-eyebrow">Free, no-obligation quote</span>
+<h1>Get a free quote.</h1>
+<p class="bdq-lead">Tell us about your project and we'll come back with a price and ideas, usually the same working day. Design, print, web, signage and liquid wrapping, all under one roof in Norwich.</p>
+<ul class="bdq-points"><li>No obligation, no hard sell</li><li>Reply usually the same working day</li><li>One team from design to installation</li></ul>
+</div></section>
+<section class="bdq-main"><div class="wrap">
+<div class="bdq-card bdf-wrap" id="enquiry">
+<form class="bdf-form bdq-form" data-bd-form="quote" data-next="/request-quote-thank-you/" novalidate aria-label="Quote request">
+<fieldset class="bdq-step wide"><legend><span>1</span>What do you need?</legend>
+<div class="bdq-chips">${services.map(([v, t]) => `<label class="bdq-chip ${v}"><input type="radio" name="service" value="${esc(t)}" data-key="${v}"><span>${esc(t)}</span></label>`).join('')}</div></fieldset>
+<fieldset class="bdq-step wide"><legend><span>2</span>Your project</legend>
+<div class="bdq-grid">
+${field('message', 'Tell us about it', 'rows="5" maxlength="6000" placeholder="What you need, rough sizes or quantities, any artwork or branding you already have"', true, '(the more detail, the better the quote)')}
+${field('timescale', 'When do you need it?', '', false, '(optional)')}
+${field('budget', 'Rough budget', 'type="text" maxlength="60" placeholder="e.g. £500–£1,000"', false, '(optional)')}
+</div></fieldset>
+<fieldset class="bdq-step wide"><legend><span>3</span>Your details</legend>
+<div class="bdq-grid">
+${field('name', 'Name', 'type="text" autocomplete="name" required maxlength="120"')}
+${field('company', 'Company', 'type="text" autocomplete="organization" maxlength="120"', false, '(optional)')}
+${field('phone', 'Phone', 'type="tel" inputmode="tel" autocomplete="tel" required maxlength="40" placeholder="e.g. 07700 900123"')}
+${field('email', 'Email', 'type="email" inputmode="email" autocomplete="email" required maxlength="254" placeholder="name@company.co.uk"')}
+</div></fieldset>
+<div class="bdf-hp" aria-hidden="true"><label for="bdq-website">Leave this empty</label><input id="bdq-website" name="website" tabindex="-1" autocomplete="off"></div>
+<div class="bdf-summary" role="alert"></div>
+<div class="bdf-actions"><button class="bdf-send" type="submit"><span class="bdf-spin" aria-hidden="true"></span><span class="bdf-label">Request my quote</span></button>
+<p class="bdf-note">We'll only use your details to reply about your quote. See our <a href="/privacy-policy/">privacy policy</a>.</p></div>
+</form>
+<div class="bdf-done" role="status"><h3>Thank you<span class="bdf-done-name"></span>.</h3><p>We've got your quote request and will be in touch shortly. If it's urgent, call us on <a href="tel:${tel}">${esc(menu.phone)}</a>.</p><button type="button" class="bdf-again">Send another request</button></div>
+</div>
+<aside class="bdq-side">
+<div class="bdq-box"><h2>What happens next?</h2><ol class="bdq-next"><li><b>We read your brief</b><span>A member of the team looks at what you need, not a call centre.</span></li><li><b>We get in touch</b><span>Usually the same working day, to ask anything we need and talk through options.</span></li><li><b>You get your quote</b><span>A clear price with no obligation. Happy? We get started.</span></li></ol></div>
+<div class="bdq-box bdq-talk"><h2>Prefer to talk?</h2>
+<a class="bdq-phone" href="tel:${tel}">${ICON.phone}${esc(menu.phone)}</a>
+<a href="mailto:${menu.email}">${ICON.mail}${esc(menu.email)}</a>
+<a href="${esc(menu.footer.maps)}" target="_blank" rel="noopener">${ICON.pin}${esc(menu.address)}</a></div>
+${vanImg ? `<a class="bdq-box bdq-offer" href="/liquid-wrapping-home/"><img src="${vanImg}" alt="A van with a half wrap" loading="lazy"><span class="bdq-offer-t">Van wraps from just <b>£0.82 a day*</b></span><span class="bdq-offer-s">Driving down your advertising costs. *Based on a half wrap with a life expectancy of 5 years.</span></a>` : ''}
+</aside>
+</div></section>
+</div>
+`;
+  // a landing page in WordPress (no footer): the site footer is added, without its enquiry form
+  if (!/<footer\b/.test(h)) h = h.replace(/<\/body>/i, '<footer class="signage"></footer>\n</body>');
+  return h.replace(/<div[^>]*class="category page[^"]*"[^>]*>[\s\S]*?(?=<footer)/, body);
 }
 
 function megaMenu(path) {
