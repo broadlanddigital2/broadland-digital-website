@@ -58,10 +58,10 @@ function setHead(html, { title, description, url, image, schema, noindex, css, v
 }
 
 // The CRM's "fixed" blocks carry a WordPress shortcode (the contact form): the site's own enquiry form goes there.
-function withForms(pageHtml, shell, service) {
-  const form = (shell.match(/<form class="form" data-enquiry[\s\S]*?<\/form>/) || [''])[0]
-    .replace('name="service" value=""', `name="service" value="${esc(service)}"`);
-  return pageHtml.replace(/<div class="crmseo-shortcode"[^>]*><\/div>/g, form ? `<div class="crmseo-shortcode form-panel"><h3>Send us your enquiry</h3>${form}</div>` : '');
+function withForms(pageHtml, shell) {
+  const form = (shell.match(/<div class="wpcf7[^"]*"[^>]*>[\s\S]*?<\/form>\s*<\/div>/) || [''])[0]
+    .replace(/wpcf7-f(\d+)-o1/g, 'wpcf7-f$1-o2');
+  return pageHtml.replace(/<div class="crmseo-shortcode"[^>]*><\/div>/g, form ? `<div class="crmseo-shortcode">${form}</div>` : '');
 }
 
 function fill(shell, inner) {
@@ -94,7 +94,7 @@ export async function crmPageResponse(request, env, opts) {
   if (!shellRes.ok) return null;
   const shell = await shellRes.text();
   const bar = preview ? `<div style="position:sticky;top:84px;z-index:40;padding:10px 16px;background:#ffd84d;color:#111;font:600 14px/1.4 system-ui,sans-serif;text-align:center">Preview from the CRM — not published${preview.note ? ' · ' + esc(preview.note) : ''}</div>` : '';
-  const inner = bar + withForms(String(page.html || ''), shell, page.h1 || page.title || '');
+  const inner = bar + withForms(String(page.html || ''), shell);
   const html = setHead(fill(shell, inner), {
     title: page.metaTitle || page.title, description: page.metaDescription, url: opts.origin + (page.path || path),
     image: page.image || '', schema: page.schema || null, noindex: !!preview, css, vars,

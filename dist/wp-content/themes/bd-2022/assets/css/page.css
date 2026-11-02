@@ -1,0 +1,153 @@
+.category-banner .container  {
+    padding: 0px 100px;
+    position: relative;
+}
+
+.page-category .banner-image {
+    margin: 0 auto;
+    height: 100%;
+    width: auto;
+    vertical-align: bottom;
+    padding-top: 64px;
+    position: absolute;
+    width: calc(100% - 200px);
+}
+
+.page-category .banner-image.shop {
+    position: static;
+    width: 100%;
+    padding-top: 0;
+}
+
+.page-category .banner-image img {
+    max-width: 100%;
+    height: auto;
+}
+
+.banner-title {
+    text-transform: capitalize;
+}
+
+.banner-subtitle {
+    font-size: 26px;
+    font-weight: 400;
+    color: white;
+    padding-top: 70px;
+}
+
+.page .section-one {
+    padding-bottom: 200px;
+    border-bottom: 2px solid #D1D1D1;
+}
+
+.section-one-title {
+    font-size: 72px;
+    font-weight: 800;
+}
+
+.signage .section-one-title, .signage .section-two-title, .signage li a {
+    color: #713FFF;
+}
+
+.print .section-one-title, .print .section-two-title, .print li a {
+    color: #DB5461;
+}
+
+.design .section-one-title, .design .section-two-title, .design li a {
+    color: #EA7317;
+}
+
+.web-dev .section-one-title, .web-dev .section-two-title, .web-dev li a {
+    color: #439A86;
+}
+
+.liquid-wrapping .section-one-title, .liquid-wrapping .section-two-title, .liquid-wrapping li a {
+    color: #f9c846;
+}
+
+/* dflip */
+.section-one-content {
+    overflow: hidden;
+}
+
+.page .section-one-content {
+    font-size: 20px;
+    font-weight: 400;
+}
+
+.page .section-two {
+    padding-bottom: 0;
+}
+
+.page .section-two-content {
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.section-two-title {
+    font-size: 50px;
+    font-weight: 800;
+    width: 33%;
+}
+
+.section-two-content li {
+    padding: 0;
+    list-style: none;
+    width: 33%;
+} 
+
+.page .section-two-content li a {
+    font-size: 30px;
+    font-weight: 800;
+    font-family: 'adelle';
+    text-decoration: none;
+    line-height: 2.5rem;
+    width: 300px;
+    display: block;
+}
+
+.shop .section-two-content li {
+    width: 50%;
+} 
+
+li img {
+    margin-bottom: 22px;
+    display: block;
+    width: 100%;
+    height: 400px;
+    object-fit: cover;
+    object-position: center;
+}
+
+.page .section-two-content li a br {
+    display: none;
+}
+
+.excerpt {
+    font-weight: 400;
+    font-size: 20px;
+    padding-top: 27px;
+    padding-bottom: 150px;
+}
+
+.banner-1 {
+    font-size: 1.5rem;
+    padding: 3.5rem 3rem;
+    background-repeat: no-repeat
+}
+
+.banner-1 .title {
+    font-size: 2.5rem;
+    line-height: 3rem;
+}
+
+.banner-1 a {
+    display: inline-block;
+    height: auto;
+    width: auto;
+    margin: 0;
+    margin-top: 5rem;
+    padding: 0.5rem 3rem;
+    border-radius: 3rem;
+}

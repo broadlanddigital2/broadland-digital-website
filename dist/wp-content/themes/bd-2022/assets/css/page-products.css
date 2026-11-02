@@ -1,0 +1,134 @@
+.page-products p {
+    font-weight: 400;
+}
+
+.page-products .banner-title  {
+    z-index: 1;
+    color: white;
+    font-weight: 800;
+    font-size: 72px;
+}
+
+.page-products .category-banner .container {
+    padding-right: 0;
+}
+
+
+.page-products .banner-content {
+    position: relative;
+}
+
+.page-products .banner-image img {
+    max-width: 100%;
+    height: auto;
+    max-width: 80%;
+    height: auto;
+    float: right;
+    margin-top: 160px;
+}
+
+.page-products .section-three {
+	margin-top: 80px;
+	border-top: 2px solid #D1D1D1;
+}
+
+.page-products .section-three-title {
+    font-size: 72px;
+    margin-bottom: 80px;
+}
+.page-products .banner-subtitle {
+    font-size: 26px;
+    font-weight: 400;
+    color: white;
+    width: 120%;
+    padding-top: 30px;
+}
+
+.wc-block-flex {
+    display: flex;
+    justify-content: space-between;
+    grid-gap: 32px;
+}
+
+.wc-block h2 {
+    font-size: 36px;
+    text-align: center;
+    margin-bottom: 80px;
+}
+
+.acf-repeater img {
+    height: 100%;
+	padding-bottom: 22px;
+}
+
+.acf-repeater .image .price {
+	position: absolute;
+    background-color: rgba(0,0,0,0.3);
+    height: 144px;
+    color: white;
+    width: 120px;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    font-size: 30px;
+    justify-content: center;
+    padding: 12px;
+    right: 32px;
+    top: 32px;
+	text-align: center;
+}
+
+.price .amount {
+	font-size: 41.5px;
+	margin-top: -12px;
+}
+
+klarna-placement > div {
+    max-width: initial!important;
+    margin-bottom: 24px;
+    height: auto;
+    max-width: 728px;
+    width: 100%;
+    display: block;
+    text-align: center;
+    display: flex!important;
+    justify-content: center;
+}
+
+/* archive-product.php specific */
+
+.page-category .pt-200 {
+    padding-top: 200px;
+}
+
+.page-category .pb-50 {
+    padding-bottom: 50px;
+}
+
+.page-category .section-two-content .excerpt {
+    padding-bottom: 24px;
+}
+
+.subcat {
+    position: relative;
+    margin-bottom: 1rem;
+}
+
+.subcat .price {
+    font-size: 24px;
+    color: #713FFF;
+}
+
+.liquid-wrapping .subcat .price {
+    color: #f9c846;
+}
+
+.page-category .klarna-container {
+    width: 100%;
+    margin: auto;
+    max-width: 1366px;
+}
+
+.page-category klarna-placement>div {
+    display: block!important;
+} 

@@ -1,0 +1,115 @@
+footer {
+    background-color: #2A2D32;
+    color: white;
+    padding: 40px 0;
+    padding-top: 100px;
+}
+
+footer a {
+    color: white;
+    text-decoration: none;
+}
+
+footer .container {
+    padding: 0 100px;
+}
+
+footer.signage {
+    background-color: #713FFF;
+}
+
+footer.print {
+    background-color: #DB5461;
+}
+
+footer.design {
+    background-color: #EA7317;
+}
+
+footer.web-dev {
+    background-color: #439A86;
+}
+
+footer.liquid-wrapping {
+    background-color: #f9c846;
+}
+
+.footer-bottom {
+    padding-top: 24px;
+}
+
+.footer-bottom a {
+	color: white;
+	text-decoration: none;
+}
+
+form, .contact-details{
+    font-size: 18px;
+}
+
+footer form .third {
+    width: 31%;
+    margin-right: 35px;
+    border: none;
+    background: transparent;
+    border-bottom: 1px solid white;
+    padding: 16px 0;
+	color: white;
+}
+
+footer form input.third::placeholder,
+footer form textarea::placeholder {
+	color: white;
+}
+
+footer form .message {
+    width: 100%;
+    margin-top: 20px;
+    color: white;
+    background: transparent;
+    border: none;
+    height: 40px;
+    margin-bottom: 40px;
+    border-bottom: 1px solid white;
+}
+
+footer form .wpcf7-submit {
+    margin-top: 10px;
+    float: right;
+    background: transparent;
+    border-radius: 24px;
+    padding: 7.5px 30px;
+    color: white;
+    border-color: white;
+    border: solid;
+}
+footer form .wpcf7-list-item {
+    margin-left: 0;
+}
+
+.contact-details {
+    margin-top: 180px;
+}
+
+footer .contact-details h5 {
+    font-size: 23px;
+    font-weight: 700;
+    color: white;
+} 
+
+.contact {
+    padding-right: 80px;
+}
+
+footer .contact a {
+    text-decoration: none;
+    color: white;
+}
+
+footer form h4 {
+    font-family: 'azo-sans-web';
+    padding-bottom: 100px;
+    font-weight: 600;
+    color: white!important;
+}
+

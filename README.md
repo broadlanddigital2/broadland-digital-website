@@ -3,14 +3,21 @@
 broadlanddigital.co.uk, rebuilt from the old WordPress site and run from the CRM. Hosted on Cloudflare as the
 Worker `broadland-digital-website`.
 
+The pages are the old WordPress site's own pages, captured as WordPress served them, so the site looks exactly as
+it did (same theme, menus, colours per section, galleries, footer). The CRM's pages and blog are served live inside
+the same header and footer.
+
 | Folder / file | What it is |
 | --- | --- |
-| `dist/` | **The live website**: the static pages built from `content/`. This is what Cloudflare serves. |
-| `content/wordpress.json` | Every page, product and post from the old WordPress site (wording, sections, galleries, SEO title and description). Edit wording here. |
-| `content/site.json` | Menu, footer, page names, redirects, which products show on which page. |
-| `site/` | `styles.css`, `site.js` and `public/` (files copied into `dist/` as they are, e.g. `wp-content/uploads`). |
-| `tools/build.mjs` | Builds `dist/` from `content/` and `site/`. |
-| `tools/wordpress-import/extract.py` | One-off: turned the WordPress export files into `content/wordpress.json`. |
+| `dist/` | **The live website**, built from the folders below. This is what Cloudflare serves. |
+| `source/wordpress/` | Every WordPress page and product, as WordPress served it (from the capture). Edit wording here. |
+| `source/wordpress-assets/` | The theme's (bd-2022) and plugins' CSS, scripts, fonts and images. |
+| `site/public/` | Uploads (`wp-content/uploads`: images, PDFs) and anything else copied in as it is. |
+| `site/bd-forms.js` | Sends the theme's forms to the CRM (in place of Contact Form 7). |
+| `content/site.json` | Redirects for old addresses; the CRM's page addresses. |
+| `content/wordpress.json` | The WordPress export as data (product names, dates), used for the sitemap and the CRM form notes. |
+| `tools/build.mjs` | Builds `dist/`: takes out WordPress, WooCommerce, Stripe, reCAPTCHA and WP Rocket scripts, makes links local, turns "Add to basket" into "Enquire now", points the forms at the CRM. |
+| `tools/capture/` | Captures the WordPress site (run by Actions → Capture WordPress site). |
 | `worker/` | The server side (below). |
 
 ## What comes from the CRM
@@ -29,7 +36,8 @@ Worker `broadland-digital-website`.
 
 ## Editing the site
 
-1. Change `content/wordpress.json`, `content/site.json` or `site/`.
+1. Change the page in `source/wordpress/<address>/index.html` (or `content/site.json`, `site/`). To start again from
+   WordPress, run **Actions → Capture WordPress site** while it is online (this overwrites `source/`).
 2. Run `node tools/build.mjs` (Node 22+, no install needed). It lists any links to addresses the site doesn't have.
 3. Commit and push — Cloudflare deploys it.
 
@@ -43,10 +51,11 @@ Deploy command: `npx wrangler deploy`.
 
 ## Before go-live
 
-1. **Images and PDFs.** Until they're in the repo, `/wp-content/uploads/...` files are fetched from the old WordPress
-   site (`OLD_SITE_ORIGIN` in `wrangler.jsonc`). Run **Actions → Import WordPress uploads** while WordPress is still
-   online: it copies the 275 files the site uses into `site/public/`, rebuilds and commits.
-2. Check the `*.workers.dev` preview (it is marked `noindex`).
+1. **Make the last changes on WordPress first, then capture.** Run **Actions → Capture WordPress site** once more just
+   before the switch, so the copy is up to date. After the switch, edit pages here, not in WordPress.
+2. Check the `*.workers.dev` preview (it is marked `noindex`). The theme's fonts (Adobe Fonts kit `qbw1hzk`) and the
+   CookieYes banner are registered to broadlanddigital.co.uk, so on the preview address the headings fall back to a
+   standard font and the cookie banner doesn't show; both work on the real domain.
 3. Add the routes `broadlanddigital.co.uk/*` and `www.broadlanddigital.co.uk/*` to this Worker (www redirects to the
    bare domain). Old WordPress addresses with trailing slashes, `-2` pages, `/privacy`, `/cart` and the like redirect
    (`worker/redirects.json`, built from `content/site.json`).
@@ -54,5 +63,6 @@ Deploy command: `npx wrangler deploy`.
 
 ## Not carried over
 
-WooCommerce checkout (product pages now take an order enquiry into the CRM instead), the account/cart/checkout pages,
+WooCommerce checkout ("Add to basket" is now "Enquire now", which fills in the enquiry form; orders arrive in the CRM
+as leads), the van graphics builder's live price lookups, the account/cart/checkout pages,
 the estimate/invoice/workspace app pages, the sample page, the Post SMTP email log and plugin settings.
