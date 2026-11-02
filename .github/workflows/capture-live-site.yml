@@ -1,0 +1,39 @@
+# Temporary: captures the current WordPress site (screenshots, HTML, theme CSS, fonts and images) into reference/ on
+# this branch, so the new site's design can be matched to it. Runs on every push to capture/live-site.
+name: Capture live site
+on:
+  push:
+    branches: [capture/live-site]
+    paths: [.github/workflows/capture-live-site.yml, tools/capture/**]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: Mirror pages with their CSS, scripts, fonts and images
+        run: |
+          mkdir -p reference/mirror
+          cd reference/mirror
+          for p in / /signage-home/ /signage-home/building-signage-shop-signs/ /van-graphics/ /vehicle-graphics/ /contact-us/ /get-a-quote/ /product/basic-large-van-graphics/ /privacy-policy/ /signage-home/signage-norwich/ /liquid-wrapping-home/ /digital-print/; do
+            wget -q -p -E -H -D broadlanddigital.co.uk,www.broadlanddigital.co.uk,use.typekit.net,p.typekit.net \
+              -U "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/130 Safari/537.36" -e robots=off "https://broadlanddigital.co.uk$p" || true
+          done
+          find . -type f | sed 's|^\./||' | sort > ../files.txt
+          du -sh . > ../size.txt
+      - name: Screenshots
+        run: |
+          npm i --no-save playwright@1.48.2 >/dev/null
+          npx playwright install --with-deps chromium >/dev/null
+          node tools/capture/shots.mjs
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898299+github-actions[bot]@users.noreply.github.com"
+          git add reference
+          git diff --cached --quiet || git commit -m "Capture of the live WordPress site"
+          git push
