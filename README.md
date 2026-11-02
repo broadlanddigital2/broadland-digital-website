@@ -14,6 +14,7 @@ the same header and footer.
 | `source/wordpress-assets/` | The theme's (bd-2022) and plugins' CSS, scripts, fonts and images. |
 | `site/public/` | Uploads (`wp-content/uploads`: images, PDFs) and anything else copied in as it is. |
 | `site/bd-forms.js` | Sends the theme's forms to the CRM (in place of Contact Form 7). |
+| `site/bd-consent.js` | The cookie banner (in place of CookieYes). Google Analytics/Ads and Linkbot ("Analytics & marketing") and the chat bot and reviews widget ("Chat & reviews") only load once a visitor agrees; the choice is kept for a year in the `bd_consent` cookie and can be changed from "Cookie settings" in the footer. |
 | `content/site.json` | Redirects for old addresses; the CRM's page addresses. |
 | `content/wordpress.json` | The WordPress export as data (product names, dates), used for the sitemap and the CRM form notes. |
 | `tools/build.mjs` | Builds `dist/`: takes out WordPress, WooCommerce, Stripe, reCAPTCHA and WP Rocket scripts, makes links local, turns "Add to basket" into "Enquire now", points the forms at the CRM. |
@@ -53,9 +54,8 @@ Deploy command: `npx wrangler deploy`.
 
 1. **Make the last changes on WordPress first, then capture.** Run **Actions → Capture WordPress site** once more just
    before the switch, so the copy is up to date. After the switch, edit pages here, not in WordPress.
-2. Check the `*.workers.dev` preview (it is marked `noindex`). The theme's fonts (Adobe Fonts kit `qbw1hzk`) and the
-   CookieYes banner are registered to broadlanddigital.co.uk, so on the preview address the headings fall back to a
-   standard font and the cookie banner doesn't show; both work on the real domain.
+2. Check the `*.workers.dev` preview (it is marked `noindex`). The theme's fonts (Adobe Fonts kit `qbw1hzk`) are
+   registered to broadlanddigital.co.uk, so on the preview address the headings fall back to a standard font.
 3. Add the routes `broadlanddigital.co.uk/*` and `www.broadlanddigital.co.uk/*` to this Worker (www redirects to the
    bare domain). Old WordPress addresses with trailing slashes, `-2` pages, `/privacy`, `/cart` and the like redirect
    (`worker/redirects.json`, built from `content/site.json`).

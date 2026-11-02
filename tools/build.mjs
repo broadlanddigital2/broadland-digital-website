@@ -51,13 +51,24 @@ function assetUrl(pathname) {
 }
 
 // ---------- Scripts kept / removed ----------
-const KEEP = /jquery-core-js|jquery-migrate-js|jquery(\.min)?\.js|jquery-migrate(\.min)?\.js|header(-js|\.js)|more_information|woo_block|swiper|ultimate_blocks|ultimate-blocks|dflip|dFlip|enquirybot|google_gtagjs|googletagmanager|gtag\(|cookieyes|client_data\/|linkbot|pagemapId|local-marketing-reports|application\/ld\+json/;
+const KEEP = /jquery-core-js|jquery-migrate-js|jquery(\.min)?\.js|jquery-migrate(\.min)?\.js|header(-js|\.js)|more_information|woo_block|swiper|ultimate_blocks|ultimate-blocks|dflip|dFlip|enquirybot|google_gtagjs|googletagmanager|gtag\(|linkbot|pagemapId|local-marketing-reports|application\/ld\+json/;
 const DROP = /woocommerce|wc-|wc_|sourcebuster|order-attribution|stripe|WCPAY|recaptcha|contact-form-7|wpcf7|swv-js|swv\/|wp-polyfill|wp-hooks|wp-i18n|hooks\.min|i18n\.min|cf7rl|redirect_method|rocket|wpr-beacon|speculationrules|omnisend|soundest|ga4w|klarna|cart-fragments|wp-(url|undo|redux|private|priority|keycodes|is-shallow|html-entities|escape|element|dom|deprecated|data|compose|api-fetch)|react|lodash|js\.cookie|blockUI|add-to-cart|single-product|country-select|checkout|address-i18n/;
+
+// Scripts that set non-essential cookies wait for consent (site/bd-consent.js switches them on).
+const ANALYTICS = /googletagmanager|gtag\(|dataLayer|linkbot|pagemapId/;
+const FUNCTIONAL = /enquirybot|local-marketing-reports/;
+const gate = (m, attrs, cat) => m.replace(/^<script\b[^>]*>/i, `<script type="text/plain" data-bd-consent="${cat}"${attrs.replace(/\stype=["'][^"']*["']/i, '')}>`);
 
 function cleanScripts(html) {
   return html.replace(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi, (m, attrs, body) => {
     const sig = attrs + ' ' + body.slice(0, 600);
     if (/cloudflare-static\/rocket-loader/.test(attrs)) return '';
+    if (/cookieyes|client_data\//i.test(sig)) return ''; // CookieYes is replaced by our own banner
+    if (/application\/ld\+json/.test(attrs)) return m;
+    if (DROP.test(sig) && !KEEP.test(sig)) return '';
+    if (/woocommerce-google-analytics|wc-order|ga4w|wc_add_to_cart|wpcf7/.test(sig)) return '';
+    if (ANALYTICS.test(sig)) return gate(m, attrs, 'analytics');
+    if (FUNCTIONAL.test(sig)) return gate(m, attrs, 'functional');
     if (KEEP.test(sig) && !/woocommerce-google-analytics|wc-order|ga4w|wc_add_to_cart|wpcf7/.test(sig)) return m;
     if (DROP.test(sig)) return '';
     return m;
@@ -88,13 +99,14 @@ function transform(html, path) {
   // Cloudflare Rocket Loader renamed every script type; WP Rocket added markers.
   h = h.replace(/\stype=["'][0-9a-f]{16,}-text\/javascript["']/g, '').replace(/\sdata-rocket-[a-z-]+(=("[^"]*"|'[^']*'))?/g, '')
     .replace(/\sdata-minify="1"/g, '').replace(/\sdata-cfasync="false"/g, '');
+  h = h.replace(/<!--\s*Start cookieyes banner\s*-->[\s\S]*?<!--\s*End cookieyes banner\s*-->/gi, '');
+  // Google Analytics: WP Rocket served gtag.js from the site itself; load it from Google.
+  h = h.replace(/src="https?:\/\/broadlanddigital\.co\.uk\/\?local_ga_js=[^"]*"/g, 'src="https://www.googletagmanager.com/gtag/js?id=GT-PJ7PZL8"');
   h = cleanScripts(h);
   // Head clutter
   h = h.replace(/<link[^>]+(oembed|wp-json|EditURI|xmlrpc|rel=['"]shortlink|rel=['"]dns-prefetch|rel=['"]https:\/\/api\.w\.org)[^>]*>\s*/gi, '')
     .replace(/<link[^>]+woocommerce-gateway-stripe[^>]*>\s*/gi, '')
     .replace(/<meta name="generator"[^>]*>\s*/gi, '');
-  // Google Analytics: WP Rocket served gtag.js from the site itself; load it from Google.
-  h = h.replace(/src="https?:\/\/broadlanddigital\.co\.uk\/\?local_ga_js=[^"]*"/g, 'src="https://www.googletagmanager.com/gtag/js?id=GT-PJ7PZL8"');
   // Local addresses everywhere except the canonical, social and schema tags (they stay absolute).
   h = h.replace(/<(?!meta\b|link\b[^>]*rel=["'](canonical|alternate)["'])([a-z]+\b[^>]*)>/gi, (tag) =>
     tag.replace(/\b(href|src|action|data-src|data-href|poster)=(["'])(https?:)?\/\/(www\.)?broadlanddigital\.co\.uk(\/[^"']*)?\2/gi, (_m, a, q, _s, _w, p) => `${a}=${q}${p || '/'}${q}`)
@@ -117,6 +129,9 @@ function transform(html, path) {
   });
   h = h.replace(/href="\/cart\?add-to-cart=\d+[^"]*"/g, `href="${path}"`).replace(/href="\/cart"/g, 'href="/shop"').replace(/href="\/(checkout|my-account)"/g, 'href="/contact-us"');
   h = h.replace(/<div[^>]*class="klarna-container"[^>]*>[\s\S]*?<\/div>/g, '');
+  // Cookie consent first in <head>; "Cookie settings" in the footer's bottom line
+  h = h.replace(/<head>/i, `<head>\n<script src="/_static/bd-consent.js?v=${CONSENT_V}"></script>`);
+  h = h.replace(/(<section class="footer-bottom">[\s\S]*?)(<\/section>)/, '$1 | <a class="text-white" href="#cookie-settings" data-bd-cookie-settings>Cookie settings</a>$2');
   // Our form script, after the theme's scripts
   h = h.replace(/<\/body>/i, `<script src="/_static/bd-forms.js?v=${FORMS_V}" defer></script>\n</body>`);
   return h;
@@ -124,6 +139,8 @@ function transform(html, path) {
 
 const formsJs = readFileSync(join(ROOT, 'site/bd-forms.js'));
 const FORMS_V = hash(formsJs);
+const consentJs = readFileSync(join(ROOT, 'site/bd-consent.js'));
+const CONSENT_V = hash(consentJs);
 
 // ---------- Shell for CRM pages and the blog ----------
 function shell() {
@@ -157,6 +174,7 @@ const sh = shell();
 write('_crm-page/index.html', sh);
 write('404.html', page404(sh));
 write('_static/bd-forms.js', formsJs);
+write('_static/bd-consent.js', consentJs);
 
 let assetsCopied = 0;
 for (const f of walk(ASSETS)) { const rel = relative(ASSETS, f); mkdirSync(dirname(join(OUT, rel)), { recursive: true }); copyFileSync(f, join(OUT, rel)); assetsCopied++; }
