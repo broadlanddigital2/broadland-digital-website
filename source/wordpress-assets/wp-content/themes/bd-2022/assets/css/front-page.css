@@ -1,0 +1,119 @@
+.categories-container .section  {
+    height: 769px;
+    /* placeholder until images available */
+    position: relative;
+    display: flex;
+    justify-content: flex-end;
+    align-items: flex-end;
+    padding: 24px 64px;
+    text-decoration: none;
+    background-size: cover;
+}
+
+.section::after {
+    transition: all 0.25s;
+    content:'';
+    position:absolute;
+    left:0; top:0;
+    width:0%; height:0%;
+    display:inline-block;
+}
+
+.homepage .section.signage {
+    background-image: url('../../assets/images/banner-signage.jpg') ;
+}
+
+.homepage .section.signage:hover::after {
+    width:100%; height:100%;
+    background: rgba(113, 63, 255, 0.5);
+}
+
+.homepage .section.print {
+    background-image: url('../../assets/images/banner-print.jpg') ;
+}
+
+.homepage .section.print:hover::after {
+    width:100%; height:100%;
+    background: rgba(219, 84, 97, 0.5)
+}
+
+.homepage .section.design {
+    background-image: url('../../assets/images/banner-design.jpg') ;
+}
+
+.homepage .section.design:hover::after {
+    width:100%; height:100%;
+    background: rgba(234, 115, 23, 0.5)
+}
+
+.homepage .section.web {
+    background-image: url('../../assets/images/banner-web.jpg') ;
+}
+
+.homepage .section.web:hover::after {
+    width:100%; height:100%;
+    background: rgba(67, 154, 134, 0.5);
+}
+
+.homepage .section.liquid-wrapping {
+    background-image: url('../../assets/images/banner-signage.jpg');
+}
+
+.homepage .section.liquid-wrapping:hover::after {
+    width:100%; height:100%;
+    background: rgba(249, 200, 70, 0.5);
+}
+
+.categories-container .category  {
+    font-size: 72px;
+    font-weight: 900;
+    color: white;
+    z-index: 1;
+}
+
+.category.signage {
+    font-weight: 900;
+}
+
+.category.print {
+    font-style: italic;
+    font-family: 'scotch-display';
+}
+
+.category.design {
+    font-weight: 700;
+    font-family: Helvetica;
+}
+
+.category.web {
+    font-family: 'maxular';
+}
+
+.plus {
+    background-color: #000000;
+    width: 139px;
+    height: 139px;
+    position: absolute;
+    z-index: 1;
+    left: 83px;
+    bottom: 60px;
+    border-radius: 100%;
+    opacity: 0;
+}
+
+.section:hover .plus {
+    opacity: 1;
+    transition: opacity 0.25s;
+}
+
+.plus span {
+    color: white;
+    font-size: 120px;
+    position: absolute;
+}
+
+/* NB maybe global */
+.home-content {
+    font-size: 30px;
+    color: #484848;
+}
