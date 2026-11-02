@@ -1,0 +1,407 @@
+{
+  "_about": "Site-wide settings for tools/build.mjs: menu, footer, names, and how WordPress pages link to products and to the CRM's pages. Page wording itself is in wordpress.json.",
+  "logo": "/wp-content/uploads/2023/03/Broadland_Digital_Logo.svg",
+  "favicon": "/wp-content/uploads/2023/03/Broadland_Digital_Logo.svg",
+  "shareImage": "/wp-content/uploads/2023/03/Broadland_Digital_Logo.svg",
+  "hours": "",
+  "nav": [
+    {
+      "href": "/signage-home",
+      "label": "Signage"
+    },
+    {
+      "href": "/print-home",
+      "label": "Print"
+    },
+    {
+      "href": "/design-home",
+      "label": "Design"
+    },
+    {
+      "href": "/web-dev-home",
+      "label": "Web"
+    },
+    {
+      "href": "/liquid-wrapping-home",
+      "label": "Liquid wrapping"
+    },
+    {
+      "href": "/signage-home/guides-and-advice",
+      "label": "Guides"
+    },
+    {
+      "href": "/contact-us",
+      "label": "Contact"
+    }
+  ],
+  "footer": [
+    {
+      "title": "Signage",
+      "links": [
+        [
+          "/signage-home",
+          "All signage"
+        ],
+        [
+          "/signage-home/building-signage-shop-signs",
+          "Building & shop signs"
+        ],
+        [
+          "/signage-home/exterior-building-signs",
+          "Exterior signs"
+        ],
+        [
+          "/signage-home/interior-signs",
+          "Interior signs"
+        ],
+        [
+          "/signage-home/signage-exhibition-stands",
+          "Exhibition stands & banners"
+        ],
+        [
+          "/signage-home/locations",
+          "Areas we cover"
+        ],
+        [
+          "/signage-home/guides-and-advice",
+          "Guides & advice"
+        ]
+      ]
+    },
+    {
+      "title": "Print & design",
+      "links": [
+        [
+          "/print-home",
+          "Print"
+        ],
+        [
+          "/digital-print",
+          "Digital print"
+        ],
+        [
+          "/large-format-print-posters",
+          "Large format print"
+        ],
+        [
+          "/design-home",
+          "Design"
+        ],
+        [
+          "/design-home/logo-design",
+          "Logo design"
+        ],
+        [
+          "/wall-graphics-and-wall-wraps",
+          "Wall graphics"
+        ]
+      ]
+    },
+    {
+      "title": "More",
+      "links": [
+        [
+          "/web-dev-home",
+          "Web development"
+        ],
+        [
+          "/liquid-wrapping-home",
+          "Liquid wrapping"
+        ],
+        [
+          "/vehicle-graphics",
+          "Vehicle graphics"
+        ],
+        [
+          "/shop",
+          "Shop"
+        ],
+        [
+          "/blog",
+          "Blog"
+        ],
+        [
+          "/signage-home/signage-brochure",
+          "Brochure"
+        ],
+        [
+          "/contact-us",
+          "Contact us"
+        ]
+      ]
+    }
+  ],
+  "names": {
+    "/": "Home",
+    "/signage-home": "Signage",
+    "/print-home": "Print",
+    "/design-home": "Design",
+    "/web-dev-home": "Web development",
+    "/liquid-wrapping-home": "Liquid wrapping",
+    "/wall-graphics-and-wall-wraps": "Wall graphics & wall wraps",
+    "/liquid-wrapping-home/plasti-dip-wrapping": "Plasti Dip liquid wrapping",
+    "/large-format-print-posters": "Large format print & posters",
+    "/digital-print": "Digital print",
+    "/race-car-graphics": "Race car graphics",
+    "/laravel-ecommerce": "Laravel ecommerce",
+    "/web-dev-home/cms-websites": "CMS websites",
+    "/norwich": "Our Norwich headquarters",
+    "/signage-home/laser-cutting-engraving-2": "Laser cutting & engraving",
+    "/signage-home/signage-exhibition-stands": "Exhibition stands, pull-up & PVC banners",
+    "/request-quote-thank-you": "Thank you for your quote request",
+    "/download-guide-thank-you": "Thank you for downloading our guide",
+    "/woocommerce": "WooCommerce websites"
+  },
+  "subtitles": {
+    "/signage-home": "Shop signs, building signs, interior signs, banners and display: designed, made and fitted from our Norwich workshop.",
+    "/signage-home/interior-signs": "Reception, office, wayfinding and display signs that present your business well."
+  },
+  "titles": {},
+  "dropPages": [],
+  "extraPaths": [
+    "/shop",
+    "/blog",
+    "/privacy",
+    "/terms"
+  ],
+  "crmPaths": [
+    "/signage-home/locations",
+    "/signage-home/guides-and-advice",
+    "/signage-home/compare",
+    "/signage-home/building-signage-shop-signs/built-up-3d-letters",
+    "/signage-home/building-signage-shop-signs/fascia-signs",
+    "/signage-home/building-signage-shop-signs/projecting-signs",
+    "/signage-home/large-format-print/aluminium-composite-panels",
+    "/signage-home/large-format-print/mesh-banners",
+    "/signage-home/signage-exhibition-stands/modular-exhibition-stands",
+    "/signage-home/signage-exhibition-stands/pop-up-displays",
+    "/signage-home/signage-exhibition-stands/pull-up-banners",
+    "/signage-home/site-safety-signs/fire-and-emergency-signs",
+    "/signage-home/site-safety-signs/safety-and-warning-signs",
+    "/signage-home/window-graphics/frosted-manifestation",
+    "/signage-home/window-graphics/privacy-film",
+    "/signage-home/signage-norwich",
+    "/signage-home/signage-norfolk"
+  ],
+  "redirects": {
+    "/privacy": "/privacy-policy",
+    "/vehicle-wraps": "/vehicle-wraps-2",
+    "/hydro-dipping": "/hydro-dipping-2",
+    "/signage-home/laser-cutting-engraving": "/signage-home/laser-cutting-engraving-2",
+    "/liquid-wrapping-home/budget-liquid-wrapping": "/liquid-wrapping-home/budget-liquid-wrapping-2",
+    "/liquid-wrapping-home/standard-spray-wrapping": "/liquid-wrapping-home/standard-spray-wrapping-2",
+    "/liquid-wrapping-home/premium-liquid-wrapping": "/liquid-wrapping-home/premium-liquid-wrapping-2",
+    "/liquid-wrapping-home/ultra-liquid-wrapping": "/liquid-wrapping-home/ultra-liquid-wrapping-2",
+    "/cart": "/shop",
+    "/checkout": "/shop",
+    "/my-account": "/contact-us",
+    "/sample-page": "/",
+    "/home": "/",
+    "/large-format-print-and-posters": "/large-format-print-posters",
+    "/liquid-wrapping-home/alloy-wheel-liquid-wrap": "/liquid-wrapping-home/alloy-wheel-wraps",
+    "/web-developers-home/bespoke-software-systems": "/web-dev-home/bespoke-software-systems",
+    "/category/vehicle-graphics": "/vehicle-graphics",
+    "/product-tag/liquid-wrapping": "/liquid-wrapping-home",
+    "/guides/shop-signs-norwich-winter-visibility-checklist": "/blog/shop-signs-norwich-winter-visibility-checklist"
+  },
+  "signageHubs": [
+    [
+      "/signage-home",
+      "Signage services"
+    ],
+    [
+      "/signage-home/guides-and-advice",
+      "Guides & advice"
+    ],
+    [
+      "/signage-home/compare",
+      "Compare sign types"
+    ],
+    [
+      "/signage-home/locations",
+      "Areas we cover"
+    ],
+    [
+      "/signage-home/signage-norwich",
+      "Signage in Norwich"
+    ],
+    [
+      "/signage-home/signage-norfolk",
+      "Signage across Norfolk"
+    ],
+    [
+      "/blog",
+      "Blog"
+    ]
+  ],
+  "hubLinks": {
+    "/signage-home": {
+      "title": "More about signage",
+      "text": "Detailed pages on individual sign types, plus buying guides, comparisons and the towns we cover.",
+      "links": [
+        [
+          "/signage-home/building-signage-shop-signs/fascia-signs",
+          "Fascia signs"
+        ],
+        [
+          "/signage-home/building-signage-shop-signs/built-up-3d-letters",
+          "Built-up 3D letters"
+        ],
+        [
+          "/signage-home/building-signage-shop-signs/projecting-signs",
+          "Projecting signs"
+        ],
+        [
+          "/signage-home/window-graphics/frosted-manifestation",
+          "Frosted manifestation"
+        ],
+        [
+          "/signage-home/window-graphics/privacy-film",
+          "Privacy film"
+        ],
+        [
+          "/signage-home/signage-exhibition-stands/pull-up-banners",
+          "Pull-up banners"
+        ],
+        [
+          "/signage-home/signage-exhibition-stands/pop-up-displays",
+          "Pop-up displays"
+        ],
+        [
+          "/signage-home/signage-exhibition-stands/modular-exhibition-stands",
+          "Modular exhibition stands"
+        ],
+        [
+          "/signage-home/large-format-print/aluminium-composite-panels",
+          "Aluminium composite panels"
+        ],
+        [
+          "/signage-home/large-format-print/mesh-banners",
+          "Mesh banners"
+        ],
+        [
+          "/signage-home/site-safety-signs/safety-and-warning-signs",
+          "Safety & warning signs"
+        ],
+        [
+          "/signage-home/site-safety-signs/fire-and-emergency-signs",
+          "Fire & emergency signs"
+        ],
+        [
+          "/signage-home/guides-and-advice",
+          "Guides & advice"
+        ],
+        [
+          "/signage-home/compare",
+          "Comparisons"
+        ],
+        [
+          "/signage-home/locations",
+          "Areas we cover"
+        ]
+      ]
+    }
+  },
+  "services": [
+    "Shop & building signs",
+    "Interior signs",
+    "Window graphics",
+    "Exhibition stands & banners",
+    "Large format print",
+    "Safety signs",
+    "Laser cutting & engraving",
+    "Wall graphics",
+    "Vehicle graphics",
+    "Liquid wrapping",
+    "Digital & litho print",
+    "Graphic & logo design",
+    "Websites & hosting",
+    "Something else"
+  ],
+  "brochurePaths": [],
+  "productLinks": {
+    "/van-graphics": [
+      "Vehicle Graphics"
+    ],
+    "/liquid-wrapping-home/budget-liquid-wrapping-2": [
+      "Budget Package"
+    ],
+    "/liquid-wrapping-home/standard-spray-wrapping-2": [
+      "Standard Package"
+    ],
+    "/liquid-wrapping-home/premium-liquid-wrapping-2": [
+      "Premium Package"
+    ],
+    "/liquid-wrapping-home/ultra-liquid-wrapping-2": [
+      "Ultra Package"
+    ],
+    "/liquid-wrapping-home/plasti-dip-wrapping": [
+      "Full Dip Liquid Wrap"
+    ]
+  },
+  "productHeadings": {
+    "/van-graphics": "Van graphics packages",
+    "/liquid-wrapping-home/plasti-dip-wrapping": "Full Dip liquid wrap products"
+  },
+  "productCategoryPages": [
+    {
+      "path": "/van-graphics",
+      "name": "Small van graphics",
+      "categories": [
+        "Vehicle Graphics",
+        "Small Vans"
+      ]
+    },
+    {
+      "path": "/van-graphics",
+      "name": "Medium van graphics",
+      "categories": [
+        "Vehicle Graphics",
+        "Medium Vans"
+      ]
+    },
+    {
+      "path": "/van-graphics",
+      "name": "Large van graphics",
+      "categories": [
+        "Vehicle Graphics",
+        "Large Vans"
+      ]
+    },
+    {
+      "path": "/liquid-wrapping-home/budget-liquid-wrapping-2",
+      "name": "Budget liquid wrapping",
+      "categories": [
+        "Budget Package"
+      ]
+    },
+    {
+      "path": "/liquid-wrapping-home/standard-spray-wrapping-2",
+      "name": "Standard liquid wrapping",
+      "categories": [
+        "Standard Package"
+      ]
+    },
+    {
+      "path": "/liquid-wrapping-home/premium-liquid-wrapping-2",
+      "name": "Premium liquid wrapping",
+      "categories": [
+        "Premium Package"
+      ]
+    },
+    {
+      "path": "/liquid-wrapping-home/ultra-liquid-wrapping-2",
+      "name": "Ultra liquid wrapping",
+      "categories": [
+        "Ultra Package"
+      ]
+    },
+    {
+      "path": "/liquid-wrapping-home/plasti-dip-wrapping",
+      "name": "Full Dip liquid wrap",
+      "categories": [
+        "Full Dip Liquid Wrap"
+      ]
+    }
+  ]
+}

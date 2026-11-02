@@ -1,0 +1,22 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "broadland-digital-website",
+  "compatibility_date": "2026-10-01",
+  "main": "./worker/index.js",
+  "assets": {
+    "directory": "./dist/",
+    "binding": "ASSETS",
+    // The worker runs first for pages (CRM pages can take over an address, old WordPress addresses redirect);
+    // styles and scripts go straight to the files.
+    "run_worker_first": ["/*", "!/_static/*"],
+    "not_found_handling": "404-page",
+    "html_handling": "drop-trailing-slash"
+  },
+  "vars": {
+    // Where /wp-content/uploads files not yet copied into the repo are fetched from. Point it at the old WordPress
+    // host's own address (e.g. its temporary domain) before broadlanddigital.co.uk is moved to this worker.
+    "OLD_SITE_ORIGIN": "https://broadlanddigital.co.uk"
+  },
+  "observability": { "enabled": true },
+  "keep_vars": true
+}

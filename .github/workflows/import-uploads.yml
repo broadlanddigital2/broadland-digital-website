@@ -1,0 +1,43 @@
+# Copies every image and PDF the site uses (content/wordpress.json → uploads) from the old WordPress site into
+# site/public/wp-content/uploads, rebuilds dist/ and commits, so the site no longer depends on the old host.
+# Run it from Actions → Import WordPress uploads → Run workflow while the WordPress site is still online
+# (optionally with its temporary address if broadlanddigital.co.uk already points here).
+name: Import WordPress uploads
+on:
+  workflow_dispatch:
+    inputs:
+      origin:
+        description: "Old WordPress site address"
+        required: false
+        default: "https://broadlanddigital.co.uk"
+permissions:
+  contents: write
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: Download
+        env:
+          ORIGIN: ${{ inputs.origin }}
+        run: |
+          node -e '
+            const fs=require("fs"),path=require("path");
+            const {uploads}=JSON.parse(fs.readFileSync("content/wordpress.json","utf8"));
+            (async()=>{let ok=0,miss=[];
+              for(const u of uploads){const f=path.join("site/public",decodeURIComponent(u));
+                if(fs.existsSync(f)){ok++;continue}
+                const r=await fetch(process.env.ORIGIN+encodeURI(decodeURIComponent(u))).catch(()=>null);
+                if(!r||!r.ok){miss.push(u);continue}
+                fs.mkdirSync(path.dirname(f),{recursive:true});fs.writeFileSync(f,Buffer.from(await r.arrayBuffer()));ok++}
+              console.log(ok+" files present");if(miss.length)console.log("::warning::Not found: "+miss.join(" "))})()'
+      - name: Rebuild and commit
+        run: |
+          node tools/build.mjs
+          git config user.name "github-actions[bot]"
+          git config user.email "41898299+github-actions[bot]@users.noreply.github.com"
+          git add site/public dist worker
+          git diff --cached --quiet || git commit -m "Import uploads from the WordPress site"
+          git push
