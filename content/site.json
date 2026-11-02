@@ -73,6 +73,7 @@
     "/category/liquid-wrapping": "/liquid-wrapping-home",
     "/category/liquid-wrapping/shop": "/shop",
     "/product/ttest": "/shop",
-    "/category/uncategorized": "/shop"
+    "/category/uncategorized": "/shop",
+    "/category/liquid-wrapping/shop/plasti-dip-spray-wrap": "/category/liquid-wrapping/shop/full-dip-liquid-wrap"
   }
 }

@@ -56,11 +56,19 @@ for (const f of ['/locations.kml']) {
 // 1. Pages
 const pages = {};
 const missing = [];
-for (const p of paths) {
+// Category pages run onto /page/2, /page/3…: those are found from the links on each page as it is saved.
+const queue = [...paths];
+const queued = new Set(queue);
+while (queue.length) {
+  const p = queue.shift();
   const r = await get(ORIGIN + (p === '/' ? '/' : p + '/'));
   if (!r) { missing.push(p); continue; }
   const html = await r.text();
   pages[p] = html;
+  for (const m of html.matchAll(/href=["'](?:https?:\/\/(?:www\.)?broadlanddigital\.co\.uk)?(\/(?:category|posts|shop)\/[^"'#?]*?\/page\/\d+)\/?["']/g)) {
+    const next = m[1].replace(/\/+$/, '');
+    if (!queued.has(next)) { queued.add(next); queue.push(next); }
+  }
   save(join(ROOT, 'source/wordpress', p === '/' ? '' : p, 'index.html'), html);
 }
 console.log(`${Object.keys(pages).length} pages saved${missing.length ? '; not found: ' + missing.join(' ') : ''}`);
