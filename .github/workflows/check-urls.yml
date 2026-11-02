@@ -31,4 +31,6 @@ jobs:
           done < urls.txt | sort > results.txt
           echo "---- summary"; cut -d' ' -f1 results.txt | sort | uniq -c
           echo "---- not 200 / not redirect to 200"; grep -v '^S200 ' results.txt | grep -v '(200)$' || true
-          echo "---- redirects"; grep '^REDIRECT' results.txt | grep -v -E ' -> https://[^ ]+'"'"'?\1' | head -200
+          echo "---- moved to a different page"
+          while read -r kind p arrow to code; do [ "$kind" = REDIRECT ] || continue; t="${to#$NEW}"; [ "$t" = "${p%/}" ] || [ "$t" = "$p" ] || echo "$p -> $t $code"; done < results.txt
+          echo "---- by sitemap"; for sm in post page product category product_cat crm-seo local; do echo "$sm: $(curl -sSL -A "$UA" $OLD/$sm-sitemap.xml | grep -c '<loc>')"; done
