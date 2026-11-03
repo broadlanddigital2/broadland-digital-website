@@ -1,0 +1,15 @@
+# Manual: browser check of the preview site (tools/check/site-check.mjs); results pushed to the site-check-results branch.
+name: Site check
+on: workflow_dispatch
+permissions:
+  contents: write
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm i --no-save playwright@1 && npx playwright install --with-deps chromium
+      - run: node tools/check/site-check.mjs
+      - run: |
+          cd out && git init -q -b site-check-results && git -c user.name=ci -c user.email=ci@localhost add . && git -c user.name=ci -c user.email=ci@localhost commit -qm "Site check"
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" site-check-results
