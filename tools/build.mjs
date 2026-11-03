@@ -23,6 +23,7 @@ const OUT = join(ROOT, 'dist');
 const ORIGIN = 'https://broadlanddigital.co.uk';
 const wp = JSON.parse(readFileSync(join(ROOT, 'content/wordpress.json'), 'utf8'));
 const extra = JSON.parse(readFileSync(join(ROOT, 'content/site.json'), 'utf8'));
+const VEH = JSON.parse(readFileSync(join(ROOT, 'content/vehicle.json'), 'utf8'));
 const OPT = existsSync(join(ROOT, 'content/opt-images.json')) ? JSON.parse(readFileSync(join(ROOT, 'content/opt-images.json'), 'utf8')) : {};
 const productTitle = new Map(wp.products.map((p) => [p.path, p.title]));
 const lastmod = new Map([...wp.pages, ...wp.products].map((p) => [p.path, p.modified]));
@@ -586,9 +587,45 @@ ${imgs.length > 9 ? `<button type="button" class="bdsub-showall" onclick="this.p
   out = out.replace(/(<\/div>\s*)(<footer\b)/, `<section class="bdhub-band"><div class="wrap"><div><h2>Ready to talk about your project?</h2><p>Tell us what you need and we'll come back to you, usually the same working day.</p></div>
 <div class="bdhub-cta"><a class="bdhub-btn bdhub-btn--solid" href="/get-a-quote/?service=${cls}">Get a free quote</a><a class="bdhub-btn bdhub-btn--ghost" href="tel:${tel}">Call ${esc(menu.phone)}</a></div></div></section>
 $1$2`);
+  out = vehicleExtras(out, path, title);
   out = out.replace(wrapM[0], wrapM[0].replace(/class="category /, `class="bdhub bdsub ${cls} category `));
   // gallery zoom: a native <dialog>
   return out.replace(/<\/body>/i, `<script>document.addEventListener('click',function(e){var a=e.target.closest('[data-bd-zoom]');if(!a)return;e.preventDefault();var d=document.getElementById('bd-zoom');if(!d){d=document.createElement('dialog');d.id='bd-zoom';d.innerHTML='<button type="button" aria-label="Close">×</button><img alt="">';d.addEventListener('click',function(){d.close()});document.body.appendChild(d)}var im=a.querySelector('img');d.querySelector('img').src=a.href;d.querySelector('img').alt=im?im.alt:'';d.showModal()});</script>\n</body>`);
+}
+
+// Vehicle pages (content/vehicle.json): what's included, prices, links to the CRM guides/sectors/locations hubs,
+// how it works and FAQs, with Service and FAQPage schema.
+function vehicleExtras(h, path, title) {
+  const v = VEH.pages[path];
+  if (!v) return h;
+  const tel = menu.phone.replace(/\s/g, '');
+  const included = v.included ? `<section class="bdv-inc"><div class="wrap"><div class="bdhub-head"><h2>${esc(v.includedTitle || 'What we do.')}</h2></div>
+<ul class="bdv-cards">${v.included.map(([a, b]) => `<li><h3>${esc(a)}</h3><p>${esc(b)}</p></li>`).join('')}</ul></div></section>` : '';
+  const pk = [
+    ['Basic', '149', 'Single-colour cut vinyl: company name on the bonnet, both sides and the rear, with your web address and phone number on the lower side panels and rear doors.'],
+    ['Standard', '210', 'Everything in Basic plus social media details, a second vinyl colour or panel infill, and a cut or printed logo (subject to complexity and hi-res files).'],
+    ['Pro', '455', 'Everything in Basic and Standard plus design options beyond the regular layout (up to 3 ideas) and a large logo or graphic on the rear quarters and rear.'],
+  ];
+  const prices = v.prices ? `<section class="bdv-prices"><div class="wrap"><div class="bdhub-head"><h2>Van graphics prices.</h2><a class="bdhub-textlink" href="/category/signage/vehicle-graphics/">Shop van graphics online →</a></div>
+<div class="bdv-pk">${pk.map(([n, p, t], i) => `<div class="bdv-p${i === 1 ? ' bdv-p--mid' : ''}"><h3>${n}</h3><p class="bdv-price"><small>from</small> £${p} <small>+ VAT</small></p><p>${esc(t)}</p><a class="bdhub-btn bdhub-btn--solid" href="/get-a-quote/?service=signage">Get a quote</a></div>`).join('')}</div>
+<p class="bdv-note">Supply and fit within 30 miles of our Norwich workshop. Prices are "from" for a typical van; your quote confirms the price for your vehicle and design. Supply-only graphics for self-fitting are in the <a href="/category/signage/vehicle-graphics/">online shop</a>.</p></div></section>` : '';
+  const hubs = v.hubLinks ? `<section class="bdv-hubs"><div class="wrap"><div class="bdhub-head"><h2>Guides, trades &amp; areas.</h2></div>
+<div class="bdv-hubgrid">${[['/vehicle-graphics/guides-and-advice/', 'Guides & advice', 'Costs, how long wraps last, Chapter 8 chevrons, lease vans and choosing the right vinyl.'], ['/vehicle-graphics/sectors/', 'By trade & sector', 'What works for trades, fleets, food vans, taxis and highways and utilities vehicles.'], ['/vehicle-graphics/locations/', 'Across Norfolk & Suffolk', 'Vehicle graphics for Norwich, Great Yarmouth, Lowestoft and King’s Lynn.']].map(([href, t, d]) => `<a href="${href}"><h3>${esc(t)}</h3><p>${esc(d)}</p><span>Explore →</span></a>`).join('')}</div></div></section>` : '';
+  const steps = `<section class="bdhub-steps"><div class="wrap"><div class="bdhub-head"><h2>How it works.</h2></div><ol>${VEH.steps.map(([a, b]) => `<li><h3>${esc(a)}</h3><p>${esc(b)}</p></li>`).join('')}</ol></div></section>`;
+  const faqs = v.faqs?.length ? `<section class="bdhub-faq"><div class="wrap"><h2>Questions.</h2><div class="bdhub-faqs">${v.faqs.map(([q, a]) => `<details><summary>${esc(q)}</summary><p>${esc(a)}</p></details>`).join('')}</div></div></section>` : '';
+  const ld = [{ '@context': 'https://schema.org', '@type': 'Service', name: v.service || title, serviceType: v.service || title, url: ORIGIN + path + '/',
+    provider: { '@type': 'LocalBusiness', name: 'Broadland Digital', telephone: '+44 1603 407786', url: ORIGIN + '/', address: { '@type': 'PostalAddress', streetAddress: 'Vulcan House, Vulcan Road North', addressLocality: 'Norwich', postalCode: 'NR6 6AQ', addressCountry: 'GB' } },
+    areaServed: ['Norwich', 'Norfolk', 'Suffolk'],
+    ...(v.prices ? { offers: pk.map(([n, p]) => ({ '@type': 'Offer', name: n + ' van graphics', price: p, priceCurrency: 'GBP', priceSpecification: { '@type': 'PriceSpecification', price: p, priceCurrency: 'GBP', valueAddedTaxIncluded: false } })) } : {}) }];
+  if (v.faqs?.length) ld.push({ '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: v.faqs.map(([q, a]) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })) });
+  let out = h;
+  // after the intro text
+  out = out.replace(/(<section\b[^>]*class="container section-padding\s+section-one[^"]*"[^>]*>[\s\S]*?<\/section>)/, (m) => m + included);
+  // before the gallery (or the closing band): prices, hubs, steps; FAQs just before the closing band
+  const mid = prices + hubs + steps;
+  out = /<section class="bdsub-gallery-sec">/.test(out) ? out.replace('<section class="bdsub-gallery-sec">', mid + '<section class="bdsub-gallery-sec">') : out.replace('<section class="bdhub-band">', mid + '<section class="bdhub-band">');
+  out = out.replace('<section class="bdhub-band">', faqs + '<section class="bdhub-band">');
+  return out.replace(/<\/head>/i, ld.map((x) => `<script type="application/ld+json">${JSON.stringify(x).replace(/</g, '\\u003c')}</script>`).join('\n') + '\n</head>');
 }
 
 function megaMenu(path) {

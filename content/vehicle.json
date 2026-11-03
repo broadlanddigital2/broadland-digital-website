@@ -1,0 +1,79 @@
+{
+  "_note": "Extra sections for the vehicle graphics pages (tools/build.mjs subPage → vehicleExtras): what's included / prices, how it works, FAQs (with FAQPage + Service schema), and on /vehicle-graphics the links to the guides, sectors and locations hubs (pages in the CRM). Facts only from the existing site; prices are the published 'from' prices, + VAT.",
+  "steps": [
+    ["Tell us about the vehicle", "Send the make, model and year (or registration), a few photos of each side and what you want on it: logo, phone number, web address, services."],
+    ["Design and proof", "Our in-house designers lay the graphics out on an outline of your exact vehicle and send a proof. Nothing is printed until you approve it."],
+    ["Print and cut", "Graphics are printed on our 8-colour, 1440dpi printers or cut from coloured vinyl in-house, using 3M and Metamark materials."],
+    ["Fit", "Bring the vehicle to our Norwich workshop or, within 30 miles, we can fit at your premises. Courtesy vehicles are available while a van is off the road."]
+  ],
+  "pages": {
+    "/vehicle-graphics": {
+      "service": "Vehicle graphics",
+      "includedTitle": "From a phone number to a full wrap.",
+      "included": [
+        ["Cut vinyl lettering", "Company name, phone number and web address in one or two colours: the most cost-effective way to put your details on a vehicle."],
+        ["Printed graphics", "Full-colour logos, photos and panels printed in-house and laminated, from a bonnet logo to the whole side of a van."],
+        ["Part and full wraps", "Change the look of the whole vehicle with printed or colour-change wrap film, without a respray."],
+        ["Chapter 8 and reflective kits", "Reflective chevron kits for most mainstream vehicles, or bespoke cut reflectives. Kits can be posted if you fit them yourself."],
+        ["Fleets", "The same livery on every vehicle, from a single van to a fleet, with the files kept so replacements match."],
+        ["Design included", "Our design team can create the graphics from scratch or work from your existing brand and files."]
+      ],
+      "prices": true,
+      "hubLinks": true,
+      "faqs": [
+        ["How much do vehicle graphics cost?", "Supply-and-fit van graphics start from £149 + VAT for basic cut vinyl lettering, £210 + VAT for standard graphics and £455 + VAT for our pro package. Wraps and larger vehicles are quoted individually; send us photos and the make and model for a price."],
+        ["How long do vehicle graphics last?", "We use 3M and Metamark materials. Looked after correctly, van graphics will last up to 7 years."],
+        ["Can graphics be removed later?", "Yes. Vinyl graphics are semi-permanent, so they can be removed or replaced, for example when you change vehicle or update your details."],
+        ["Do you fit graphics on site?", "You can bring the vehicle to our Norwich workshop, or we can fit at your premises within 30 miles. Further afield, ask us for a quote or a posted kit."],
+        ["Can you design the graphics for us?", "Yes. Our in-house design team can design your vehicle graphics from scratch or work with your existing logo, brand guidelines or design agency."]
+      ]
+    },
+    "/van-graphics": {
+      "service": "Van graphics",
+      "prices": true,
+      "faqs": [
+        ["What's included in basic van graphics?", "Single-colour cut vinyl of your company name to the bonnet, both side panels and the rear, with your web address and phone number on the lower side panels and the bottom of the rear doors. Fitted from £149 + VAT within 30 miles of Norwich."],
+        ["Can I design my own van graphics?", "Yes. Use the online design builder on this page, or send us your ideas and our designers will create a proof for you to approve."],
+        ["How long will the van be off the road?", "It depends on the size of the job. Tell us how long you can spare the van and we'll plan around it; courtesy vehicles are available while it's with us."],
+        ["Will the graphics damage my paintwork?", "Quality vinyl applied to sound, factory paintwork can be removed later. Let us know about any resprays or damaged paint before fitting."],
+        ["Do you do graphics for a whole fleet?", "Yes. We keep your artwork and vehicle templates so every van matches, including replacements added later."]
+      ]
+    },
+    "/signage-home/car-graphics": {
+      "service": "Car graphics",
+      "faqs": [
+        ["What can you put on a car?", "Anything from a door logo and phone number to sponsor graphics, part wraps, roof and bonnet wraps, or a full colour change."],
+        ["Is a car wrap cheaper than a respray?", "Usually, and it can be removed later. If you'd prefer a sprayed finish without paint, ask about our liquid wrapping."],
+        ["Can you work from my logo files?", "Yes. Vector files (AI, EPS, PDF or SVG) give the sharpest results. If you only have a small image, our designers can redraw it."],
+        ["How long do car graphics last?", "We use 3M and Metamark materials, which last for years when they're looked after: hand washing helps, and avoid pressure-washing the edges."]
+      ]
+    },
+    "/vehicle-wraps-2": {
+      "service": "Vehicle wraps",
+      "faqs": [
+        ["What's the difference between a wrap and graphics?", "Graphics cover parts of the vehicle (lettering, logos, panels). A wrap covers most or all of the painted surface, either printed with your design or in a solid colour-change film."],
+        ["Does a wrap protect the paint?", "The film covers the paint while it's on, which helps protect it from light scratches and stone chips. It can be removed later."],
+        ["How long does a vehicle wrap last?", "With 3M and Metamark films and sensible care, a wrap lasts for years. Hand washing and keeping it out of harsh conditions where possible helps."],
+        ["Can you wrap large vehicles?", "Yes. Our printers handle roughly 1.5m wide by 50m long, so even coaches and large vans are no problem; we've wrapped up to a 56-seater coach."]
+      ]
+    },
+    "/race-car-graphics": {
+      "service": "Race car graphics",
+      "faqs": [
+        ["Can you include sponsor logos and car numbers?", "Yes. Send sponsor logos (vector files are best) and any series rules for numbers and placement, and we'll lay them out on your car."],
+        ["Can you do our support vehicles and trailers too?", "Yes. We can carry your race livery across vans, trailers and support vehicles so the team looks consistent."],
+        ["How quickly can graphics be updated between races?", "Vinyl graphics can be replaced panel by panel, so new sponsors or repairs after contact don't mean redoing the whole car. Tell us your race dates when you order."],
+        ["Do you supply graphics for self-fitting?", "Yes, many race teams fit their own. We can supply printed and cut graphics ready to apply."]
+      ]
+    },
+    "/vehicle-livery": {
+      "service": "Vehicle livery design",
+      "faqs": [
+        ["What's the difference between livery and graphics?", "Livery is the overall design and branding of your vehicles; graphics are how it's produced and fitted. We design the livery and then print, cut and fit it."],
+        ["Can you design livery for a whole fleet?", "Yes. We design it once to work across your different vehicle types, then keep the files so every vehicle and future replacement matches."],
+        ["What do you need from us to start?", "Your logo and brand colours (or guidelines), the vehicle makes and models, photos of each side, and what you want people to remember."],
+        ["Can you work with our design agency?", "Yes. We can produce and fit their design, or work with them to adapt it to your vehicles."]
+      ]
+    }
+  }
+}

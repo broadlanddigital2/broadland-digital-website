@@ -88,7 +88,10 @@ function heroCrumbs(html, path, name) {
   const last = tidy((m[2].match(/aria-current="page"[^>]*>([\s\S]*?)<\//) || [])[1] ?? m[2].replace(/[\s\S]*<\/a>/, '').replace(/^\s*\/\s*/, ''));
   const seg = path.split('/')[1] || '';
   const slash = (h) => (h === '/' || /[?#]/.test(h) || h.endsWith('/') ? h : h + '/');
-  if (SECTIONS[seg] && !items.some((i) => i.href.replace(/\/+$/, '') === '/' + seg)) items.unshift({ href: '/' + seg, name: SECTIONS[seg] });
+  if (seg === 'vehicle-graphics') { // vehicle pages sit under Signage
+    if (!items.some((i) => i.href.replace(/\/+$/, '') === '/vehicle-graphics')) items.unshift({ href: '/vehicle-graphics', name: 'Vehicle graphics' });
+    if (!items.some((i) => i.href.replace(/\/+$/, '') === '/signage-home')) items.unshift({ href: '/signage-home', name: 'Signage' });
+  } else if (SECTIONS[seg] && !items.some((i) => i.href.replace(/\/+$/, '') === '/' + seg)) items.unshift({ href: '/' + seg, name: SECTIONS[seg] });
   items.unshift({ href: '/', name: 'Home' });
   const nav = `<nav class="bdc" aria-label="Breadcrumb"><ol>${items.map((i) => `<li><a href="${slash(i.href)}">${esc(i.name)}</a></li>`).join('')}${last ? `<li><span aria-current="page">${esc(last)}</span></li>` : ''}</ol></nav>`;
   const out = m[0] ? html.replace(m[0], '') : html;
