@@ -2,11 +2,12 @@
  * Guides & resources on the section hubs (/signage-home/, /print-home/ …), filled in live from the CRM so new guides
  * and blog posts appear without a rebuild. The static page has an empty, hidden
  * <section class="bdhub-res" data-bd-resources="<section>">; this fills it, or leaves it hidden if there's nothing.
- *   Signage: the CRM's buying guides, comparisons and area pages (Marketing → SEO pages), plus matching blog posts
+ *   Signage: the CRM's buying guides, comparisons, area pages and sectors (Marketing → SEO pages), plus matching blog posts
  *   Others:  matching blog posts (Marketing → Blog posts)
  */
 import { getFeed } from './crm-pages.js';
 import { fetchPosts } from './crm-blog.js';
+import { sectorGroup } from './sector-links.js';
 
 const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const MATCH = {
@@ -34,6 +35,8 @@ async function build(cls, opts) {
     if (guides.length) parts.push(`<div class="bdr-group"><div class="bdr-group-head"><h3>Buying guides</h3><a href="/signage-home/guides-and-advice/">All guides →</a></div><div class="bdr-grid">${guides.map((p) => card(slash(p.path), 'Guide', p.h1 || p.title, p.metaDescription, p.image)).join('')}</div></div>`);
     if (compare.length) parts.push(`<div class="bdr-group"><div class="bdr-group-head"><h3>Compare sign types</h3><a href="/signage-home/compare/">All comparisons →</a></div><ul class="bdr-list">${compare.map((p) => `<li><a href="${esc(slash(p.path))}"><span>${esc(p.h1 || p.title)}</span><i aria-hidden="true">→</i></a></li>`).join('')}</ul></div>`);
     if (areas.length) parts.push(`<div class="bdr-group"><div class="bdr-group-head"><h3>Areas we cover</h3><a href="/signage-home/locations/">All areas →</a></div><ul class="bdr-pills">${areas.map((p) => `<li><a href="${esc(slash(p.path))}">${esc((p.h1 || p.title).replace(/^Signage\s+/i, ''))}</a></li>`).join('')}</ul></div>`);
+    const sectors = sectorGroup(feed);
+    if (sectors) parts.push(sectors);
   }
   const re = MATCH[cls];
   const matching = (posts || []).filter((p) => re && re.test([p.title, p.excerpt, p.category, ...(p.keywords || [])].join(' '))).slice(0, 3);

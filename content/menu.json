@@ -35,6 +35,10 @@
           "/signage-home/locations/"
         ],
         [
+          "Signage by sector",
+          "/sectors/"
+        ],
+        [
           "Guides & advice",
           "/signage-home/guides-and-advice/"
         ],
@@ -198,6 +202,10 @@
       [
         "Blog",
         "/blog"
+      ],
+      [
+        "Sectors we work with",
+        "/sectors/"
       ],
       [
         "Signage brochure",

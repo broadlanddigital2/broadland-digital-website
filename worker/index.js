@@ -1,6 +1,7 @@
 // Broadland Digital website worker. Serves the static site in dist/ and adds what needs a server:
 //   /api/forms            enquiry, quote, guide and order forms → CRM leads (forms.js)
 //   CRM SEO pages         locations, guides, comparisons, sectors, services, published in the CRM (crm-pages.js)
+//   sector links          signage hub "Industries we work with", signage pages "Popular with" (sector-links.js)
 //   /blog, /blog/<slug>   blog posts written and approved in the CRM (crm-blog.js, shared with the other sites)
 //   /sitemap.xml          static pages + CRM pages + blog posts;  /llms.txt  from the CRM's site profile
 //   redirects             old WordPress addresses (worker/redirects.json, written by tools/build.mjs)
@@ -10,6 +11,7 @@ import { crmPageResponse, addCrmPagesToSitemap, llmsTxt } from './crm-pages.js';
 import { blogResponse, addPostsToSitemap } from './crm-blog.js';
 import { trackAi } from './ai-visibility.js';
 import { withHubResources } from './hub-resources.js';
+import { withSectorLinks } from './sector-links.js';
 import redirects from './redirects.json' with { type: 'json' };
 import staticPaths from './static-paths.json' with { type: 'json' };
 
@@ -107,7 +109,7 @@ async function route(request, env) {
 
   // A page published in the CRM wins, then the static pages, then old addresses.
   const crm = await crmPageResponse(request, env, { feedKey: FEED_KEY, origin: ORIGIN, shellPath: SHELL, trailingSlash: true });
-  if (crm) return crm;
+  if (crm) return request.method === 'GET' ? withSectorLinks(crm, key, FEED_KEY) : crm;
   if (key === '/_crm-page') return new Response('Not found', { status: 404 });
   if (!STATIC.has(key) && redirects[key]) return redirect(redirects[key], url);
   // A permanent redirect to the "/" address (the static files would answer with a temporary one).
@@ -116,6 +118,8 @@ async function route(request, env) {
   const res = await env.ASSETS.fetch(request);
   // Section hubs: guides, comparisons, areas and blog posts from the CRM, added live
   if (HUBS.has(key) && request.method === 'GET') return withHubResources(res, { feedKey: FEED_KEY, blog: BLOG });
+  // Signage category and service pages: "Popular with" links to the sectors that use them
+  if (request.method === 'GET') return withSectorLinks(res, key, FEED_KEY);
   return res;
 }
 
