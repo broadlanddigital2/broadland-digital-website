@@ -78,7 +78,53 @@ function withForms(pageHtml, shell) {
 // The site's breadcrumbs (Home / Section / … / page), white, at the top of the page's hero (as on the static pages),
 // in place of the CRM's own trail under the hero picture. Styles: site/bd-pages.css (.crm-main).
 const SECTIONS = { 'signage-home': 'Signage', 'print-home': 'Print', 'design-home': 'Design', 'web-dev-home': 'Web Dev', 'liquid-wrapping-home': 'Liquid Wrapping' };
+// The CRM's schema, completed for the site: breadcrumbs that match the ones shown (Home / Section / … / page),
+// the town for location pages ("Vehicle graphics Norwich" → Norwich), the pages a hub lists (ItemList), and the
+// picture, offers and the article's section where the CRM leaves them out.
+function enrichSchema(schema, { origin, path, page, trail, html }) {
+  if (!schema || !Array.isArray(schema['@graph'])) return schema || null;
+  const s = JSON.parse(JSON.stringify(schema));
+  const g = s['@graph'];
+  const here = origin + (path === '/' ? '/' : path + '/');
+  const abs = (u) => (/^https?:\/\//.test(u) ? u : origin + u);
+  const bc = g.find((x) => x['@type'] === 'BreadcrumbList');
+  if (bc && trail?.length) bc.itemListElement = trail.map((c, i) => ({ '@type': 'ListItem', position: i + 1, name: c.name, item: c.path ? abs(c.path) : here }));
+  const type = page.pageType;
+  const biz = g.find((x) => x['@id'] === origin + '/#business');
+  if (biz) Object.assign(biz, {
+    name: biz.name || 'Broadland Digital', telephone: biz.telephone || '+44 1603 407786', email: biz.email || 'production@broadlanddigital.co.uk',
+    logo: origin + '/wp-content/uploads/2023/03/Broadland_Digital_Logo.svg', image: origin + '/wp-content/uploads/2023/03/Broadland_Digital_Logo.svg',
+    address: biz.address || { '@type': 'PostalAddress', streetAddress: 'Vulcan House, Vulcan Road North', addressLocality: 'Norwich', postalCode: 'NR6 6AQ', addressCountry: 'GB' },
+    openingHoursSpecification: [{ '@type': 'OpeningHoursSpecification', dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'], opens: '08:30', closes: '17:00' }],
+    sameAs: ['https://www.facebook.com/BroadlandDigital/', 'https://www.instagram.com/broadland.digital/'],
+  });
+  const svc = g.find((x) => x['@type'] === 'Service');
+  if (svc && type === 'location') {
+    const town = String(page.h1 || '').replace(/\.$/, '').replace(/^(vehicle graphics|van graphics|signage|signs)\s+(in\s+)?/i, '').trim();
+    if (town && town.toLowerCase() !== String(page.h1 || '').toLowerCase()) svc.areaServed = town.split(/\s*(?:&|and)\s*/).map((t) => ({ '@type': 'Place', name: t }));
+  }
+  if (svc && /£\s?\d/.test(html)) {
+    const prices = [...new Set([...html.matchAll(/£\s?(\d{2,4})(?:\.\d\d)?\s*\+\s*VAT/g)].map((m) => +m[1]))].sort((a, b) => a - b);
+    if (prices.length) svc.offers = { '@type': 'AggregateOffer', priceCurrency: 'GBP', lowPrice: prices[0], highPrice: prices[prices.length - 1], offerCount: prices.length,
+      priceSpecification: { '@type': 'PriceSpecification', priceCurrency: 'GBP', valueAddedTaxIncluded: false } };
+  }
+  const art = g.find((x) => x['@type'] === 'Article');
+  if (art) { art.articleSection = trail?.length > 2 ? trail[trail.length - 2].name : undefined; art.about = svc ? { '@id': svc['@id'] } : art.about; art.wordCount = String(html).replace(/<style[\s\S]*?<\/style>/gi, '').replace(/<[^>]+>/g, ' ').split(/\s+/).filter(Boolean).length; }
+  if (type === 'hub' || type === 'category') {
+    const links = [...new Set([...html.matchAll(/<article class="card"[^>]*>[\s\S]*?<a\b[^>]*href="(\/[^"#?]+)"[\s\S]*?<h3>([\s\S]*?)<\/h3>/g)].map((m) => m[1] + '|' + m[2].replace(/<[^>]+>/g, '').replace(/\s*↗\s*/g, '').trim()))]
+      .map((x) => x.split('|'));
+    if (links.length) {
+      const page_ = g.find((x) => x['@type'] === 'CollectionPage');
+      const list = { '@type': 'ItemList', '@id': here + '#list', itemListElement: links.map(([u, n], i) => ({ '@type': 'ListItem', position: i + 1, name: n, url: abs(u.replace(/\/?$/, '/')) })) };
+      g.push(list);
+      if (page_) page_.mainEntity = { '@id': list['@id'] };
+    }
+  }
+  return s;
+}
+
 function heroCrumbs(html, path, name) {
+  heroCrumbs.trail = null;
   // pages without a CRM trail (e.g. the locations list) get Home / Section / page
   const m = html.match(/<(nav|div)\b[^>]*class="crumb wrap"[^>]*>([\s\S]*?)<\/\1>/)
     || ['', '', `<span aria-current="page">${esc(String(name || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim())}</span>`];
@@ -93,6 +139,7 @@ function heroCrumbs(html, path, name) {
     if (!items.some((i) => i.href.replace(/\/+$/, '') === '/signage-home')) items.unshift({ href: '/signage-home', name: 'Signage' });
   } else if (SECTIONS[seg] && !items.some((i) => i.href.replace(/\/+$/, '') === '/' + seg)) items.unshift({ href: '/' + seg, name: SECTIONS[seg] });
   items.unshift({ href: '/', name: 'Home' });
+  heroCrumbs.trail = [...items.map((i) => ({ name: i.name, path: slash(i.href) })), ...(last ? [{ name: last, path: null }] : [])];
   const nav = `<nav class="bdc" aria-label="Breadcrumb"><ol>${items.map((i) => `<li><a href="${slash(i.href)}">${esc(i.name)}</a></li>`).join('')}${last ? `<li><span aria-current="page">${esc(last)}</span></li>` : ''}</ol></nav>`;
   const out = m[0] ? html.replace(m[0], '') : html;
   const hero = out.match(/<div class="(?:research-hero wrap|hero-title|sector-hero[^"]*)">/);
@@ -134,7 +181,7 @@ export async function crmPageResponse(request, env, opts) {
   const inner = bar + withForms(heroCrumbs(String(page.html || ''), path, String(page.title || '').replace(/\s*[|–]\s*Broadland Digital.*$/i, '') || page.h1), shell);
   const html = setHead(fill(shell, inner), {
     title: page.metaTitle || page.title, description: page.metaDescription, url: opts.origin + (page.path || path) + (opts.trailingSlash && (page.path || path) !== '/' ? '/' : ''),
-    image: page.image || '', schema: page.schema || null, noindex: !!preview, css, vars,
+    image: page.image || '', schema: enrichSchema(page.schema, { origin: opts.origin, path, page, trail: heroCrumbs.trail, html: String(page.html || '') }), noindex: !!preview, css, vars,
   });
   return new Response(request.method === 'HEAD' ? null : html, {
     headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': preview ? 'no-store' : 'public, max-age=120' },
