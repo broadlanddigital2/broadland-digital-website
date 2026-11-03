@@ -675,7 +675,13 @@ function page404(sh) {
 
 // ---------- Write ----------
 rmSync(OUT, { recursive: true, force: true });
-const write = (rel, data) => { const f = join(OUT, rel); mkdirSync(dirname(f), { recursive: true }); writeFileSync(f, data); };
+// HTML pages: every script opts out of Cloudflare Rocket Loader (on for the zone while WordPress ran there), which
+// would otherwise rewrite them once the domain points at this worker.
+const write = (rel, data) => {
+  const f = join(OUT, rel); mkdirSync(dirname(f), { recursive: true });
+  if (typeof data === 'string' && rel.endsWith('.html')) data = data.replace(/<script\b(?![^>]*data-cfasync)/g, '<script data-cfasync="false"');
+  writeFileSync(f, data);
+};
 for (const p of staticPaths) write(p === '/' ? 'index.html' : `${p.slice(1)}/index.html`, transform(captured.get(p), p));
 const sh = shell();
 write('_crm-page/index.html', sh);

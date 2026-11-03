@@ -64,9 +64,14 @@ const MAIN_PAGES = [['/', 'Home'], ['/signage-home', 'Signage'], ['/print-home',
 const withSlash = (to) => (to === '/' || to.endsWith('/') || /\.[a-z0-9]{2,5}$/i.test(to) || /^\/blog(\/|$)/.test(to) || to.includes('#') ? to : to + '/');
 const redirect = (to, url) => Response.redirect(new URL(withSlash(to) + url.search, url.origin).toString(), 301);
 
+const WP_PASSTHROUGH = /^\/(wp-admin(\/|$)|wp-login\.php|wp-json\/|wp-cron\.php|xmlrpc\.php)/;
+
 async function route(request, env) {
   const url = new URL(request.url);
   let path = decodeURIComponent(url.pathname);
+  // Once broadlanddigital.co.uk is routed to this worker, WordPress's admin and API still reach the old WordPress
+  // server: a worker's request to its own (routed) hostname goes to the origin, not back to the worker.
+  if (WP_PASSTHROUGH.test(path) && /(^|\.)broadlanddigital\.co\.uk$/.test(url.host)) return fetch(request);
 
   if (path === '/api/forms') return handleForms(request, env);
   if (path.startsWith('/_static/')) return env.ASSETS.fetch(request);
@@ -78,7 +83,7 @@ async function route(request, env) {
     const res = await env.ASSETS.fetch(request);
     if (res.status !== 404) return longCache(res);
     const old = env.OLD_SITE_ORIGIN || ORIGIN;
-    if (new URL(old).host === url.host) return res;
+    // (when old is this site's own address, the request goes to the WordPress server behind it: see WP_PASSTHROUGH)
     const up = await fetch(old + url.pathname, { cf: { cacheTtl: 86400, cacheEverything: true } }).catch(() => null);
     if (!up || !up.ok) return res;
     const h = new Headers(up.headers);
