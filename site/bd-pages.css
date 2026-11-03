@@ -174,13 +174,13 @@ p{font-size:18px;line-height:1.65}
 .bdhub-tiles.n4>.bdhub-tile:last-child,.bdhub-tiles.n7>.bdhub-tile:last-child{grid-column:span 2}
 .bdhub-tile{--g:color-mix(in srgb,var(--c) 62%,#140c30);position:relative;display:flex;align-items:flex-end;border-radius:20px;overflow:hidden;color:#fff!important;text-decoration:none!important;background:#2a2d32;isolation:isolate}
 .bdhub-tile img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-2;transition:transform .6s ease}
-.bdhub-tile::after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(20,12,48,0) 40%,color-mix(in srgb,var(--g) 45%,transparent) 65%,color-mix(in srgb,var(--g) 82%,transparent) 100%);transition:opacity .3s}
+.bdhub-tile::after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(rgba(0,0,0,.1),rgba(0,0,0,.1)),linear-gradient(180deg,rgba(20,12,48,0) 40%,color-mix(in srgb,var(--g) 45%,transparent) 65%,color-mix(in srgb,var(--g) 82%,transparent) 100%);transition:opacity .3s}
 .bdhub-tile:hover img{transform:scale(1.06)}
 .bdhub-tile-in{display:flex;flex-direction:column;gap:8px;padding:24px;width:100%}
 .bdhub-tile-title{font-family:"Adelle",adelle,Georgia,serif;font-weight:800;font-size:24px;line-height:1.15;text-shadow:0 1px 12px rgba(0,0,0,.25)}
 .bdhub-tile-desc{text-shadow:0 1px 8px rgba(0,0,0,.35);font-size:15px;line-height:1.45;opacity:.92;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .bdhub-tile-go{display:flex;align-items:center;justify-content:space-between;font-weight:700;font-size:15px;border-top:1px solid rgba(255,255,255,.35);padding-top:12px;margin-top:4px}
-.bdhub-tile-go i{font-style:normal;display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;background:#fff;color:var(--g);transition:transform .2s}
+.bdhub-tile-go i{font-style:normal;display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;flex-shrink:0;border-radius:50%;background:#fff;color:var(--g);transition:transform .2s}
 .bdhub-tile:hover .bdhub-tile-go i{transform:translateX(4px)}
 .bdhub-tile:focus-visible{outline:3px solid var(--c);outline-offset:3px}
 @media(max-width:1000px){.bdhub-tiles,.bdhub-tiles.n1,.bdhub-tiles.n2{grid-template-columns:repeat(2,1fr);grid-auto-rows:250px}.bdhub-tiles>.bdhub-tile:first-child{grid-row:auto;grid-column:span 2}.bdhub-tiles.n4>.bdhub-tile:last-child,.bdhub-tiles.n7>.bdhub-tile:last-child{grid-column:auto}}
@@ -361,7 +361,7 @@ p{font-size:18px;line-height:1.65}
 .crm-main .crmseo-d .location-grid h3{margin:0 0 8px}
 .crm-main .crmseo-d :is(.grid,.location-grid) .card:has(img){--g:color-mix(in srgb,var(--c) 62%,#140c30);position:relative;display:flex;flex-direction:column;justify-content:flex-end;min-height:360px;padding:24px;border:0;border-radius:20px;overflow:hidden;isolation:isolate;background:#2a2d32;color:#fff}
 .crm-main .crmseo-d :is(.grid,.location-grid) .card:has(img) img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-2;transition:transform .6s ease}
-.crm-main .crmseo-d :is(.grid,.location-grid) .card:has(img)::after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(20,12,48,0) 40%,color-mix(in srgb,var(--g) 45%,transparent) 65%,color-mix(in srgb,var(--g) 82%,transparent) 100%)}
+.crm-main .crmseo-d :is(.grid,.location-grid) .card:has(img)::after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(rgba(0,0,0,.1),rgba(0,0,0,.1)),linear-gradient(180deg,rgba(20,12,48,0) 40%,color-mix(in srgb,var(--g) 45%,transparent) 65%,color-mix(in srgb,var(--g) 82%,transparent) 100%)}
 .crm-main .crmseo-d :is(.grid,.location-grid) .card:has(img):hover img{transform:scale(1.06)}
 .crm-main .crmseo-d :is(.grid,.location-grid) .card:has(img) :is(h3,h3 a,a){text-shadow:0 1px 12px rgba(0,0,0,.35);color:#fff;text-decoration:none;font-size:23px;line-height:1.2;margin:0 0 8px}
 .crm-main .crmseo-d :is(.grid,.location-grid) .card:has(img) p{text-shadow:0 1px 8px rgba(0,0,0,.35);color:rgba(255,255,255,.92);font-size:15px;line-height:1.45;margin:0;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
@@ -389,3 +389,4 @@ p{font-size:18px;line-height:1.65}
 .crm-main .crmseo-d .crm-enquiry .button:hover{background:transparent;color:#fff;opacity:1}
 @media(max-width:1100px){.crm-main .crmseo-d .wrap{padding-left:50px;padding-right:50px}}
 @media(max-width:700px){.crm-main .crmseo-d .wrap{padding-left:20px;padding-right:20px}.crm-main .crmseo-d .research-hero>p,.crm-main .crmseo-d .hero-title>p:not([style]){font-size:18px}.crm-main .crmseo-d .research-hero-image img,.crm-main .crmseo-d .big-hero{aspect-ratio:4/3}.crm-main .crmseo-d :is(.grid,.location-grid) .card:has(img){min-height:300px}}
+

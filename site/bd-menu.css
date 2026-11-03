@@ -88,3 +88,12 @@ body.bdm-lock #masthead .main-navigation>.menu,body.bdm-lock #masthead .main-nav
   .bdm-contact{text-align:left}
 }
 @media (prefers-reduced-motion:reduce){.bdm,.bdm.open,.bdm-btn span{transition:none}}
+
+/* Sticky header: once the page scrolls past the header (theme header.js adds .sticky) it is fixed to the top and
+   shrinks: less padding, smaller logo. Fixed (not sticky) so the #spacing block keeps the page from jumping. */
+#masthead .header-flex-wrapper{transition:padding .25s ease}
+#masthead .custom-logo{transition:width .25s ease,height .25s ease}
+#masthead.sticky{position:fixed!important;top:0;left:0;right:0;width:100%;z-index:900;border-bottom:0;box-shadow:0 6px 24px rgba(0,0,0,.18)}
+#masthead.sticky .header-flex-wrapper{padding-top:6px!important;padding-bottom:6px!important}
+#masthead.sticky .custom-logo{width:96px!important;height:auto!important}
+@media (max-width:575px){#masthead.sticky .custom-logo{width:84px!important}}

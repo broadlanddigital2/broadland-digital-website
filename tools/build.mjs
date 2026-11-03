@@ -432,7 +432,7 @@ ${wpText ? `<details class="bdhub-more"><summary><span class="more">Read more</s
 </div></section>
 <section class="bdhub-services" aria-labelledby="bdhub-services-h"><div class="wrap">
 <div class="bdhub-head"><h2 id="bdhub-services-h">${esc(hub.servicesTitle)}</h2><a class="bdhub-textlink" href="/get-a-quote/?service=${hub.cls}">Not sure what you need? Ask us →</a></div>
-<div class="bdhub-tiles n${cards.length}">${cards.map((c) => `<a class="bdhub-tile" href="${c.href}"><img src="${c.img}" alt="" loading="lazy"><span class="bdhub-tile-in"><span class="bdhub-tile-title">${esc(c.title)}</span>${c.desc ? `<span class="bdhub-tile-desc">${esc(c.desc)}</span>` : ''}<span class="bdhub-tile-go">View service <i aria-hidden="true">→</i></span></span></a>`).join('')}</div>
+<div class="bdhub-tiles n${cards.length}">${cards.map((c) => `<a class="bdhub-tile" href="${c.href}"><img src="${c.img}" alt="" loading="lazy"><span class="bdhub-tile-in"><span class="bdhub-tile-title">${esc(c.title)}</span>${c.desc ? `<span class="bdhub-tile-desc">${esc(c.desc)}</span>` : ''}<span class="bdhub-tile-go">View service <i aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24"><path d="M4 12h15M13 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></i></span></span></a>`).join('')}</div>
 ${more.length ? `<div class="bdhub-also"><span>Also in ${esc(sec.title)}:</span><ul>${more.map(([l, hh]) => `<li><a href="${hh}">${esc(l)}</a></li>`).join('')}</ul></div>` : ''}
 </div></section>
 <section class="bdhub-steps" aria-labelledby="bdhub-steps-h"><div class="wrap">
