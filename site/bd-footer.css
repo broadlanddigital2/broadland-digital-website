@@ -118,3 +118,4 @@ footer.bdf .bdf-brand-grid a:hover,footer.bdf .bdf-brand-grid a:focus-visible{ba
 .wpcf7-form.invalid .wpcf7-response-output{border:1px solid #b00020;background:#fff1f2;color:#7a0010}
 .wpcf7-form.sent .wpcf7-response-output{border:1px solid #1d7a45;background:#effaf3;color:#145c33}
 .bdf.bdf-noform{padding-top:56px}.bdf.bdf-noform .bdf-links{margin-top:0;padding-top:0;border-top:0}
+footer.bdf .bdf-h,footer.bdf .bdf-done h3{color:var(--fg)!important}

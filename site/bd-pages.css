@@ -390,3 +390,39 @@ p{font-size:18px;line-height:1.65}
 @media(max-width:1100px){.crm-main .crmseo-d .wrap{padding-left:50px;padding-right:50px}}
 @media(max-width:700px){.crm-main .crmseo-d .wrap{padding-left:20px;padding-right:20px}.crm-main .crmseo-d .research-hero>p,.crm-main .crmseo-d .hero-title>p:not([style]){font-size:18px}.crm-main .crmseo-d .research-hero-image img,.crm-main .crmseo-d .big-hero{aspect-ratio:4/3}.crm-main .crmseo-d :is(.grid,.location-grid) .card:has(img){min-height:300px}}
 
+
+/* Service / product sub pages (tools/build.mjs subPage): theme sections inside the hub look */
+.bdsub .section-one{max-width:1366px;margin:0 auto;padding:80px 100px 40px!important}
+.bdsub .section-one-content{max-width:860px}
+.bdsub .section-one-content p,.bdsub .section-one-content li{font-size:18px;line-height:1.7;color:#3d4046}
+.bdsub .section-one-content h2{font-family:"Adelle",adelle,Georgia,serif;font-size:22px;margin-top:24px}
+.bdsub .section-one-content a{color:var(--c);text-underline-offset:4px}
+.bdsub.liquid-wrapping .section-one-content a{color:#9a7400}
+.bdsub .ub-expand-toggle-button{display:inline-flex!important;align-items:center;gap:8px;margin-top:6px;padding:9px 18px;border-radius:30px;border:1px solid #ddd8ea;background:#fff;color:var(--ink)!important;font-family:azo-sans-web,Arial,sans-serif;font-size:15px!important;font-weight:700;text-transform:capitalize;cursor:pointer;text-decoration:none!important;float:none!important}
+.bdsub .ub-expand-toggle-button:hover{border-color:var(--c)}
+.bdsub section.shop{padding:0 0 40px!important}
+.bdsub section.shop .container{max-width:1366px;padding:0 100px!important}
+.bdsub section.shop .bg-color{border-radius:20px;padding:30px 34px!important;background:#2a2d32!important;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px}
+.bdsub section.shop .site-font{font-family:"Adelle",adelle,Georgia,serif!important;font-size:28px!important}
+.bdsub section.shop .d-flex{margin-top:0!important;gap:20px;align-items:center!important}
+.bdsub section.shop .find-out-more-btn{border-radius:30px;padding:11px 24px;font-weight:700;color:#2a2d32!important;text-decoration:none;border:0}
+.bdsub .section-wc{max-width:1366px;margin:0 auto;padding:40px 100px!important}
+.bdsub .woo_block_container{border-radius:20px;overflow:hidden;box-shadow:0 12px 34px rgba(42,45,50,.08)}
+.bdsub .bdhub-services{background:#f4f3f7}
+.bdsub-gallery{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.bdsub-ph{display:block;border-radius:16px;overflow:hidden;aspect-ratio:4/3;background:#e8e6ef}
+.bdsub-ph img{width:100%;height:100%;object-fit:cover;transition:transform .5s}
+.bdsub-ph:hover img{transform:scale(1.05)}
+.bdsub-ph:focus-visible{outline:3px solid var(--c);outline-offset:3px}
+.bdsub-gallery[data-open="false"] .bdsub-more{display:none}
+.bdsub-showall{display:block;margin:26px auto 0;padding:13px 28px;border-radius:40px;border:2px solid var(--ink);background:#fff;color:var(--ink);font:700 16px azo-sans-web,Arial,sans-serif;cursor:pointer}
+.bdsub-showall:hover{background:var(--ink);color:#fff}
+#bd-zoom{padding:0;border:0;border-radius:16px;max-width:min(92vw,1400px);max-height:90vh;background:#111;overflow:hidden}
+#bd-zoom::backdrop{background:rgba(10,10,14,.85)}
+#bd-zoom img{display:block;max-width:min(92vw,1400px);max-height:90vh;object-fit:contain}
+#bd-zoom button{position:absolute;top:10px;right:10px;width:42px;height:42px;border-radius:50%;border:0;background:#fff;color:#2a2d32;font-size:24px;cursor:pointer}
+@media(max-width:1100px){.bdsub .section-one,.bdsub .section-wc{padding-left:50px!important;padding-right:50px!important}.bdsub section.shop .container{padding:0 50px!important}}
+@media(max-width:700px){.bdsub .section-one,.bdsub .section-wc{padding:50px 20px 20px!important}.bdsub section.shop .container{padding:0 20px!important}.bdsub-gallery{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}}
+.bdhub .bdhub-lead,.bdhub .bdhub-btn,.bdsub .section-one-content :is(p,li){font-family:azo-sans-web,Arial,sans-serif}
+.bdsub .section-two:not(.section-padding){padding-top:40px!important}
+.bdsub :not(em):not(i):not(cite){font-style:normal}

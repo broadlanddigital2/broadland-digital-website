@@ -72,9 +72,11 @@ async function route(request, env) {
   if (path.startsWith('/_static/')) return env.ASSETS.fetch(request);
 
   // Uploads: from dist/ when copied in, otherwise from the old WordPress site while it is still running elsewhere.
+  // Pictures and theme files don't change at the same address: let browsers and Cloudflare keep them (30 days).
+  if (path.startsWith('/opt/')) return longCache(await env.ASSETS.fetch(request));
   if (path.startsWith('/wp-content/')) {
     const res = await env.ASSETS.fetch(request);
-    if (res.status !== 404) return res;
+    if (res.status !== 404) return longCache(res);
     const old = env.OLD_SITE_ORIGIN || ORIGIN;
     if (new URL(old).host === url.host) return res;
     const up = await fetch(old + url.pathname, { cf: { cacheTtl: 86400, cacheEverything: true } }).catch(() => null);
@@ -138,3 +140,10 @@ export default {
     return response;
   },
 };
+
+function longCache(res) {
+  if (!res.ok) return res;
+  const r = new Response(res.body, res);
+  r.headers.set('Cache-Control', 'public, max-age=2592000');
+  return r;
+}

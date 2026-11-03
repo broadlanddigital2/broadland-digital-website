@@ -23,6 +23,7 @@ const OUT = join(ROOT, 'dist');
 const ORIGIN = 'https://broadlanddigital.co.uk';
 const wp = JSON.parse(readFileSync(join(ROOT, 'content/wordpress.json'), 'utf8'));
 const extra = JSON.parse(readFileSync(join(ROOT, 'content/site.json'), 'utf8'));
+const OPT = existsSync(join(ROOT, 'content/opt-images.json')) ? JSON.parse(readFileSync(join(ROOT, 'content/opt-images.json'), 'utf8')) : {};
 const productTitle = new Map(wp.products.map((p) => [p.path, p.title]));
 const lastmod = new Map([...wp.pages, ...wp.products].map((p) => [p.path, p.modified]));
 
@@ -148,6 +149,14 @@ function transform(html, path) {
   h = breadcrumbs(h, path);
   if (path === '/') h = homePage(h);
   if (hubByPath.has(path)) h = hubPage(h, path);
+  else if (/class="category page-(?:service|products)\b/.test(h) && !/thank-you/.test(path)) h = subPage(h, path);
+  // Pictures: WordPress asked for the full-width original everywhere ("(max-width: 2560px) 100vw, 2560px") and loaded
+  // them all at once. Cap at the content width and load off-screen ones lazily.
+  // light WebP copies of heavy pictures shown without a srcset (tools/images/optimize.py → content/opt-images.json)
+  h = h.replace(/(<img\b(?![^>]*srcset=)[^>]*\ssrc=")(\/wp-content\/uploads\/[^"?]+)/g, (m, a, src) => OPT[src] ? a + OPT[src] : m)
+    .replace(/url\((\/wp-content\/uploads\/[^)'"?]+)\)/g, (m, src) => (OPT[src] ? `url(${OPT[src]})` : m));
+  h = h.replace(/\ssizes="\(max-width: \d+px\) 100vw, \d+px"/g, ' sizes="(max-width: 1366px) 100vw, 1166px"')
+    .replace(/<img\b(?![^>]*\b(?:loading|fetchpriority)=)(?![^>]*custom-logo)/g, '<img loading="lazy"');
   if (path === '/get-a-quote') h = quotePage(h);
   // Long legal pages: slightly smaller text (site/bd-pages.css .bd-legal)
   if (['/privacy-policy', '/returns', '/refund_returns'].includes(path)) h = h.replace(/class="category page\b/, 'class="category page bd-legal');
@@ -511,6 +520,71 @@ ${vanImg ? `<a class="bdq-box bdq-offer" href="/liquid-wrapping-home/"><img src=
   // a landing page in WordPress (no footer): the site footer is added, without its enquiry form
   if (!/<footer\b/.test(h)) h = h.replace(/<\/body>/i, '<footer class="signage"></footer>\n</body>');
   return h.replace(/<div[^>]*class="category page[^"]*"[^>]*>[\s\S]*?(?=<footer)/, body);
+}
+
+// Service and product sub pages (theme templates page-service / page-products, e.g. /vehicle-graphics/): the hubs'
+// look. Hero with breadcrumbs, lead and buttons and the page picture; the WordPress text kept (its "show more");
+// the "find out more" blocks as gradient photo tiles; the inspiration gallery as a tidy grid (small, lazy-loaded
+// pictures, first nine shown, click to enlarge); the shop link and the product builder kept; a closing band.
+const SUB_SECTION = { signage: 'signage', print: 'print', design: 'design', 'web-dev': 'web', 'liquid-wrapping': 'liquid-wrapping' };
+function subPage(h, path) {
+  const wrapM = h.match(/<div[^>]*class="category (page-service|page-products)\s*([a-z-]*)[^"]*"[^>]*>/);
+  if (!wrapM) return h;
+  // section: the template's colour class, else the menu section that lists (or contains) this page
+  const here = path + '/';
+  const bySection = menu.sections.find((x) => x.links.some(([, hh]) => hh === here)) || menu.sections.find((x) => here.startsWith(x.href));
+  const cls = SUB_SECTION[wrapM[2]] || bySection?.class || 'signage';
+  const sec = menu.sections.find((x) => x.class === cls) || menu.sections[0];
+  const tel = menu.phone.replace(/\s/g, '');
+  const banner = (h.match(/<section\b[^>]*class="category-banner banner[^"]*"[^>]*>[\s\S]*?<\/section>/) || [''])[0];
+  if (!banner) return h;
+  const crumbs = (banner.match(/<nav class="bdc"[\s\S]*?<\/nav>/) || [''])[0];
+  const title = decode(((banner.match(/<h1 class="banner-title">([\s\S]*?)<\/h1>/) || [])[1] || '').replace(/<[^>]+>/g, '')).trim();
+  let lead = decode(((banner.match(/<div class="banner-subtitle">([\s\S]*?)<\/div>/) || [])[1] || '').replace(/<[^>]+>/g, '')).trim();
+  if (!lead) lead = decode(((h.match(/<meta name="description" content="([^"]*)"/) || [])[1] || '')).trim();
+  let heroImg = (banner.match(/<div class="banner-image[^"]*">\s*(<img[^>]*>)/) || [])[1] || '';
+  heroImg = heroImg.replace(/\ssizes="[^"]*"/, ' sizes="(max-width: 1000px) 100vw, 560px"').replace(/\sstyle="[^"]*"/, '').replace(/\stitle="[^"]*"/, '');
+  const hero = `<section class="bdhub-hero"><div class="wrap">
+<div class="bdhub-hero-text">${crumbs}
+<span class="bdhub-eyebrow">${esc(sec.title)}</span>
+<h1>${esc(title)}</h1>
+${lead ? `<p class="bdhub-lead">${esc(lead)}</p>` : ''}
+<div class="bdhub-cta"><a class="bdhub-btn bdhub-btn--solid" href="/get-a-quote/?service=${cls}">Get a free quote</a><a class="bdhub-btn bdhub-btn--ghost" href="tel:${tel}">Call ${esc(menu.phone)}</a></div></div>
+${heroImg ? `<figure class="bdhub-hero-img">${heroImg}</figure>` : ''}
+</div></section>`;
+  let out = h.replace(banner, hero);
+  // "find out more" blocks → tiles
+  out = out.replace(/<section\b[^>]*class="container section-padding\s+section-two row"[^>]*>[\s\S]*?<\/section>/, (block) => {
+    const items = [...block.matchAll(/<div class='row acf-repeater'>[\s\S]*?<img[^>]*src="([^"]+)"[\s\S]*?<h2>([\s\S]*?)<\/h2>\s*(?:<p>([\s\S]*?)<\/p>)?[\s\S]*?<a class="find-out-more-btn" href="([^"]+)"/g)]
+      .map((m) => ({ img: m[1], title: decode(m[2].replace(/<br\s*\/?>/g, ' ').replace(/<[^>]+>/g, '')).replace(/\s+/g, ' ').replace(/\.\s*$/, '').trim(), desc: decode((m[3] || '').replace(/<[^>]+>/g, '')).trim() || cardDesc(m[4]), href: m[4] }))
+      .map((c) => { const fix = (extra.tileLinks || {})[c.title]; return fix ? { ...c, href: fix } : c; });
+    if (!items.length) return block;
+    return `<section class="bdhub-services"><div class="wrap"><div class="bdhub-head"><h2>Explore ${esc(title.replace(/\.\s*$/, '').toLowerCase())}.</h2></div>
+<div class="bdhub-tiles n${items.length}">${items.map((c) => `<a class="bdhub-tile" href="${c.href}"><img src="${c.img}" alt="" loading="lazy"><span class="bdhub-tile-in"><span class="bdhub-tile-title">${esc(c.title)}</span>${c.desc ? `<span class="bdhub-tile-desc">${esc(c.desc)}</span>` : ''}<span class="bdhub-tile-go">View service <i aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24"><path d="M4 12h15M13 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></i></span></span></a>`).join('')}</div></div></section>`;
+  });
+  // inspiration gallery → grid
+  out = out.replace(/<section\b[^>]*class="container section-padding\s+section-three row"[^>]*>[\s\S]*?<\/section>/, (block) => {
+    const gTitle = decode(((block.match(/<h3 class="section-three-title">([\s\S]*?)<\/h3>/) || [])[1] || 'Inspiration.').replace(/<br\s*\/?>/g, ' ').replace(/<[^>]+>/g, '')).replace(/\s+/g, ' ').trim();
+    const imgs = [...block.matchAll(/<img\b[^>]*>/g)].map((m) => m[0]);
+    if (!imgs.length) return '';
+    const big = (tag) => { const ss = (tag.match(/srcset="([^"]*)"/) || [])[1] || ''; const c = ss.split(',').map((x) => x.trim().split(/\s+/)).filter((x) => x[1]).sort((a, b) => parseInt(b[1]) - parseInt(a[1])); const fit = c.find((x) => parseInt(x[1]) <= 1600); return (fit || c[c.length - 1] || [(tag.match(/src="([^"]+)"/) || [])[1]])[0]; };
+    const cells = imgs.map((tag, i) => {
+      const t = tag.replace(/\ssizes="[^"]*"/, ' sizes="(max-width: 600px) 50vw, (max-width: 1000px) 33vw, 380px"').replace(/\sstyle="[^"]*"/, '').replace(/\sdecoding="[^"]*"/, '').replace(/<img\b/, '<img loading="lazy" decoding="async"');
+      const alt = (tag.match(/alt="([^"]*)"/) || [])[1] || '';
+      return `<a class="bdsub-ph${i >= 9 ? ' bdsub-more' : ''}" href="${big(tag)}" data-bd-zoom aria-label="${alt ? esc(decode(alt)) + ' — ' : ''}enlarge photo">${t}</a>`;
+    }).join('');
+    return `<section class="bdsub-gallery-sec"><div class="wrap"><div class="bdhub-head"><h2>${esc(gTitle)}</h2></div>
+<div class="bdsub-gallery" data-open="false">${cells}</div>
+${imgs.length > 9 ? `<button type="button" class="bdsub-showall" onclick="this.previousElementSibling.dataset.open='true';this.remove()">Show all ${imgs.length} photos</button>` : ''}
+</div></section>`;
+  });
+  // closing band before the page wrapper ends (= before the footer)
+  out = out.replace(/(<\/div>\s*)(<footer\b)/, `<section class="bdhub-band"><div class="wrap"><div><h2>Ready to talk about your project?</h2><p>Tell us what you need and we'll come back to you, usually the same working day.</p></div>
+<div class="bdhub-cta"><a class="bdhub-btn bdhub-btn--solid" href="/get-a-quote/?service=${cls}">Get a free quote</a><a class="bdhub-btn bdhub-btn--ghost" href="tel:${tel}">Call ${esc(menu.phone)}</a></div></div></section>
+$1$2`);
+  out = out.replace(wrapM[0], wrapM[0].replace(/class="category /, `class="bdhub bdsub ${cls} category `));
+  // gallery zoom: a native <dialog>
+  return out.replace(/<\/body>/i, `<script>document.addEventListener('click',function(e){var a=e.target.closest('[data-bd-zoom]');if(!a)return;e.preventDefault();var d=document.getElementById('bd-zoom');if(!d){d=document.createElement('dialog');d.id='bd-zoom';d.innerHTML='<button type="button" aria-label="Close">×</button><img alt="">';d.addEventListener('click',function(){d.close()});document.body.appendChild(d)}var im=a.querySelector('img');d.querySelector('img').src=a.href;d.querySelector('img').alt=im?im.alt:'';d.showModal()});</script>\n</body>`);
 }
 
 function megaMenu(path) {

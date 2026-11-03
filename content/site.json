@@ -115,5 +115,13 @@
       "/posts/signage": "/posts/news-and-info",
       "/posts/web-dev": "/posts/news-and-info"
     }
+  },
+  "tileLinks": {
+    "_note": "Service tiles on sub pages whose WordPress 'Find out more' link points at the wrong page: tile title → correct page.",
+    "Budget Liquid Wrap": "/liquid-wrapping-home/budget-liquid-wrapping-2/",
+    "Standard Liquid Wrap": "/liquid-wrapping-home/standard-spray-wrapping-2/",
+    "Premium Liquid Wrap": "/liquid-wrapping-home/premium-liquid-wrapping-2/",
+    "Ultra Liquid Wrap": "/liquid-wrapping-home/ultra-liquid-wrapping-2/",
+    "Laravel ecommerce": "/laravel-ecommerce/"
   }
 }
