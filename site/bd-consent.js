@@ -3,14 +3,14 @@
 // Nothing that sets non-essential cookies runs until the visitor agrees: tools/build.mjs turns those scripts into
 // <script type="text/plain" data-bd-consent="analytics|functional"> and this file switches them on.
 //   analytics  — Google Analytics, Google Ads, Linkbot
-//   functional — the chat assistant and the reviews widget
+//   functional — the reviews widget (the chat assistant is the CRM's own, see tools/build.mjs CRM_BOT)
 // The choice is kept for a year (cookie "bd_consent"). Google Consent Mode v2 is told the same choice.
 // The footer's "Cookie settings" link (or any element with data-bd-cookie-settings) opens the settings again.
 (function () {
   var NAME = 'bd_consent', VERSION = 1, DAYS = 365;
   var CATS = [
     { id: 'analytics', name: 'Analytics & marketing', text: 'Google Analytics and Google Ads help us see how the site is used and which adverts bring people to it.' },
-    { id: 'functional', name: 'Chat & reviews', text: 'The website chat assistant and our customer reviews widget, which are provided by other companies and may set their own cookies.' },
+    { id: 'functional', name: 'Reviews', text: 'Our customer reviews widget, which is provided by another company and may set its own cookies.' },
   ];
 
   window.dataLayer = window.dataLayer || [];
@@ -73,7 +73,7 @@
     box.setAttribute('role', 'dialog');
     box.setAttribute('aria-labelledby', 'bdcc-title');
     box.innerHTML = '<h2 id="bdcc-title">We value your privacy</h2>'
-      + '<p>We use essential cookies to make this site work. With your permission we would also like to use analytics and marketing cookies, and to load our chat assistant and reviews. See our <a href="/privacy-policy">privacy policy</a>.</p>'
+      + '<p>We use essential cookies to make this site work. With your permission we would also like to use analytics and marketing cookies, and to load our reviews widget. See our <a href="/privacy-policy">privacy policy</a>.</p>'
       + (settings ? '<div class="bdcc-cats"><div class="bdcc-cat"><label>Essential <span class="bdcc-always">Always on</span></label><small>Needed for the site and its forms to work.</small></div>'
         + CATS.map(function (c) { return '<div class="bdcc-cat"><label for="bdcc-' + c.id + '">' + c.name + '<input type="checkbox" id="bdcc-' + c.id + '"' + (current[c.id] ? ' checked' : '') + '></label><small>' + c.text + '</small></div>'; }).join('') + '</div>' : '')
       + '<div class="bdcc-btns">' + (settings ? '<button type="button" class="bdcc-yes" data-a="save">Save my choices</button>' : '<button type="button" class="bdcc-yes" data-a="all">Accept all</button>')

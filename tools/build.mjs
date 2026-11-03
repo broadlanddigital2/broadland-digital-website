@@ -66,6 +66,7 @@ function cleanScripts(html) {
     const sig = attrs + ' ' + body.slice(0, 600);
     if (/cloudflare-static\/rocket-loader/.test(attrs)) return '';
     if (/cookieyes|client_data\//i.test(sig)) return ''; // CookieYes is replaced by our own banner
+    if (/launcher\.enquirybot\.com|enquirybot\.com/i.test(sig)) return ''; // the old EnquiryBot chat is replaced by the CRM's assistant (CRM_BOT)
     if (/application\/ld\+json/.test(attrs)) return m;
     if (DROP.test(sig) && !KEEP.test(sig)) return '';
     if (/woocommerce-google-analytics|wc-order|ga4w|wc_add_to_cart|wpcf7/.test(sig)) return '';
@@ -172,7 +173,7 @@ function transform(html, path) {
   h = h.replace(/<\/body>/i, `<script src="/_static/bd-menu.js?v=${MENU_V}" defer></script>\n</body>`);
   // Our form script, after the theme's scripts
   h = h.replace(/<\/body>/i, `<script src="/_static/bd-forms.js?v=${FORMS_V}" defer></script>\n</body>`);
-  h = h.replace(/<\/body>/i, SITE_SEARCH + '\n</body>');
+  h = h.replace(/<\/body>/i, SITE_SEARCH + '\n' + CRM_BOT + '\n</body>');
   return h;
 }
 
@@ -207,6 +208,9 @@ const SEARCH_ICON = '<svg width="18" height="18" viewBox="0 0 24 24" aria-hidden
 // CRM site search + AI assistant (Marketing → Site search; key in the CRM's site_search_configs). It opens from
 // [data-site-search] elements (shown once it has loaded), "/" or Ctrl/Cmd+K.
 const SITE_SEARCH = '<script src="https://crm.racecargraphics.uk/embed/site-search.js" data-key="cb26807045182484b558ce3a" defer></script>';
+// The CRM's chat assistant (Channels → Broadland Digital Site Assistant): its enquiries become Broadland Digital leads in
+// the CRM. It only remembers a visitor with "Analytics & marketing" consent (window.__crmBotTracking, set by bd-consent.js).
+const CRM_BOT = '<script src="https://crm.racecargraphics.uk/rcg-enquiry-bot.js" data-bot-key="1fc0c248-2a70-4c51-9ed0-b43b1ba5a339" defer></script>';
 function headerActions() {
   return `<div class="bdh-actions"><button class="bdh-search" type="button" data-site-search hidden aria-label="Search the site or ask a question">${SEARCH_ICON}<span>Search</span></button><a class="bdh-phone" href="tel:${menu.phone.replace(/\s/g, '')}" aria-label="Call ${esc(menu.phone)}">${PHONE_ICON}<span>${esc(menu.phone)}</span></a>`
     + `<a class="bdh-quote" href="/get-a-quote/"><span class="bdh-long">Get a quote</span><span class="bdh-short">Quote</span></a></div>`;
