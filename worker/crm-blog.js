@@ -44,7 +44,12 @@ function setHead(html, { title, description, url, image, jsonLd, noindex }) {
   if (image) { meta('property', 'og:image', image); meta('name', 'twitter:image', image); }
   meta('name', 'twitter:title', title);
   meta('name', 'twitter:description', description);
-  if (noindex) meta('name', 'robots', 'noindex');
+  // The same social and search tags WordPress printed (and the CRM pages print: crm-pages.js)
+  meta('property', 'og:locale', 'en_US');
+  meta('property', 'og:site_name', 'Broadland Digital');
+  meta('property', 'article:publisher', 'https://www.facebook.com/broadlanddigital');
+  meta('name', 'twitter:card', 'summary_large_image');
+  meta('name', 'robots', noindex ? 'noindex' : 'follow, index, max-snippet:-1, max-video-preview:-1, max-image-preview:large');
   html = /<link[^>]*rel="canonical"[^>]*>/i.test(html)
     ? html.replace(/<link[^>]*rel="canonical"[^>]*>/i, `<link rel="canonical" href="${esc(url)}">`)
     : html.replace('</head>', `<link rel="canonical" href="${esc(url)}"></head>`);
