@@ -1,4 +1,4 @@
-import { leadHtml, blockHtml } from '../worker/seo-blocks.js';
+import { leadHtml, blockHtml, ARROW } from '../worker/seo-blocks.js';
 import { readFileSync as _rf } from 'node:fs';
 const REDIRECTS = JSON.parse(_rf(new URL('../worker/redirects.json', import.meta.url), 'utf8'));
 // SEO finishing pass over every built page (tools/build.mjs calls finishSeo once all pages are built), for the points
@@ -122,10 +122,13 @@ const PAGE_EXTRA = {
 };
 
 // Keyword copy: a lead paragraph under the hero, and the keyword section above the FAQs / closing band / footer.
-export function addBlocks(body, sec, video) {
+export function addBlocks(body, sec, video, pool = []) {
   if (!sec && !video) return body;
   const lead = leadHtml(sec);
-  if (lead && body.includes('<div class="bdsub-intro-text')) {
+  if (lead && /<section class="bdhub-intro">[\s\S]*?<div class="bdhub-text">/.test(body)) {
+    // hub pages: the lead opens the intro text
+    body = body.replace(/(<section class="bdhub-intro">[\s\S]*?<div class="bdhub-text">)/, `$1${lead}`);
+  } else if (lead && body.includes('<div class="bdsub-intro-text')) {
     // sub pages: the lead opens the intro, beside its photo
     body = body.replace(/(<div class="bdsub-intro-text[^"]*">)/, `$1${lead}`).replace('bdsub-intro bdsub-intro--empty', 'bdsub-intro bdsub-intro--solo');
   } else if (lead) {
@@ -139,7 +142,8 @@ export function addBlocks(body, sec, video) {
   const used = new Set([...body.slice(0, Math.max(0, body.indexOf('bdkw-leadband') + 1) || body.indexOf('</h1>') + 2000).matchAll(/<img\b[^>]*\ssrc="([^"]+)"/g)].map((m) => m[1]));
   for (const m of (body.match(/<figure class="bdsub-intro-img">[\s\S]*?<\/figure>/) || [''])[0].matchAll(/\ssrc="([^"]+)"/g)) used.add(m[1]);
   const gallery = [...body.matchAll(/<a class="bdsub-ph[^"]*"[^>]*>\s*<img\b[^>]*>/g)].map((m) => m[0].match(/<img\b[^>]*>/)[0]);
-  const pics = gallery.filter((t) => !used.has((t.match(/\ssrc="([^"]+)"/) || [])[1])).slice(2);
+  let pics = gallery.filter((t) => !used.has((t.match(/\ssrc="([^"]+)"/) || [])[1])).slice(2);
+  if (pics.length < 3) pics = pool.filter((t) => !body.includes((t.match(/\ssrc="([^"]+)"/) || [])[1])).slice(0, 3);
   const block = blockHtml(sec, video, pics);
   if (block) {
     // high enough that it is read as main copy (crawlers and the CRM audit only read the first ~1,300 words):
@@ -159,7 +163,7 @@ export function addBlocks(body, sec, video) {
 export function linkChips(body, path = '') {
   const fix = (href) => { const k = href.replace(/[?#].*$/, '').replace(/\/+$/, '') || '/'; const to = REDIRECTS[k]; return to ? (to === '/' ? '/' : to.replace(/\/?$/, '/')) : href; };
   const self = (path.replace(/\/+$/, '') || '/') + '/';
-  const chip = (href, label) => (fix(href) === self ? '' : `<a class="bdrel-chip" href="${fix(href)}">${label}<span aria-hidden="true">→</span></a>`);
+  const chip = (href, label) => (fix(href) === self ? '' : `<a class="bdrel-chip" href="${fix(href)}">${label}<span aria-hidden="true">${ARROW}</span></a>`);
   const clean = (t) => decode(String(t).replace(/<[^>]+>/g, '')).replace(/\s+/g, ' ').trim();
   body = body.replace(/<(h[2-6]|p)\b[^>]*>((?:(?!<\/\1>)[\s\S])*?)<\/\1>/g, (m, tag, inner) => {
     const links = [...inner.matchAll(/<a\b[^>]*href="(\/[^"]*)"[^>]*>([\s\S]*?)<\/a>/g)].map((x) => [x[1], clean(x[2])]).filter((x) => x[1]);
@@ -179,6 +183,28 @@ export function linkChips(body, path = '') {
   body = body.replace(/<div class="bdrel">/g, '<div class="bdrel"><span class="bdrel-label">Related</span>');
   // keep the related row visible: out of the hidden "read more" text, under the button
   return body.replace(/(<div class="bdsub-more" hidden>[\s\S]*?)(<div class="bdrel">[\s\S]*?<\/div>)(\s*<\/div>\s*<button type="button" class="bdsub-morebtn"[\s\S]*?<\/button>)/, '$1$3$2');
+}
+
+// Scripts and styles WordPress loaded on every page, kept only where the page uses them
+export function pruneAssets(h) {
+  const body = h.slice(h.indexOf('</header>') >= 0 ? h.indexOf('</header>') : 0).replace(/<script\b[\s\S]*?<\/script>/g, '');
+  const uses = {
+    swiper: /class="[^"]*\bswiper\b/.test(body),
+    dflip: /_df_(book|thumb|button)|df-element/.test(body),
+    expand: /ub-expand/.test(body),
+    woo: /id="(selectManufacturer|design-button|moreInfoBtn|woo_products_loop|selectModel|selectGraphics|continueBtn)"/.test(body),
+    tabs: /id="(about|faqs|how-to)"/.test(body),
+  };
+  const drop = (re) => { h = h.replace(re, ''); };
+  if (!uses.swiper) { drop(/<script\b[^>]*swiper-bundle[^>]*><\/script>\s*/g); drop(/<link\b[^>]*swiper-bundle[^>]*>\s*/g); }
+  if (!uses.dflip) { drop(/<script\b[^>]*dflip[^>]*><\/script>\s*/g); drop(/<link\b[^>]*dflip[^>]*>\s*/g); drop(/<script\b[^>]*>\s*window\.dFlipLocation[\s\S]*?<\/script>\s*/g); }
+  if (!uses.expand) drop(/<script\b[^>]*ultimate-blocks\/src\/blocks\/expand[^>]*><\/script>\s*/g);
+  if (!uses.woo) drop(/<script\b[^>]*woo_block\.js[^>]*><\/script>\s*/g);
+  if (!uses.tabs) drop(/<script\b[^>]*more_information\.js[^>]*><\/script>\s*/g);
+  // jQuery only where something still needs it
+  const needsJq = uses.dflip || uses.woo || /<script\b[^>]*(woocommerce|wc-|ultimate-blocks|contact-form)[^>]*src=/.test(h) || /jQuery|\$\(/.test(h.replace(/<script\b[^>]*src="[^"]*jquery[^"]*"[^>]*><\/script>/g, '').replace(/<script\b[^>]*src=[^>]*><\/script>/g, '').match(/<script\b[^>]*>[\s\S]*?<\/script>/g)?.join('') || '');
+  if (!needsJq) drop(/<script\b[^>]*wp-includes\/js\/jquery\/jquery(-migrate)?\.min\.js[^>]*><\/script>\s*/g);
+  return h;
 }
 
 export function fixHeadings(html) {
@@ -287,6 +313,15 @@ function shareImage(h) {
   return h.replace('</head>', `<meta property="og:image" content="${url}">\n<meta name="twitter:image" content="${url}">\n</head>`);
 }
 
+// Which part of the site a page belongs to (signage, print, design, web-dev, liquid-wrapping), for sharing photos
+const rotate = (list, key) => { if (!list.length) return list; let n = 0; for (const ch of key) n = (n * 31 + ch.charCodeAt(0)) >>> 0; const k = n % list.length; return [...list.slice(k), ...list.slice(0, k)]; };
+function secKey(path, h) {
+  const c = (h.match(/class="bdhub(?: bdsub)? (signage|print|design|web-dev|liquid-wrapping)\b/) || [])[1];
+  if (c) return c;
+  const seg = path.split('/')[1] || '';
+  return /^(signage|vehicle|sectors)/.test(seg) ? 'signage' : /^print|digital-print|large-format/.test(seg) ? 'print' : /^design/.test(seg) ? 'design' : /^web|ecommerce|woocommerce|laravel|magento/.test(seg) ? 'web-dev' : /^liquid|hydro|category\/liquid/.test(seg) ? 'liquid-wrapping' : seg;
+}
+
 export function finishSeo(pages, { trail, sizes = {}, faqs = {}, keywords = {}, sections = {}, videos = {} }) {
   const info = new Map();
   for (const [path, h] of pages) {
@@ -299,6 +334,15 @@ export function finishSeo(pages, { trail, sizes = {}, faqs = {}, keywords = {}, 
   }
   const count = (k) => { const c = new Map(); for (const v of info.values()) if (v[k]) c.set(v[k], (c.get(v[k]) || 0) + 1); return c; };
   const tc = count('title'), dc = count('desc'), hc = count('h1');
+  // photo pool per site section (gallery photos from the section's sub pages), for pages without a gallery of their own
+  const POOL = new Map();
+  for (const [p, h] of pages) {
+    const key = secKey(p, h);
+    const add = (t) => { const l = POOL.get(key) || []; const src = (t.match(/\ssrc="([^"]+)"/) || [])[1]; if (src && l.length < 80 && !l.some((x) => x.includes(src))) l.push(t); POOL.set(key, l); };
+    for (const m of h.matchAll(/<a class="bdsub-ph[^"]*"[^>]*>\s*(<img\b[^>]*>)/g)) add(m[1]);
+    // otherwise any content photo from the section's pages (not logos, icons or product cut-outs)
+    for (const m of h.slice(h.indexOf('</header>')).matchAll(/<img\b[^>]*\ssrc="(\/(?:wp-content\/uploads|opt)\/[^"]+\.(?:jpe?g|webp|png))"[^>]*>/g)) if (!/logo|icon|product|placeholder|brands\//i.test(m[0])) add(m[0]);
+  }
   const out = new Map();
   for (let [path, h] of pages) {
     const { title, desc, h1 } = info.get(path);
@@ -359,7 +403,7 @@ export function finishSeo(pages, { trail, sizes = {}, faqs = {}, keywords = {}, 
       body = body.replace(ex.after, `$1${ex.html}`);
       for (const [a, b] of ex.replace || []) body = body.replace(a, b);
     }
-    if (!NOINDEX.test(path)) body = addBlocks(body, sections[path], videos[path]);
+    if (!NOINDEX.test(path)) body = addBlocks(body, sections[path], videos[path], [...rotate((POOL.get(secKey(path, h)) || []).filter((t) => !body.includes((t.match(/\ssrc="([^"]+)"/) || [])[1])), path), ...rotate(['signage', 'print', 'liquid-wrapping', 'design'].flatMap((k) => (POOL.get(k) || []).slice(0, 10)).filter((t) => !body.includes((t.match(/\ssrc="([^"]+)"/) || [])[1])), path)]);
     body = linkChips(body, path);
     body = fixHeadings(body);
     // FAQs on shop and product pages (with FAQPage schema), when the page has none
@@ -390,7 +434,8 @@ export function finishSeo(pages, { trail, sizes = {}, faqs = {}, keywords = {}, 
       const price = (decode((h.match(/<title>([\s\S]*?)<\/title>/) || [])[1] || '').match(/–\s+£([\d.,]+)/) || [])[1] || '';
       h = applyKeywords(path, h, kw, usedTitles, price);
     }
-    out.set(path, shareImage(h));
+    out.set(path, pruneAssets(shareImage(h)));
   }
+  out.pools = POOL;
   return out;
 }

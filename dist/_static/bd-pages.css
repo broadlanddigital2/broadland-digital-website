@@ -626,3 +626,15 @@ h1.bd-was4,h1.bd-was5,h1.bd-was6{font-weight:700}
 .bdrel-chip span{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;background:#fff;font-size:13px;transition:transform .15s}
 .bdrel-chip:hover{background:#713fff;color:#fff!important}
 .bdrel-chip:hover span{color:#713fff;transform:translateX(2px)}
+/* Bigger arrow roundels everywhere */
+.bdkw-cardlink span{width:40px;height:40px}
+.bdkw-cardlink span svg{width:20px;height:20px}
+.bdrel-chip{padding:6px 6px 6px 18px;gap:12px}
+.bdrel-chip span{width:34px;height:34px}
+.bdrel-chip span svg{width:18px;height:18px}
+.bdhub-alsorow{margin-top:26px}
+.bdhub-text .bdkw-lead{max-width:none;margin:0 0 18px;font-size:20px;line-height:1.55;color:#2a2d32;font-weight:600}
+/* the big arrow in every roundel */
+.bdh-card .bdh-go i{width:40px;height:40px}
+.bdh-card .bdh-go i svg{width:20px;height:20px}
+.page .section-two-content>li>a::after{content:""!important;width:44px;height:44px;background:var(--c) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M4 12h15M13 5l7 7-7 7' fill='none' stroke='white' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/22px 22px no-repeat}

@@ -156,6 +156,8 @@ function sizeImages(html) {
     : tag.replace(/\s(width|height)="[^"]*"/g, '').replace(/<img\b/, '<img width="1600" height="900"')));
 }
 
+const poolKey = (path) => (/^\/(liquid|hydro)/.test(path) ? 'liquid-wrapping' : /^\/print|^\/digital-print/.test(path) ? 'print' : /^\/design/.test(path) ? 'design' : /^\/web/.test(path) ? 'web-dev' : 'signage');
+
 function fill(shell, inner) {
   return shell.replace(/(<div[^>]*data-crm-blog="slot"[^>]*>)\s*<\/div>/i, (_m, open) => open + inner + '</div>');
 }
@@ -188,7 +190,7 @@ export async function crmPageResponse(request, env, opts) {
   if (!shellRes.ok) return null;
   const shell = await shellRes.text();
   const bar = preview ? `<div style="position:sticky;top:84px;z-index:40;padding:10px 16px;background:#ffd84d;color:#111;font:600 14px/1.4 system-ui,sans-serif;text-align:center">Preview from the CRM — not published${preview.note ? ' · ' + esc(preview.note) : ''}</div>` : '';
-  const inner = bar + withForms(heroCrumbs(decorateCrmHtml(sizeImages(sectorImages(String(page.html || ''), path, SECTOR_IMAGES)), preview ? null : SEO.sections[path], preview ? null : SEO.videos[path]), path, String(page.title || '').replace(/\s*[|–]\s*Broadland Digital.*$/i, '') || page.h1), shell);
+  const inner = bar + withForms(heroCrumbs(decorateCrmHtml(sizeImages(sectorImages(String(page.html || ''), path, SECTOR_IMAGES)), preview ? null : SEO.sections[path], preview ? null : SEO.videos[path], (SEO.pools || {})[poolKey(path)] || []), path, String(page.title || '').replace(/\s*[|–]\s*Broadland Digital.*$/i, '') || page.h1), shell);
   const html = setHead(fill(shell, inner), {
     title: kwTitle(page.metaTitle || page.title, preview ? '' : SEO.sections[path]?.primary), description: kwDesc(page.metaDescription, preview ? '' : SEO.sections[path]?.primary), url: opts.origin + (page.path || path) + (opts.trailingSlash && (page.path || path) !== '/' ? '/' : ''),
     image: (SECTOR_IMAGES[path]?.hero ? opts.origin + SECTOR_IMAGES[path].hero.src : '') || page.image || '', schema: enrichSchema(page.schema, { origin: opts.origin, path, page, trail: heroCrumbs.trail, html: String(page.html || '') }), noindex: !!preview, css, vars,

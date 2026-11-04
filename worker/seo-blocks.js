@@ -1,6 +1,7 @@
 // Keyword copy blocks (content/seo-sections/*.json, merged into worker/seo-sections.json by the build) and videos
 // (content/videos.json). Used by the static build (tools/seo.mjs) and by the worker for CRM pages, so both look the same.
 
+export const ARROW = '<svg width="22" height="22" viewBox="0 0 24 24"><path d="M4 12h15M13 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
 // Copy may carry <strong> and internal links only; everything else is escaped.
@@ -36,7 +37,7 @@ export function blockHtml(s, video, pics = []) {
     return `<span class="bdkw-img">${img}</span>`;
   };
   return `<section class="bdkw${items.length && pics.length >= items.length ? ' bdkw--pics' : ''}"><div class="bdkw-wrap">${s?.heading ? `<h2>${safe(s.heading)}</h2>` : ''}${videoHtml(video)}`
-    + (items.length ? `<div class="bdkw-grid">${items.map((i, n) => { const x = pullLinks(i.p); return `<div class="bdkw-card">${pic(n)}<div class="bdkw-txt"><h3>${safe(i.h)}</h3><p>${safe(x.text)}</p>${x.links.map((l) => `<a class="bdkw-cardlink" href="${esc(l.href)}">${esc(l.label)}<span aria-hidden="true">→</span></a>`).join('')}</div></div>`; }).join('')}</div>` : '')
+    + (items.length ? `<div class="bdkw-grid">${items.map((i, n) => { const x = pullLinks(i.p); return `<div class="bdkw-card">${pic(n)}<div class="bdkw-txt"><h3>${safe(i.h)}</h3><p>${safe(x.text)}</p>${x.links.map((l) => `<a class="bdkw-cardlink" href="${esc(l.href)}">${esc(l.label)}<span aria-hidden="true">${ARROW}</span></a>`).join('')}</div></div>`; }).join('')}</div>` : '')
     + (s?.close ? (() => { const x = pullLinks(s.close); return `<div class="bdkw-closeband"><p class="bdkw-close">${safe(x.text)}</p>${x.links.length ? `<div class="bdkw-btns">${x.links.map((l, k) => `<a class="bdkw-btn${k ? " bdkw-btn--ghost" : ""}" href="${esc(l.href)}">${esc(l.label)}</a>`).join('')}</div>` : ''}</div>`; })() : '') + '</div></section>';
 }
 
@@ -86,7 +87,7 @@ export function kwDesc(desc, pk) {
   return out;
 }
 /** Lead under the H1, keyword section before the enquiry band, keyword in the first photo's alt text */
-export function decorateCrmHtml(html, sec, video) {
+export function decorateCrmHtml(html, sec, video, pool = []) {
   let h = String(html || '');
   if (!sec && !video) return h;
   const lead = leadHtml(sec);
@@ -95,7 +96,11 @@ export function decorateCrmHtml(html, sec, video) {
     const m = h.match(/<\/h1>(\s*<p\b[^>]*>[\s\S]*?<\/p>)?/);
     if (m) h = h.replace(m[0], m[0] + lead);
   }
-  const block = blockHtml(sec, video);
+  // photos for the keyword cards: from the site section's photo pool, not ones already on the page
+  let n = 0; for (const ch of String(sec?.primary || '')) n = (n * 31 + ch.charCodeAt(0)) >>> 0;
+  const rot = pool.length ? [...pool.slice(n % pool.length), ...pool.slice(0, n % pool.length)] : [];
+  const pics = rot.filter((x) => x?.src && !h.includes(x.src)).slice(0, 3).map((x) => `<img src="${esc(x.src)}" alt="${esc(x.alt || '')}" width="1200" height="800">`);
+  const block = blockHtml(sec, video, pics);
   if (block) {
     const end = [/<section class="section tint crm-enquiry"/, /<div class="crmblog-cta/, /<\/main>/].map((r) => h.search(r)).find((i) => i >= 0);
     // after the second section below the H1, so it is read as main copy, unless the page ends first

@@ -31,6 +31,7 @@ const lastmod = new Map([...wp.pages, ...wp.products].map((p) => [p.path, p.modi
 
 const walk = (dir) => readdirSync(dir).flatMap((e) => { const f = join(dir, e); return statSync(f).isDirectory() ? walk(f) : [f]; });
 const hash = (b) => createHash('sha1').update(b).digest('hex').slice(0, 10);
+const BIG_ARROW = '<svg width="22" height="22" viewBox="0 0 24 24"><path d="M4 12h15M13 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
 // ---------- Captured pages ----------
@@ -374,7 +375,7 @@ function homePage(h) {
   const collage = ['signage', 'liquid-wrapping', 'print'].map((c) => menu.sections.find((x) => x.class === c)).map((sec) =>
     `<a href="${sec.href}" tabindex="-1" aria-hidden="true"><img src="${img(sec)}" alt="" loading="eager"><span>${esc(sec.title)}</span></a>`).join('');
   const cards = order.map((sec) => `<a class="bdh-card ${sec.class}" href="${sec.href}"><img src="${img(sec)}" alt="" loading="lazy">
-<h3>${esc(sec.title)}.</h3><p>${esc(sec.summary)}</p><span class="bdh-go"><i aria-hidden="true">→</i>Explore ${esc(sec.title.toLowerCase())}</span></a>`).join('\n');
+<h3>${esc(sec.title)}.</h3><p>${esc(sec.summary)}</p><span class="bdh-go"><i aria-hidden="true">${BIG_ARROW}</i>Explore ${esc(sec.title.toLowerCase())}</span></a>`).join('\n');
   const body = `<div class="bdh">
 <section class="bdh-hero"><div class="wrap">
 <div><span class="bdh-eyebrow">${esc(H.eyebrow)}</span>
@@ -396,7 +397,7 @@ ${lead ? `<p class="bdh-lead">${esc(lead)}</p>` : ''}
 <h2 id="bdh-about">About Broadland Digital.</h2>
 <div class="bdh-text">${paras.slice(0, 2).map((p) => `<p>${p}</p>`).join('')}
 ${paras.length > 2 ? `<details><summary><span class="more">Read more</span><span class="less">Show less</span></summary>${paras.slice(2).map((p) => `<p>${p}</p>`).join('')}</details>` : ''}
-<ul class="bdh-guides">${H.guides.map(([l, h2]) => `<li><a href="${h2}">${esc(l)}</a></li>`).join('')}</ul></div>
+<div class="bdrel"><span class="bdrel-label">Useful</span>${H.guides.map(([l, h2]) => `<a class="bdrel-chip" href="${/^\/blog$/.test(h2) ? h2 : h2}">${esc(l)}<span aria-hidden="true">${BIG_ARROW}</span></a>`).join('')}</div></div>
 </div></section>
 </div>`;
   return h.replace(/<div class="homepage">[\s\S]*?(?=<footer)/, body + '\n');
@@ -456,7 +457,7 @@ ${wpText ? `<details class="bdhub-more"><summary><span class="more">Read more</s
 <section class="bdhub-services" aria-labelledby="bdhub-services-h"><div class="wrap">
 <div class="bdhub-head"><h2 id="bdhub-services-h">${esc(hub.servicesTitle)}</h2><a class="bdhub-textlink" href="/get-a-quote/?service=${hub.cls}">Not sure what you need? Ask us →</a></div>
 <div class="bdhub-tiles n${cards.length}">${cards.map((c) => `<a class="bdhub-tile" href="${c.href}"><img src="${c.img}" alt="" loading="lazy"><span class="bdhub-tile-in"><span class="bdhub-tile-title">${esc(c.title)}</span>${c.desc ? `<span class="bdhub-tile-desc">${esc(c.desc)}</span>` : ''}<span class="bdhub-tile-go">View service <i aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24"><path d="M4 12h15M13 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></i></span></span></a>`).join('')}</div>
-${more.length ? `<div class="bdhub-also"><span>Also in ${esc(sec.title)}:</span><ul>${more.map(([l, hh]) => `<li><a href="${hh}">${esc(l)}</a></li>`).join('')}</ul></div>` : ''}
+${more.length ? `<div class="bdrel bdhub-alsorow"><span class="bdrel-label">Also in ${esc(sec.title)}</span>${more.map(([l, hh]) => `<a class="bdrel-chip" href="${hh}">${esc(l)}<span aria-hidden="true">${BIG_ARROW}</span></a>`).join('')}</div>` : ''}
 </div></section>
 <section class="bdhub-steps" aria-labelledby="bdhub-steps-h"><div class="wrap">
 <div class="bdhub-head"><h2 id="bdhub-steps-h">How it works.</h2></div>
@@ -864,7 +865,10 @@ const VIDEOS = existsSync(join(ROOT, 'content/videos.json')) ? JSON.parse(readFi
 const SEO_KW = JSON.parse(readFileSync(join(ROOT, 'content/seo-keywords.json'), 'utf8'));
 for (const [p, x] of Object.entries(SEO_SECTIONS)) if (x.primary) SEO_KW[p] = [x.primary, x.secondary || []];
 writeFileSync(join(ROOT, 'worker/seo-sections.json'), JSON.stringify({ sections: SEO_SECTIONS, videos: VIDEOS }) + '\n');
-for (const [p, h] of finishSeo(built, { trail, sizes: IMG_SIZES, faqs: JSON.parse(readFileSync(join(ROOT, 'content/faqs.json'), 'utf8')), keywords: SEO_KW, sections: SEO_SECTIONS, videos: VIDEOS })) write(p === '/' ? 'index.html' : `${p.slice(1)}/index.html`, h);
+const FINISHED = finishSeo(built, { trail, sizes: IMG_SIZES, faqs: JSON.parse(readFileSync(join(ROOT, 'content/faqs.json'), 'utf8')), keywords: SEO_KW, sections: SEO_SECTIONS, videos: VIDEOS });
+for (const [p, h] of FINISHED) write(p === '/' ? 'index.html' : `${p.slice(1)}/index.html`, h);
+// photo pools for the worker's CRM pages (keyword cards)
+writeFileSync(join(ROOT, 'worker/seo-sections.json'), JSON.stringify({ sections: SEO_SECTIONS, videos: VIDEOS, pools: Object.fromEntries([...(FINISHED.pools || new Map())].map(([k, list]) => [k, list.map((t) => ({ src: (t.match(/\ssrc="([^"]+)"/) || [])[1], alt: decode((t.match(/\salt="([^"]*)"/) || [])[1] || '') })).filter((x) => x.src)])) }) + '\n');
 const sh = shell();
 write('_crm-page/index.html', sh);
 write('404.html', page404(sh));

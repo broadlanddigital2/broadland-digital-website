@@ -174,7 +174,7 @@ export async function blogResponse(request, env, opts) {
   const biz = posts.business || null;
   const kw = SEO.sections[path];
   const ptitle = kwTitle(branded(p.metaTitle || p.title, opts.siteName), kw?.primary);
-  const html = setHead(fill(shell, resizeStorageImages(decorateCrmHtml(postHtml(opts, p, biz), kw, SEO.videos[path])), ptitle), {
+  const html = setHead(fill(shell, resizeStorageImages(decorateCrmHtml(postHtml(opts, p, biz), kw, SEO.videos[path], (SEO.pools || {})[/van|vehicle/.test(path) ? 'signage' : 'signage'] || [])), ptitle), {
     title: ptitle, description: kwDesc(p.metaDescription || p.excerpt, kw?.primary), url: origin + p.path, image: p.image?.url,
     jsonLd: { '@context': 'https://schema.org', '@graph': [
       { '@type': 'BlogPosting', headline: p.title, description: p.metaDescription || p.excerpt, url: origin + p.path, mainEntityOfPage: origin + p.path,
