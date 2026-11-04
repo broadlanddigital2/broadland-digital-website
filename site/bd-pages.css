@@ -640,3 +640,11 @@ h1.bd-was4,h1.bd-was5,h1.bd-was6{font-weight:700}
 .page .section-two-content>li>a::after{content:""!important;width:44px;height:44px;background:var(--c) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M4 12h15M13 5l7 7-7 7' fill='none' stroke='white' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/22px 22px no-repeat}
 .bdkw-card p,.bdkw-close,.bdkw-lead{font-weight:400}
 .bdsub-intro-text .bdkw-lead,.bdhub-text .bdkw-lead{font-weight:600}
+
+/* Shop page */
+.bdshop-page .bdhub-hero-img img{object-fit:cover}
+.bdshop-sec{padding:70px 0 30px}
+.bdshop-sec:nth-of-type(even){background:#f7f6fa}
+.bdshop-sec-desc{font-size:17px;color:#4a4d55;margin:-14px 0 6px;max-width:720px}
+.bdshop-page .bdhub-tiles.n3{grid-template-columns:repeat(3,minmax(0,1fr))}
+@media(max-width:900px){.bdshop-page .bdhub-tiles.n3{grid-template-columns:1fr}}

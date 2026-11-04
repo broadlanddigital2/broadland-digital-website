@@ -25,6 +25,7 @@ const ORIGIN = 'https://broadlanddigital.co.uk';
 const wp = JSON.parse(readFileSync(join(ROOT, 'content/wordpress.json'), 'utf8'));
 const extra = JSON.parse(readFileSync(join(ROOT, 'content/site.json'), 'utf8'));
 const VEH = JSON.parse(readFileSync(join(ROOT, 'content/vehicle.json'), 'utf8'));
+const OPTS = existsSync(join(ROOT, 'content/opt-srcset.json')) ? JSON.parse(readFileSync(join(ROOT, 'content/opt-srcset.json'), 'utf8')) : {};
 const OPT = existsSync(join(ROOT, 'content/opt-images.json')) ? JSON.parse(readFileSync(join(ROOT, 'content/opt-images.json'), 'utf8')) : {};
 const productTitle = new Map(wp.products.map((p) => [p.path, p.title]));
 const lastmod = new Map([...wp.pages, ...wp.products].map((p) => [p.path, p.modified]));
@@ -164,11 +165,15 @@ function transform(html, path) {
   // Pictures: WordPress asked for the full-width original everywhere ("(max-width: 2560px) 100vw, 2560px") and loaded
   // them all at once. Cap at the content width and load off-screen ones lazily.
   // light WebP copies of heavy pictures shown without a srcset (tools/images/optimize.py → content/opt-images.json)
+  // light WebP copies of heavy PNG/JPG sizes in srcset lists (tools/images/optimize_srcset.py)
+  h = h.replace(/\ssrcset="([^"]+)"/g, (m, ss) => ` srcset="${ss.split(',').map((x) => { const [u, ...r] = x.trim().split(/\s+/); return [OPTS[u] || u, ...r].join(' '); }).join(', ')}"`)
+    .replace(/(<img\b(?=[^>]*srcset=)[^>]*\ssrc=")(\/wp-content\/uploads\/[^"?]+)/g, (m, a, src) => (OPTS[src] ? a + OPTS[src] : m));
   h = h.replace(/(<img\b(?![^>]*srcset=)[^>]*\ssrc=")(\/wp-content\/uploads\/[^"?]+)/g, (m, a, src) => OPT[src] ? a + OPT[src] : m)
     .replace(/url\((\/wp-content\/uploads\/[^)'"?]+)\)/g, (m, src) => (OPT[src] ? `url(${OPT[src]})` : m));
   h = h.replace(/\ssizes="\(max-width: \d+px\) 100vw, \d+px"/g, ' sizes="(max-width: 1366px) 100vw, 1166px"')
     .replace(/<img\b(?![^>]*\b(?:loading|fetchpriority)=)(?![^>]*custom-logo)/g, '<img loading="lazy"');
   if (path === '/contact-us') h = contactPage(h);
+  if (path === '/shop') h = shopPage(h);
   if (path === '/get-a-quote') h = quotePage(h).replace(/(<ul[^>]*class="menu bdh-links"[\s\S]*?<\/ul>)/, (m) => m.replace(/\saria-current="[^"]*"/g, ''));
   // Long legal pages: slightly smaller text (site/bd-pages.css .bd-legal)
   if (['/privacy-policy', '/returns', '/refund_returns'].includes(path)) h = h.replace(/class="category page\b/, 'class="category page bd-legal');
@@ -694,6 +699,43 @@ function vehicleExtras(h, path, title) {
 // left out on this page (the page has it).
 const NAP = { name: 'Broadland Digital', street: 'Vulcan House, Vulcan Road North', town: 'Norwich', county: 'Norfolk', postcode: 'NR6 6AQ',
   hours: 'Monday–Friday, 8:30am–5pm' };
+// The online shop: the old WordPress homepage copy replaced with a shop page (hero, categories, product grids).
+// The product grids are filled in with the shop category grids (<!--bdshop-grid:…-->).
+function shopPage(h) {
+  const start = h.indexOf('<div class="homepage">');
+  const end = h.indexOf('<footer', start);
+  if (start < 0 || end < 0) return h;
+  const tel = menu.phone.replace(/\s/g, '');
+  const img = (src) => OPT[src] || src;
+  const prodImg = (re) => img((wp.products.find((p) => re.test(p.path)) || {}).image?.src || '');
+  const tiles = [
+    ['/category/signage/vehicle-graphics/', 'Van graphics packages', 'Basic, Standard, Pro and wrap packages for small, medium and large vans, fitted or as supply-only kits.', img('/wp-content/uploads/2023/03/Van-Graphics-Category.png')],
+    ['/category/liquid-wrapping/', 'Liquid wrapping packages', 'Budget, Standard, Premium and Ultra liquid wrap colour changes, priced by vehicle size.', img('/wp-content/uploads/2024/04/category-fimage-liquid-wrap.png')],
+    ['/category/liquid-wrapping/shop/', 'Full Dip spray wrap', 'Spray wrap colours, primers and glossifier for your own projects.', prodImg(/full-dip-cherry-red/)],
+  ];
+  const section = (id, title, desc, cats, more) => `<section class="bdshop-sec" id="${id}"><div class="wrap"><div class="bdhub-head"><h2>${esc(title)}</h2>${more ? `<a class="bdhub-textlink" href="${more[0]}">${esc(more[1])} →</a>` : ''}</div>${desc ? `<p class="bdshop-sec-desc">${esc(desc)}</p>` : ''}<!--bdshop-grid:${cats}--></div></section>`;
+  const body = `<div class="bdhub signage bdshop-page">
+<section class="bdhub-hero"><div class="wrap"><div class="bdhub-hero-text"><nav class="bdc" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><span aria-current="page">Shop</span></li></ol></nav>
+<span class="bdhub-eyebrow">Online shop</span>
+<h1>Van graphics and spray wrap, online.</h1>
+<p class="bdhub-lead">Order van graphics packages, liquid wrapping and Full Dip spray wrap online from our Norwich workshop, or ask us for a quote on anything made to measure.</p>
+<div class="bdhub-cta"><a class="bdhub-btn bdhub-btn--solid" href="#van-graphics">Shop van graphics</a><a class="bdhub-btn bdhub-btn--ghost" href="tel:${tel}">Call ${esc(menu.phone)}</a></div></div>
+<figure class="bdhub-hero-img"><img src="${esc(prodImg(/basic-small-van-graphics$/))}" alt="Van graphics package from the Broadland Digital shop" width="1200" height="900" fetchpriority="high"></figure>
+</div></section>
+<section class="bdhub-intro"><div class="wrap"><h2>How the shop works.</h2><div class="bdhub-text"><p>Each package has a fixed starting price for a typical vehicle of that size. Choose the package, add your details and we will confirm the layout, artwork and price for your vehicle before anything is made.</p><p>Fitted packages are applied at our Norwich workshop. Supply-only kits are for fitting yourself, and Full Dip spray wrap is for your own projects.</p></div></div></section>
+<section class="bdhub-services"><div class="wrap"><div class="bdhub-head"><h2>Shop by category.</h2><a class="bdhub-textlink" href="/get-a-quote/">Need something made to measure? Ask us →</a></div>
+<div class="bdhub-tiles n3">${tiles.map(([href, t, d, src]) => `<a class="bdhub-tile" href="${href}"><img src="${esc(src)}" alt="${esc(t)}" loading="lazy" width="800" height="600"><span class="bdhub-tile-in"><span class="bdhub-tile-title">${esc(t)}</span><span class="bdhub-tile-desc">${esc(d)}</span><span class="bdhub-tile-go">Shop now <i aria-hidden="true">${BIG_ARROW}</i></span></span></a>`).join('')}</div></div></section>
+${section('van-graphics', 'Fitted van graphics.', 'Designed by us and fitted at our Norwich workshop.', 'vehicle graphics+fitted', ['/category/signage/vehicle-graphics/', 'All van graphics'])}
+${section('van-kits', 'Supply-only van graphics kits.', 'The same packages, supplied for you to fit yourself.', 'vehicle graphics+supply only')}
+${section('liquid-wrapping', 'Liquid wrapping packages.', 'Colour changes applied at our workshop, priced by vehicle size.', 'liquid wrapping+!shop', ['/liquid-wrapping-home/', 'About liquid wrapping'])}
+${section('spray-wrap', 'Full Dip spray wrap.', 'Colours, primers and glossifier for your own projects.', 'shop', ['/category/liquid-wrapping/shop/', 'All spray wrap'])}
+<section class="bdhub-band"><div class="wrap"><div><h2>Can't see what you need?</h2><p>Most of our work is made to order. Send sizes, photos and a deadline and we'll price it.</p></div>
+<div class="bdhub-cta"><a class="bdhub-btn bdhub-btn--solid" href="/get-a-quote/">Get a free quote</a><a class="bdhub-btn bdhub-btn--ghost" href="tel:${tel}">Call ${esc(menu.phone)}</a></div></div></section>
+</div>
+`;
+  return h.slice(0, start) + body + h.slice(end);
+}
+
 function contactPage(h) {
   const tel = menu.phone.replace(/\s/g, '');
   const full = `${NAP.name}, ${NAP.street}, ${NAP.town}, ${NAP.postcode}`;
@@ -835,6 +877,11 @@ const IMG_SIZES = existsSync(join(ROOT, 'content/img-sizes.json')) ? JSON.parse(
     return `<a class="bdp-card" href="${p.path}/">${p.img ? `<span class="bdp-img"><img src="${esc(p.img)}" alt="${esc(p.title)}" width="${sz[0]}" height="${sz[1]}" loading="lazy" decoding="async"></span>` : ''}<span class="bdp-body"><span class="bdp-title">${esc(p.title)}</span>${p.summary ? `<span class="bdp-sum">${esc(p.summary)}</span>` : ''}<span class="bdp-price">${p.price ? `From £${String(p.price).replace(/\.0+$/, '')}` : 'See options and prices'}</span></span></a>`;
   };
   const grid = (list) => `<div class="bdp-grid">${list.map(card).join('')}</div>`;
+  if (built.has('/shop')) built.set('/shop', built.get('/shop').replace(/<!--bdshop-grid:([^>]*?)-->/g, (m, spec) => {
+    const need = spec.split('+');
+    const list = prods.filter((p) => need.every((n) => (n.startsWith('!') ? !p.cats.includes(n.slice(1)) : p.cats.includes(n))));
+    return list.length ? grid(list) : '';
+  }));
   for (const [path, h0] of built) {
     if (!path.startsWith('/category/') || /\/page\/\d+$/.test(path)) continue;
     const segs = path.split('/').slice(2);

@@ -207,6 +207,50 @@ export function pruneAssets(h) {
   return h;
 }
 
+// Structured data tidy-up: one Product per product page (with a real price, or none at all), clean product names,
+// organisations with their web address.
+export function fixLd(h, path) {
+  const head = h.slice(0, h.indexOf('</head>') >= 0 ? h.indexOf('</head>') : h.length);
+  const visible = h.slice(h.indexOf('</header>') >= 0 ? h.indexOf('</header>') : 0).replace(/<script[\s\S]*?<\/script>/g, '').replace(/<[^>]+>/g, ' ');
+  const pagePrices = [...visible.matchAll(/£\s?(\d{1,5}(?:,\d{3})*(?:\.\d{2})?)/g)].map((m) => Number(m[1].replace(/,/g, ''))).filter((x) => x > 0);
+  const h1 = decode(((h.match(/<h1\b[^>]*>([\s\S]*?)<\/h1>/) || [])[1] || '').replace(/<[^>]+>/g, '')).replace(/\s+/g, ' ').replace(/\.\s*$/, '').trim();
+  const blocks = [...h.matchAll(/(<script[^>]*type="application\/ld\+json"[^>]*>)([\s\S]*?)(<\/script>)/g)];
+  if (!blocks.length) return h;
+  const parsed = blocks.map((b) => { try { return JSON.parse(b[2]); } catch { return null; } });
+  const all = [];
+  const collect = (n, parent, key) => { if (Array.isArray(n)) n.forEach((x, i) => collect(x, n, i)); else if (n && typeof n === 'object') { all.push({ n, parent, key }); for (const [k, v] of Object.entries(n)) if (k !== '@context') collect(v, n, k); } };
+  parsed.forEach((j) => collect(j, null, null));
+  const isType = (n, t) => [].concat(n['@type'] || []).includes(t);
+  const products = all.filter((x) => isType(x.n, 'Product'));
+  const withOffers = products.filter((x) => x.n.offers);
+  const remove = new Set();
+  for (const x of products) {
+    if (!x.n.offers) { remove.add(x.n); continue; } // a product with no price can't be a valid Product result
+    // the product's own name, not "… - Signage & Print, Norwich Norfolk - Broadland Digital"
+    if (x.n.name) x.n.name = (path.startsWith('/product/') && h1 ? h1 : decode(String(x.n.name)).replace(/\s+-\s+Signage .*$/i, '')).trim();
+    if (x.n.description) x.n.description = decode(String(x.n.description));
+    if (x.n.category) x.n.category = decode(String(x.n.category));
+    const offers = [].concat(x.n.offers || []);
+    for (const o of offers) {
+      if (o.price != null && !(Number(o.price) > 0)) {
+        if (pagePrices.length) { o.price = Math.min(...pagePrices).toFixed(2); if (o.priceSpecification) o.priceSpecification.price = o.price; }
+        else remove.add(x.n);
+      }
+    }
+  }
+  for (const x of all) if (isType(x.n, 'Organization') && !x.n.url && !(Object.keys(x.n).length <= 2 && x.n['@id'])) x.n.url = 'https://broadlanddigital.co.uk/';
+  // drop removed nodes (from @graph arrays or as values)
+  const prune = (n) => { if (Array.isArray(n)) { for (let i = n.length - 1; i >= 0; i--) { if (remove.has(n[i])) n.splice(i, 1); else prune(n[i]); } } else if (n && typeof n === 'object') { for (const [k, v] of Object.entries(n)) { if (remove.has(v)) delete n[k]; else prune(v); } } };
+  parsed.forEach(prune);
+  let i = 0;
+  return h.replace(/(<script[^>]*type="application\/ld\+json"[^>]*>)([\s\S]*?)(<\/script>)/g, (m, a, b, c) => {
+    const j = parsed[i++];
+    if (j == null) return m;
+    if (remove.has(j) || (Array.isArray(j) && !j.length) || (j['@graph'] && !j['@graph'].length)) return '';
+    return a + JSON.stringify(j).replace(/</g, '\\u003c') + c;
+  });
+}
+
 export function fixHeadings(html) {
   const hasH1 = /<h1\b/.test(html);
   let prev = hasH1 ? 0 : -1;
@@ -435,7 +479,7 @@ export function finishSeo(pages, { trail, sizes = {}, faqs = {}, keywords = {}, 
       const price = (decode((h.match(/<title>([\s\S]*?)<\/title>/) || [])[1] || '').match(/–\s+£([\d.,]+)/) || [])[1] || '';
       h = applyKeywords(path, h, kw, usedTitles, price);
     }
-    out.set(path, pruneAssets(shareImage(h)));
+    out.set(path, fixLd(pruneAssets(shareImage(h)), path));
   }
   out.pools = POOL;
   return out;
