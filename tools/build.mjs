@@ -166,6 +166,7 @@ function transform(html, path) {
     .replace(/url\((\/wp-content\/uploads\/[^)'"?]+)\)/g, (m, src) => (OPT[src] ? `url(${OPT[src]})` : m));
   h = h.replace(/\ssizes="\(max-width: \d+px\) 100vw, \d+px"/g, ' sizes="(max-width: 1366px) 100vw, 1166px"')
     .replace(/<img\b(?![^>]*\b(?:loading|fetchpriority)=)(?![^>]*custom-logo)/g, '<img loading="lazy"');
+  if (path === '/contact-us') h = contactPage(h);
   if (path === '/get-a-quote') h = quotePage(h).replace(/(<ul[^>]*class="menu bdh-links"[\s\S]*?<\/ul>)/, (m) => m.replace(/\saria-current="[^"]*"/g, ''));
   // Long legal pages: slightly smaller text (site/bd-pages.css .bd-legal)
   if (['/privacy-policy', '/returns', '/refund_returns'].includes(path)) h = h.replace(/class="category page\b/, 'class="category page bd-legal');
@@ -173,7 +174,7 @@ function transform(html, path) {
   // header.js expects the theme's menu checkbox; landing pages have no menu, so give it an inert one.
   if (!/class="nav-container"/.test(h)) h = h.replace(/<\/header>/, '<span class="nav-container" hidden><input type="checkbox" tabindex="-1" aria-hidden="true"></span></header>');
   // Footer: ours in place of the theme's (same section colour)
-  h = h.replace(/<footer\b([^>]*)>[\s\S]*?<\/footer>/, (_m, attrs) => footerHtml((attrs.match(/class="([^"]*)"/) || [])[1] || '', { form: path !== '/get-a-quote' }));
+  h = h.replace(/<footer\b([^>]*)>[\s\S]*?<\/footer>/, (_m, attrs) => footerHtml((attrs.match(/class="([^"]*)"/) || [])[1] || '', { form: !['/get-a-quote', '/contact-us'].includes(path) }));
   h = h.replace(/<\/head>/i, `<link rel="stylesheet" href="/_static/bd-footer.css?v=${FOOTER_V}">\n</head>`);
   // Phone fields were number inputs (no spaces, arrows): proper phone fields
   h = h.replace(/(<input[^>]*name="your-phone"[^>]*)type="number"/g, '$1type="tel" inputmode="tel"').replace(/type="number"([^>]*name="your-phone")/g, 'type="tel" inputmode="tel"$1');
@@ -633,6 +634,82 @@ function vehicleExtras(h, path, title) {
   out = /<section class="bdsub-gallery-sec">/.test(out) ? out.replace('<section class="bdsub-gallery-sec">', mid + '<section class="bdsub-gallery-sec">') : out.replace('<section class="bdhub-band">', mid + '<section class="bdhub-band">');
   out = out.replace('<section class="bdhub-band">', faqs + '<section class="bdhub-band">');
   return out.replace(/<\/head>/i, ld.map((x) => `<script type="application/ld+json">${JSON.stringify(x).replace(/</g, '\\u003c')}</script>`).join('\n') + '\n</head>');
+}
+
+// Contact us (/contact-us): name, address and phone (NAP) with opening hours, a map, how to find us, directions in
+// Google Maps / Apple Maps / Waze, the enquiry form, and LocalBusiness + ContactPage schema. The footer's own form is
+// left out on this page (the page has it).
+const NAP = { name: 'Broadland Digital', street: 'Vulcan House, Vulcan Road North', town: 'Norwich', county: 'Norfolk', postcode: 'NR6 6AQ',
+  hours: 'Monday–Friday, 8:30am–5pm' };
+function contactPage(h) {
+  const tel = menu.phone.replace(/\s/g, '');
+  const full = `${NAP.name}, ${NAP.street}, ${NAP.town}, ${NAP.postcode}`;
+  const q = encodeURIComponent(full);
+  const field = (name, label, attrs, wide, hint = '') => `<div class="bdf-field${wide ? ' wide' : ''}"><label for="bdk-${name}">${label}${hint ? ` <small>${hint}</small>` : ''}</label>`
+    + (name === 'message' ? `<textarea id="bdk-${name}" name="${name}" ${attrs} aria-describedby="bdk-${name}-err"></textarea>` : `<input id="bdk-${name}" name="${name}" ${attrs} aria-describedby="bdk-${name}-err">`)
+    + `<span class="bdf-err" id="bdk-${name}-err" aria-live="polite"></span></div>`;
+  const body = `<section class="bdk"><div class="wrap">
+<div class="bdk-grid">
+<div class="bdk-card bdk-nap" itemscope itemtype="https://schema.org/LocalBusiness">
+<h2>Get in touch.</h2>
+<p class="bdk-name" itemprop="name">${NAP.name}</p>
+<address itemprop="address" itemscope itemtype="https://schema.org/PostalAddress"><span itemprop="streetAddress">${NAP.street}</span><br><span itemprop="addressLocality">${NAP.town}</span>, <span itemprop="addressRegion">${NAP.county}</span><br><span itemprop="postalCode">${NAP.postcode}</span></address>
+<ul class="bdk-lines">
+<li>${ICON.phone}<a href="tel:${tel}" itemprop="telephone">${esc(menu.phone)}</a></li>
+<li>${ICON.mail}<a href="mailto:${menu.email}" itemprop="email">${esc(menu.email)}</a></li>
+<li><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 7v5l3 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span><meta itemprop="openingHours" content="Mo-Fr 08:30-17:00">${NAP.hours}</span></li>
+</ul>
+<div class="bdk-actions"><a class="bdk-btn bdk-btn--solid" href="tel:${tel}">Call us</a><a class="bdk-btn" href="mailto:${menu.email}">Email us</a><a class="bdk-btn" href="/get-a-quote/">Get a quote</a></div>
+</div>
+<div class="bdk-map"><iframe title="Map: ${esc(full)}" src="https://www.google.com/maps?q=${q}&amp;output=embed" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe></div>
+</div>
+<div class="bdk-grid bdk-grid--2">
+<div class="bdk-card"><h2>How to find us.</h2>
+<p>Our offices and workshop are at Vulcan House on Vulcan Road North, on the airport side of Norwich. From the city, head towards the north Norwich ring road and Vulcan Road North, and set your sat nav to <strong>${NAP.postcode}</strong> or "Vulcan House" rather than a city-centre address.</p>
+<p>We're open ${NAP.hours}. If you'd like to see samples, talk through artwork or collect an order, give us a call first so the right person is here. Bring photos, rough sizes and any logo or brand files you have.</p>
+<p>Collecting a large panel, or need step-free access? Call ahead and we'll sort out where to park and how to get it to your vehicle.</p>
+</div>
+<div class="bdk-card"><h2>Directions.</h2>
+<p>Open turn-by-turn directions from where you are now:</p>
+<div class="bdk-dir">
+<a href="https://www.google.com/maps/dir/?api=1&amp;destination=${q}" target="_blank" rel="noopener"><b>Google Maps</b><span>Directions by car, public transport, bike or on foot</span></a>
+<a href="https://maps.apple.com/?daddr=${q}" target="_blank" rel="noopener"><b>Apple Maps</b><span>For iPhone, iPad and Mac</span></a>
+<a href="https://waze.com/ul?q=${encodeURIComponent(NAP.street + ', ' + NAP.town + ' ' + NAP.postcode)}&amp;navigate=yes" target="_blank" rel="noopener"><b>Waze</b><span>Live traffic and route</span></a>
+</div>
+<p class="bdk-small">Sat nav postcode: <strong>${NAP.postcode}</strong></p>
+</div>
+</div>
+<div class="bdk-card bdk-formcard bdf-wrap" id="enquiry">
+<h2>Send us a message.</h2>
+<p>Tell us what you need and we'll come back to you, usually the same working day. For a priced quote, use the <a href="/get-a-quote/">quote form</a>.</p>
+<form class="bdf-form" data-bd-form="contact" novalidate aria-label="Contact form">
+${field('name', 'Name', 'type="text" autocomplete="name" required maxlength="120"')}
+${field('phone', 'Phone', 'type="tel" inputmode="tel" autocomplete="tel" required maxlength="40" placeholder="e.g. 07700 900123"')}
+${field('email', 'Email', 'type="email" inputmode="email" autocomplete="email" required maxlength="254" placeholder="name@company.co.uk"', true)}
+${field('message', 'How can we help?', 'rows="5" maxlength="6000"', true, '(optional)')}
+<div class="bdf-hp" aria-hidden="true"><label for="bdk-website">Leave this empty</label><input id="bdk-website" name="website" tabindex="-1" autocomplete="off"></div>
+<div class="bdf-summary" role="alert"></div>
+<div class="bdf-actions"><button class="bdf-send" type="submit"><span class="bdf-spin" aria-hidden="true"></span><span class="bdf-label">Send message</span></button>
+<p class="bdf-note">We'll only use your details to reply to you. See our <a href="/privacy-policy/">privacy policy</a>.</p></div>
+</form>
+<div class="bdf-done" role="status"><h3>Thank you<span class="bdf-done-name"></span>.</h3><p>We've received your message and will be in touch shortly. If it's urgent, call us on <a href="tel:${tel}">${esc(menu.phone)}</a>.</p><button type="button" class="bdf-again">Send another message</button></div>
+</div>
+</div></section>`;
+  const ld = { '@context': 'https://schema.org', '@graph': [
+    { '@type': 'ContactPage', '@id': ORIGIN + '/contact-us/#contact', url: ORIGIN + '/contact-us/', name: 'Contact Broadland Digital', about: { '@id': ORIGIN + '/#business' } },
+    { '@type': 'LocalBusiness', '@id': ORIGIN + '/#business', name: NAP.name, url: ORIGIN + '/', telephone: '+44 1603 407786', email: menu.email,
+      logo: ORIGIN + '/wp-content/uploads/2023/03/Broadland_Digital_Logo.svg', image: ORIGIN + '/wp-content/uploads/2023/03/Broadland_Digital_Logo.svg',
+      address: { '@type': 'PostalAddress', streetAddress: NAP.street, addressLocality: NAP.town, addressRegion: NAP.county, postalCode: NAP.postcode, addressCountry: 'GB' },
+      hasMap: 'https://www.google.com/maps?q=' + q,
+      openingHoursSpecification: [{ '@type': 'OpeningHoursSpecification', dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'], opens: '08:30', closes: '17:00' }],
+      contactPoint: [{ '@type': 'ContactPoint', contactType: 'customer service', telephone: '+44 1603 407786', email: menu.email, areaServed: 'GB', availableLanguage: 'en' }],
+      areaServed: ['Norwich', 'Norfolk', 'Suffolk'], sameAs: (menu.footer.social || []).map(([, u]) => u) } ] };
+  return h.replace(/<span class="bdhub-eyebrow">[^<]*<\/span>/, '<span class="bdhub-eyebrow">Contact</span>')
+    .replace(/<p class="bdhub-lead">[\s\S]*?<\/p>/, '<p class="bdhub-lead">Call, email or visit our Norwich offices and workshop. We usually reply the same working day.</p>')
+    .replace(/<div class="bdhub-cta">[\s\S]*?<\/div><\/div>/, `<div class="bdhub-cta"><a class="bdhub-btn bdhub-btn--solid" href="tel:${tel}">Call ${esc(menu.phone)}</a><a class="bdhub-btn bdhub-btn--ghost" href="#enquiry">Send a message</a></div></div>`)
+    .replace(/<section\b[^>]*class="container section-padding\s+section-one[^"]*"[^>]*>[\s\S]*?<\/section>/, body)
+    .replace(/<section class="bdhub-band">[\s\S]*?<\/section>/, '')
+    .replace(/<\/head>/i, `<script type="application/ld+json">${JSON.stringify(ld).replace(/</g, '\\u003c')}</script>\n</head>`);
 }
 
 function megaMenu(path) {
