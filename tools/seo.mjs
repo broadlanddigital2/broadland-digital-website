@@ -90,7 +90,9 @@ export function finishSeo(pages, { trail, sizes = {}, faqs = {} }) {
     const name = h1 || names[names.length - 1] || title.split(/\s[|–-]\s/)[0];
     const shopLike = /^\/(product|category)\//.test(path);
     let t = title, d = desc;
-    const price = path.startsWith('/product/') ? ((h.match(/"price"\s*:\s*"?(\d+(?:\.\d+)?)/) || [])[1] || '') : '';
+    const prices = path.startsWith('/product/') ? [...h.slice(0, h.indexOf('</head>')).matchAll(/"(?:price|lowPrice)"\s*:\s*"?(\d+(?:\.\d+)?)/g)].map((m) => +m[1]).filter((x) => x > 0) : [];
+    // only where several products share a name (fitted / supply-only versions)
+    const price = prices.length && tc.get(title) > 1 ? String(Math.min(...prices)) : '';
     const priced = price ? `${name.replace(/\.\s*$/, '')} – £${String(+price).replace(/\.0+$/, '')}` : name;
     if (t.length > 65 || t.length < 30 || tc.get(t) > 1 || pageN || (shopLike && !t.includes(BRAND))) t = titleFor(path, priced, names, pageN);
     if (!d || d.length < 120 || d.length > 165 || dc.get(d) > 1 || pageN) d = describe(path, priced, names);
