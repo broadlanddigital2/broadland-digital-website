@@ -190,7 +190,47 @@ function transform(html, path) {
   // Our form script, after the theme's scripts
   h = h.replace(/<\/body>/i, `<script src="/_static/bd-forms.js?v=${FORMS_V}" defer></script>\n</body>`);
   h = h.replace(/<\/body>/i, SITE_SEARCH + '\n' + CRM_BOT + '\n</body>');
+  h = fixSchema(h);
   return h;
+}
+
+// Structured data (the JSON-LD copied from WordPress / Yoast): the business node also becomes a LocalBusiness with the
+// phone, a photo and the Google Maps link (hasMap, from the Business Profile); placeholder pictures (Yoast's
+// "category-fimage-placeholder") and author avatars are replaced by the page's own share picture as its main image.
+// The SEO optimiser scores pages on these (Schema → picture, logo and map).
+const BD_MAP = 'https://maps.google.com/maps?cid=15721225970647822825';
+const BD_PHOTO = 'https://broadlanddigital.co.uk/wp-content/uploads/2024/04/signage-15-scaled_v2-jpg.webp';
+const PLACEHOLDER = /placeholder|gravatar|avatar/i;
+function fixSchema(html) {
+  const og = (html.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)/i) || [])[1] || '';
+  const photo = og && !PLACEHOLDER.test(og) ? og.replace(/&amp;/g, '&') : BD_PHOTO;
+  return html.replace(/(<script\b[^>]*type=["']application\/ld\+json["'][^>]*>)([\s\S]*?)(<\/script>)/gi, (all, open, body, close) => {
+    let j; try { j = JSON.parse(body); } catch { return all; }
+    const graph = Array.isArray(j['@graph']) ? j['@graph'] : null; if (!graph) return all;
+    let changed = false;
+    for (let i = graph.length - 1; i >= 0; i--) {
+      const o = graph[i]; if (!o || typeof o !== 'object') continue;
+      if (o['@type'] === 'Organization' && /broadlanddigital\.co\.uk\/#organization/.test(o['@id'] || '')) {
+        o['@type'] = ['Organization', 'LocalBusiness'];
+        if (!o.telephone) o.telephone = '+44 1603 407786';
+        if (!o.image) o.image = BD_PHOTO;
+        if (!o.hasMap) o.hasMap = BD_MAP;
+        changed = true;
+      }
+      if (o['@type'] === 'Place' && /#place$/.test(o['@id'] || '') && !o.hasMap) { o.hasMap = BD_MAP; changed = true; }
+      // Drop placeholder image nodes and point the page at a real picture.
+      if (o['@type'] === 'ImageObject' && PLACEHOLDER.test(String(o.url || o['@id'] || '')) && !/author/.test(String(o['@id']))) { graph.splice(i, 1); changed = true; continue; }
+      if (o['@type'] === 'WebPage' || (Array.isArray(o['@type']) && o['@type'].includes('WebPage'))) {
+        const cur = o.primaryImageOfPage, curUrl = typeof cur === 'string' ? cur : cur?.url || cur?.['@id'] || '';
+        if (!curUrl || PLACEHOLDER.test(curUrl)) { o.primaryImageOfPage = { '@type': 'ImageObject', url: photo, contentUrl: photo }; changed = true; }
+      }
+      for (const k of ['image', 'thumbnailUrl']) {
+        const v = o[k], u = typeof v === 'string' ? v : v?.url || v?.['@id'] || '';
+        if (u && PLACEHOLDER.test(u) && o['@type'] !== 'Person') { o[k] = photo; changed = true; }
+      }
+    }
+    return changed ? open + JSON.stringify(j).replace(/</g, '\\u003c') + close : all;
+  });
 }
 
 const formsJs = readFileSync(join(ROOT, 'site/bd-forms.js'));
