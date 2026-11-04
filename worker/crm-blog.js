@@ -1,5 +1,5 @@
 import SEO from './seo-sections.json';
-import { decorateCrmHtml, kwTitle, kwDesc } from './seo-blocks.js';
+import { decorateCrmHtml, kwTitle, kwDesc, resizeStorageImages } from './seo-blocks.js';
 /**
  * CRM blog (shared by the Le Man Cave, Auto Opulence, Race Car Graphics and Broadland Digital workers; keep the copies in step).
  *
@@ -153,7 +153,7 @@ export async function blogResponse(request, env, opts) {
     const posts = (await fetchPosts(opts)) || [];
     const kw = SEO.sections[base];
     const title = kwTitle(`${opts.blogTitle} | ${opts.siteName}`, kw?.primary);
-    const html = setHead(fill(shell, decorateCrmHtml(listHtml(opts, posts), kw, SEO.videos[base]), title), {
+    const html = setHead(fill(shell, resizeStorageImages(decorateCrmHtml(listHtml(opts, posts), kw, SEO.videos[base]), 900), title), {
       title, description: kwDesc(opts.description || opts.intro, kw?.primary), url: origin + base, image: posts[0]?.image?.url,
       jsonLd: { '@context': 'https://schema.org', '@graph': [
         { '@type': 'Blog', name: opts.blogTitle, url: origin + base, publisher: { '@type': 'Organization', name: opts.siteName, url: origin },
@@ -174,7 +174,7 @@ export async function blogResponse(request, env, opts) {
   const biz = posts.business || null;
   const kw = SEO.sections[path];
   const ptitle = kwTitle(branded(p.metaTitle || p.title, opts.siteName), kw?.primary);
-  const html = setHead(fill(shell, decorateCrmHtml(postHtml(opts, p, biz), kw, SEO.videos[path]), ptitle), {
+  const html = setHead(fill(shell, resizeStorageImages(decorateCrmHtml(postHtml(opts, p, biz), kw, SEO.videos[path])), ptitle), {
     title: ptitle, description: kwDesc(p.metaDescription || p.excerpt, kw?.primary), url: origin + p.path, image: p.image?.url,
     jsonLd: { '@context': 'https://schema.org', '@graph': [
       { '@type': 'BlogPosting', headline: p.title, description: p.metaDescription || p.excerpt, url: origin + p.path, mainEntityOfPage: origin + p.path,

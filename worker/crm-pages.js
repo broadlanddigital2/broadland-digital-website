@@ -1,5 +1,5 @@
 import SEO from './seo-sections.json';
-import { decorateCrmHtml, kwTitle, kwDesc } from './seo-blocks.js';
+import { decorateCrmHtml, kwTitle, kwDesc, resizeStorageImages } from './seo-blocks.js';
 /**
  * CRM SEO pages (Marketing → SEO pages in the CRM) served live inside the site's own header and footer.
  *
@@ -150,6 +150,7 @@ function heroCrumbs(html, path, name) {
 
 // Images without width/height reserve a 16:9 box so the page doesn't jump while they load
 function sizeImages(html) {
+  html = resizeStorageImages(html);
   return html.replace(/<img\b[^>]*>/g, (tag) => (/\swidth=/.test(tag) && /\sheight=/.test(tag) ? tag
     : tag.replace(/\s(width|height)="[^"]*"/g, '').replace(/<img\b/, '<img width="1600" height="900"')));
 }
