@@ -67,7 +67,7 @@ function cleanScripts(html) {
     const sig = attrs + ' ' + body.slice(0, 600);
     if (/cloudflare-static\/rocket-loader/.test(attrs)) return '';
     if (/cookieyes|client_data\//i.test(sig)) return ''; // CookieYes is replaced by our own banner
-    if (/launcher\.enquirybot\.com|enquirybot\.com/i.test(sig)) return ''; // the old EnquiryBot chat is replaced by the CRM's assistant (CRM_BOT)
+    if (/launcher\.enquirybot\.com|enquirybot\.com|data-bot-id="250af904/i.test(sig)) return ''; // the old EnquiryBot chat is replaced by the CRM's assistant (CRM_BOT)
     if (/application\/ld\+json/.test(attrs)) return m;
     if (DROP.test(sig) && !KEEP.test(sig)) return '';
     if (/woocommerce-google-analytics|wc-order|ga4w|wc_add_to_cart|wpcf7/.test(sig)) return '';
