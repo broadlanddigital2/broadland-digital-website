@@ -1,4 +1,6 @@
 import { leadHtml, blockHtml } from '../worker/seo-blocks.js';
+import { readFileSync as _rf } from 'node:fs';
+const REDIRECTS = JSON.parse(_rf(new URL('../worker/redirects.json', import.meta.url), 'utf8'));
 // SEO finishing pass over every built page (tools/build.mjs calls finishSeo once all pages are built), for the points
 // the CRM's SEO optimiser scores: titles 30–65 characters, unique and ending "| Broadland Digital"; meta descriptions
 // 120–165 characters and unique; one H1; alt text and width/height on every image; FAQs (with FAQPage schema) on shop
@@ -150,6 +152,33 @@ export function addBlocks(body, sec, video) {
     else { const last = body.lastIndexOf('</section>'); if (last >= 0) body = body.slice(0, last + 10) + block + body.slice(last + 10); }
   }
   return body;
+}
+
+// WordPress "link list" lines ("Vehicle Graphics <a>Car Graphics</a>, <a>Van Graphics</a>") and "… here" links
+// become a row of related-page buttons.
+export function linkChips(body, path = '') {
+  const fix = (href) => { const k = href.replace(/[?#].*$/, '').replace(/\/+$/, '') || '/'; const to = REDIRECTS[k]; return to ? (to === '/' ? '/' : to.replace(/\/?$/, '/')) : href; };
+  const self = (path.replace(/\/+$/, '') || '/') + '/';
+  const chip = (href, label) => (fix(href) === self ? '' : `<a class="bdrel-chip" href="${fix(href)}">${label}<span aria-hidden="true">→</span></a>`);
+  const clean = (t) => decode(String(t).replace(/<[^>]+>/g, '')).replace(/\s+/g, ' ').trim();
+  body = body.replace(/<(h[2-6]|p)\b[^>]*>((?:(?!<\/\1>)[\s\S])*?)<\/\1>/g, (m, tag, inner) => {
+    const links = [...inner.matchAll(/<a\b[^>]*href="(\/[^"]*)"[^>]*>([\s\S]*?)<\/a>/g)].map((x) => [x[1], clean(x[2])]).filter((x) => x[1]);
+    if (!links.length) return m;
+    const rest = clean(inner.replace(/<a\b[^>]*>[\s\S]*?<\/a>/g, '')).replace(/[,|&]/g, '').trim();
+    if (links.length >= 2 && rest.length < 40 && !/[.?!]/.test(rest)) {
+      return `<div class="bdrel">${links.map(([h, l]) => chip(h, esc(l))).join('')}</div>`;
+    }
+    if (links.length === 1 && /^(here|click here|this page)$/i.test(links[0][1]) && tag === 'p') {
+      const label = rest.replace(/^(have a look at|take a look at|see|view|check out|browse)\s+(our|the)\s+/i, '').replace(/[.:]\s*$/, '').trim();
+      if (label && label.length < 60) return `<div class="bdrel">${chip(links[0][0], esc(label.charAt(0).toUpperCase() + label.slice(1)))}</div>`;
+    }
+    return m;
+  });
+  // neighbouring rows → one row
+  body = body.replace(/<div class="bdrel"><\/div>/g, '').replace(/<\/div>\s*<div class="bdrel">/g, '');
+  body = body.replace(/<div class="bdrel">/g, '<div class="bdrel"><span class="bdrel-label">Related</span>');
+  // keep the related row visible: out of the hidden "read more" text, under the button
+  return body.replace(/(<div class="bdsub-more" hidden>[\s\S]*?)(<div class="bdrel">[\s\S]*?<\/div>)(\s*<\/div>\s*<button type="button" class="bdsub-morebtn"[\s\S]*?<\/button>)/, '$1$3$2');
 }
 
 export function fixHeadings(html) {
@@ -331,6 +360,7 @@ export function finishSeo(pages, { trail, sizes = {}, faqs = {}, keywords = {}, 
       for (const [a, b] of ex.replace || []) body = body.replace(a, b);
     }
     if (!NOINDEX.test(path)) body = addBlocks(body, sections[path], videos[path]);
+    body = linkChips(body, path);
     body = fixHeadings(body);
     // FAQs on shop and product pages (with FAQPage schema), when the page has none
     if (shopLike && !/FAQPage/.test(head)) {

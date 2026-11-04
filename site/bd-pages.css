@@ -618,3 +618,11 @@ h1.bd-was4,h1.bd-was5,h1.bd-was6{font-weight:700}
 .bdkw-btn:hover{transform:translateY(-1px);box-shadow:0 10px 24px rgba(113,63,255,.28)}
 .bdkw-btn--ghost{background:#fff;color:#2a2d32!important;border-color:#ddd8ea}
 .bdkw-btn--ghost:hover{border-color:#713fff;color:#713fff!important;box-shadow:none}
+
+/* Related-page buttons (from WordPress link lists) */
+.bdrel{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:22px 0 6px}
+.bdrel-label{font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#7a7d85;margin-right:4px}
+.bdrel-chip{display:inline-flex;align-items:center;gap:10px;padding:10px 12px 10px 18px;border-radius:30px;background:#f1ecff;color:#4b1fd6!important;font-weight:700;font-size:15px;line-height:1;text-decoration:none!important;transition:background .15s,color .15s,transform .15s}
+.bdrel-chip span{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;background:#fff;font-size:13px;transition:transform .15s}
+.bdrel-chip:hover{background:#713fff;color:#fff!important}
+.bdrel-chip:hover span{color:#713fff;transform:translateX(2px)}
