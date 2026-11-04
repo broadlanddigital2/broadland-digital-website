@@ -150,7 +150,7 @@ export function addBlocks(body, sec, video, pool = []) {
     // after the second section below the hero, or before the FAQs / closing band / footer if that comes first
     const end = [/<section class="bdhub-faq/, /<section class="bdhub-band">/, /<footer\b/, /<\/main>/].map((r) => body.search(r)).find((i) => i >= 0);
     let at = end;
-    const lb = body.indexOf('bdkw-leadband') >= 0 ? body.indexOf('bdkw-leadband') : body.indexOf('<section class="bdsub-intro');
+    const lb = body.includes('class="bdp-card"') || body.includes('class="bdp-grid"') ? -1 : body.indexOf('bdkw-leadband') >= 0 ? body.indexOf('bdkw-leadband') : body.indexOf('<section class="bdsub-intro');
     if (lb > 0) { let i = body.indexOf('</section>', lb); if (i > 0) i = body.indexOf('</section>', i + 10); if (i > 0 && (end == null || i < end)) at = i + 10; }
     if (at != null) body = body.slice(0, at) + block + body.slice(at);
     else { const last = body.lastIndexOf('</section>'); if (last >= 0) body = body.slice(0, last + 10) + block + body.slice(last + 10); }
@@ -318,7 +318,7 @@ const rotate = (list, key) => { if (!list.length) return list; let n = 0; for (c
 function secKey(path, h) {
   const c = (h.match(/class="bdhub(?: bdsub)? (signage|print|design|web-dev|liquid-wrapping)\b/) || [])[1];
   if (c) return c;
-  const seg = path.split('/')[1] || '';
+  const seg = path.startsWith('/category/') || path.startsWith('/product/') ? (/liquid|dip|spray|wrap/.test(path) && !/van-graphics|vehicle-graphics/.test(path) ? 'liquid' : 'signage') : path.split('/')[1] || '';
   return /^(signage|vehicle|sectors)/.test(seg) ? 'signage' : /^print|digital-print|large-format/.test(seg) ? 'print' : /^design/.test(seg) ? 'design' : /^web|ecommerce|woocommerce|laravel|magento/.test(seg) ? 'web-dev' : /^liquid|hydro|category\/liquid/.test(seg) ? 'liquid-wrapping' : seg;
 }
 
@@ -337,6 +337,7 @@ export function finishSeo(pages, { trail, sizes = {}, faqs = {}, keywords = {}, 
   // photo pool per site section (gallery photos from the section's sub pages), for pages without a gallery of their own
   const POOL = new Map();
   for (const [p, h] of pages) {
+    if (/^\/(product|category|shop|cart|checkout|my-account)(\/|$)/.test(p)) continue; // shop pages: product cut-outs, not photos
     const key = secKey(p, h);
     const add = (t) => { const l = POOL.get(key) || []; const src = (t.match(/\ssrc="([^"]+)"/) || [])[1]; if (src && l.length < 80 && !l.some((x) => x.includes(src))) l.push(t); POOL.set(key, l); };
     for (const m of h.matchAll(/<a class="bdsub-ph[^"]*"[^>]*>\s*(<img\b[^>]*>)/g)) add(m[1]);

@@ -899,6 +899,90 @@ for (const p of brokenLinks) {
 }
 writeFileSync(join(ROOT, 'worker/redirects.json'), JSON.stringify(redirects, null, 1) + '\n');
 writeFileSync(join(ROOT, 'worker/static-paths.json'), JSON.stringify([...staticPaths].sort()) + '\n');
+// Styles: drop WordPress plugin styles a page doesn't use, then serve the rest as one file per combination
+// (23 render-blocking requests → 1). The font stylesheet (Adobe Fonts) loads without blocking.
+{
+  const { createHash } = await import('node:crypto');
+  const DIST = join(ROOT, 'dist');
+  const bundles = new Map();
+  const files = [];
+  const walkHtml = (d) => { for (const f of readdirSync(d)) { const p = join(d, f); if (statSync(p).isDirectory()) { if (!/^(wp-content|wp-includes|opt|img|brands|_static)$/.test(f)) walkHtml(p); } else if (f === 'index.html' || f === '404.html') files.push(p); } };
+  walkHtml(DIST);
+  const readCss = (href) => {
+    const clean = href.replace(/[?#].*$/, '');
+    const fp = join(DIST, clean);
+    if (!existsSync(fp)) return null;
+    const dir = clean.replace(/[^/]*$/, '');
+    return readFileSync(fp, 'utf8').replace(/url\(\s*(['"]?)(?!data:|https?:|\/\/|\/|#)([^'")]+)\1\s*\)/g, (m, q, u) => `url(${q}${new URL(u, 'https://x' + dir).pathname}${q})`)
+      .replace(/\/\*# sourceMappingURL=[^*]*\*\//g, '');
+  };
+  for (const f of files) {
+    let h = readFileSync(f, 'utf8');
+    const headEnd = h.indexOf('</head>');
+    if (headEnd < 0) continue;
+    let head = h.slice(0, headEnd);
+    const body = h.slice(headEnd);
+    const uses = {
+      woo: /class="[^"]*\b(woocommerce|wc-block|product|cart|checkout)\b/.test(body) && /\/(product|category|shop|cart|checkout|my-account)\//.test(f.replace(DIST, '') + '/') ,
+      cf7: /wpcf7/.test(body), ub: /\bub-|wp-block-ub/.test(body), dflip: /_df_(book|thumb|button)|df-element/.test(body), swiper: /class="[^"]*\bswiper\b/.test(body),
+    };
+    const keep = (href) => {
+      if (/woocommerce|wc-blocks|single-product|woo_block/.test(href)) return uses.woo;
+      if (/contact-form-7/.test(href)) return uses.cf7;
+      if (/ultimate-blocks/.test(href)) return uses.ub;
+      if (/dflip/.test(href)) return uses.dflip;
+      if (/swiper/.test(href)) return uses.swiper;
+      return true;
+    };
+    const tags = [...head.matchAll(/<link\b[^>]*rel=['"]stylesheet['"][^>]*>/g)].map((m) => m[0]);
+    const local = [];
+    let fontTag = '';
+    for (const tag of tags) {
+      const href = (tag.match(/href=['"]([^'"]+)['"]/) || [])[1] || '';
+      const media = (tag.match(/media=['"]([^'"]+)['"]/) || [])[1] || '';
+      if (/qbw1hzk\.css/.test(href)) { fontTag = href; head = head.replace(tag, ''); continue; }
+      if (!keep(href)) { head = head.replace(tag, ''); continue; }
+      if (/^https?:|^\/\//.test(href)) continue;
+      const css = readCss(href);
+      if (css == null) continue;
+      local.push({ tag, href, media, css });
+    }
+    if (local.length > 1) {
+      const id = createHash('sha1').update(local.map((x) => x.href + '|' + x.media).join('\n')).digest('hex').slice(0, 10);
+      if (!bundles.has(id)) {
+        const css = local.map((x) => `/* ${x.href.replace(/[?#].*$/, '')} */\n` + (x.media && x.media !== 'all' ? `@media ${x.media}{${x.css}}` : x.css)).join('\n');
+        // @import must come first in a stylesheet: keep any at the top
+        const imports = []; const rest = css.replace(/@import[^;]+;/g, (m) => { imports.push(m); return ''; });
+        const out = imports.join('\n') + '\n' + rest;
+        const hash = createHash('sha1').update(out).digest('hex').slice(0, 10);
+        mkdirSync(join(DIST, '_static/css'), { recursive: true });
+        writeFileSync(join(DIST, `_static/css/site-${hash}.css`), out);
+        bundles.set(id, `/_static/css/site-${hash}.css`);
+      }
+      const first = local[0].tag;
+      for (const x of local.slice(1)) head = head.replace(x.tag, '');
+      head = head.replace(first, `<link rel="stylesheet" href="${bundles.get(id)}">`);
+    }
+    if (fontTag) {
+      const fh = fontTag.startsWith('http') ? fontTag : fontTag;
+      head = head.replace(/(<link rel="stylesheet" href="\/_static\/css\/[^"]+">|<\/title>)/, `$1\n<link rel="preconnect" href="https://use.typekit.net" crossorigin><link rel="preload" as="style" href="${fh}" onload="this.onload=null;this.rel='stylesheet'"><noscript><link rel="stylesheet" href="${fh}"></noscript>`);
+    }
+    // stylesheet tags WordPress printed in the body
+    const body2 = body.replace(/<link\b[^>]*rel=['"]stylesheet['"][^>]*>/g, (tag) => (keep((tag.match(/href=['"]([^'"]+)['"]/) || [])[1] || '') ? tag : ''));
+    writeFileSync(f, head + body2);
+  }
+  console.log(`Styles: ${files.length} pages share ${bundles.size} combined stylesheets.`);
+}
+
+// Build id: changes whenever a page, the styles or the worker change, so the worker's page cache starts afresh
+{
+  const { createHash } = await import('node:crypto');
+  const hsh = createHash('sha1');
+  const walk = (d) => { for (const f of readdirSync(d).sort()) { const p = join(d, f); if (statSync(p).isDirectory()) { if (!/wp-content|wp-includes|opt|img|brands/.test(f)) walk(p); } else if (/\.(html|css|js|json)$/.test(f)) hsh.update(f + readFileSync(p)); } };
+  walk(join(ROOT, 'dist'));
+  for (const f of readdirSync(join(ROOT, 'worker')).sort()) if (f !== 'build-id.json') hsh.update(f + readFileSync(join(ROOT, 'worker', f)));
+  writeFileSync(join(ROOT, 'worker/build-id.json'), JSON.stringify({ id: hsh.digest('hex').slice(0, 12) }) + '\n');
+}
 
 const stillBroken = [...brokenLinks].filter((p) => !redirects[p]).sort();
 console.log(`Built ${staticPaths.size} pages from the WordPress capture (CRM pages left to the worker: ${crmPages.join(', ') || 'none'}), ${assetsCopied} theme/plugin files, ${publicCopied} uploads, ${Object.keys(redirects).length} redirects.`);

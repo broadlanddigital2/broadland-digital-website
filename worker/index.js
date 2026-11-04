@@ -14,6 +14,7 @@ import { withHubResources } from './hub-resources.js';
 import { withSectorLinks } from './sector-links.js';
 import redirects from './redirects.json' with { type: 'json' };
 import staticPaths from './static-paths.json' with { type: 'json' };
+import BUILD from './build-id.json' with { type: 'json' };
 
 const FEED_KEY = 'c9a2ffbc-820c-45d0-a212-14f0f33a2f54'; // seo_sites.feed_key for Broadland Digital (public, read-only)
 const ORIGIN = 'https://broadlanddigital.co.uk';
@@ -143,7 +144,7 @@ export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     if (url.host === 'www.broadlanddigital.co.uk') return Response.redirect(ORIGIN + url.pathname + url.search, 301);
-    const response = await route(request, env);
+    const response = await cachedPage(request, env, ctx, url);
     // Preview hosts (*.workers.dev) are kept out of search engines; AI-visibility stats only count the live site.
     if (url.host.endsWith('.workers.dev')) {
       const r = new Response(response.body, response);
@@ -154,6 +155,40 @@ export default {
     return response;
   },
 };
+
+// Whole pages are kept at the edge (per build) and served at once; after two minutes the next visit refreshes the
+// copy in the background, so CRM edits show within a few minutes and nobody waits for the CRM feed.
+const PAGE_FRESH_MS = 120_000;
+async function cachedPage(request, env, ctx, url) {
+  const cacheable = request.method === 'GET' && !url.search && !/^\/(api|_static|wp-|opt\/|img\/|_crm-page)/.test(url.pathname)
+    && !/\.(xml|txt|json|js|css|png|jpe?g|webp|svg|ico|pdf)$/i.test(url.pathname) && !(request.headers.get('Cookie') || '').includes('wordpress_logged_in');
+  if (!cacheable) return route(request, env);
+  const cache = caches.default;
+  const key = new Request(`${url.origin}${url.pathname}?__b=${BUILD.id}`, { method: 'GET' });
+  const hit = await cache.match(key);
+  const refresh = async () => {
+    const res = await route(request, env);
+    if (res.status === 200 && (res.headers.get('Content-Type') || '').includes('text/html') && !res.headers.get('Set-Cookie')) {
+      const body = await res.clone().arrayBuffer();
+      const h = new Headers(res.headers);
+      h.set('Cache-Control', 'public, s-maxage=86400');
+      h.set('X-Page-Cached', String(Date.now()));
+      await cache.put(key, new Response(body, { status: 200, headers: h }));
+    }
+    return res;
+  };
+  if (hit) {
+    if (Date.now() - Number(hit.headers.get('X-Page-Cached') || 0) > PAGE_FRESH_MS) ctx.waitUntil(refresh().catch(() => {}));
+    const out = new Response(hit.body, hit);
+    out.headers.set('Cache-Control', 'public, max-age=0, must-revalidate');
+    out.headers.set('X-Cache', 'HIT');
+    return out;
+  }
+  const res = await refresh();
+  const out = new Response(res.body, res);
+  if ((res.headers.get('Content-Type') || '').includes('text/html')) out.headers.set('Cache-Control', 'public, max-age=0, must-revalidate');
+  return out;
+}
 
 function longCache(res) {
   if (!res.ok) return res;
