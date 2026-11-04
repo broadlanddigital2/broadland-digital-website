@@ -151,7 +151,7 @@ export async function blogResponse(request, env, opts) {
     const posts = (await fetchPosts(opts)) || [];
     const title = `${opts.blogTitle} | ${opts.siteName}`;
     const html = setHead(fill(shell, listHtml(opts, posts), title), {
-      title, description: opts.intro, url: origin + base, image: posts[0]?.image?.url,
+      title, description: opts.description || opts.intro, url: origin + base, image: posts[0]?.image?.url,
       jsonLd: { '@context': 'https://schema.org', '@graph': [
         { '@type': 'Blog', name: opts.blogTitle, url: origin + base, publisher: { '@type': 'Organization', name: opts.siteName, url: origin },
           blogPost: posts.slice(0, 20).map((p) => ({ '@type': 'BlogPosting', headline: p.title, url: origin + p.path, datePublished: p.publishedAt })) },

@@ -32,9 +32,12 @@ const BLOG = {
   blogTitle: 'Signage and vehicle graphics blog',
   kicker: 'Signage, print & design advice',
   intro: 'Our signage and vehicle graphics blog: practical advice on signs, van graphics, print and design for Norfolk and Suffolk businesses, from our Norwich studio and workshop.',
+  description: 'Signage and vehicle graphics blog from Broadland Digital in Norwich: practical advice on signs, van graphics, print and design for local businesses.',
   outroHtml: `<div class="crmblog-about">
 <div><h2>Signage advice</h2><p>Planning a shop sign, fascia or window graphics? Our signage advice covers planning consent, materials, illumination, measuring up and how long outdoor signs last, written by the people who make and fit them. Start with our <a href="/signage-home/guides-and-advice/">signage guides</a> or <a href="/signage-home/compare/">material comparisons</a>.</p></div>
 <div><h2>Vehicle graphics advice</h2><p>Van graphics are one of the cheapest ways for a local business to be seen. Our vehicle graphics advice explains costs, coverage options from lettering to full wraps, lease van rules and aftercare. See <a href="/vehicle-graphics/">vehicle graphics</a> or download our <a href="/get-a-guide/">free vehicle graphics guide</a>.</p></div>
+<div><h2>Design and branding</h2><p>Good signs, vehicles and print start with a clear brand. We share practical design tips on logos, colours and layouts that stay readable from across the street, at speed on a dual carriageway or on a small business card. See <a href="/design-home/">design services</a> or our <a href="/signage-home/signage-brochure/">signage brochure</a> for ideas.</p></div>
+<div><h2>Local to Norfolk and Suffolk</h2><p>Every article is written by our team at Vulcan House in Norwich, who design, print and fit work for businesses across Norfolk and the Suffolk coast. Find your town on our <a href="/signage-home/locations/">signage locations</a> page, or visit the workshop: <a href="/contact-us/">directions and contact details</a>.</p></div>
 <div><h2>Printing tips</h2><p>From business cards and leaflets to banners and pull-ups, our printing tips help you choose stock, finishes and sizes that suit the job and the budget. Browse <a href="/print-home/">print services</a> or <a href="/get-a-quote/">ask for a quote</a>.</p></div>
 </div>`,
   guidesPath: '/signage-home/guides-and-advice',
