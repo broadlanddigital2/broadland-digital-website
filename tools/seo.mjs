@@ -132,7 +132,12 @@ export function addBlocks(body, sec, video) {
   }
   const block = blockHtml(sec, video);
   if (block) {
-    const at = [/<section class="bdhub-faq/, /<section class="bdhub-band">/, /<footer\b/, /<\/main>/].map((r) => body.search(r)).find((i) => i >= 0);
+    // high enough that it is read as main copy (crawlers and the CRM audit only read the first ~1,300 words):
+    // after the second section below the hero, or before the FAQs / closing band / footer if that comes first
+    const end = [/<section class="bdhub-faq/, /<section class="bdhub-band">/, /<footer\b/, /<\/main>/].map((r) => body.search(r)).find((i) => i >= 0);
+    let at = end;
+    const lb = body.indexOf('bdkw-leadband');
+    if (lb > 0) { let i = body.indexOf('</section>', lb); if (i > 0) i = body.indexOf('</section>', i + 10); if (i > 0 && (end == null || i < end)) at = i + 10; }
     if (at != null) body = body.slice(0, at) + block + body.slice(at);
     else { const last = body.lastIndexOf('</section>'); if (last >= 0) body = body.slice(0, last + 10) + block + body.slice(last + 10); }
   }

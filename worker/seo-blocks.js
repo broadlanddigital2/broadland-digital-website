@@ -56,13 +56,15 @@ export function kwTitle(title, pk) {
 /** Meta description that mentions the keyword */
 export function kwDesc(desc, pk) {
   const d = String(desc || '').trim();
-  if (!pk || !d || has(d, pk)) return d;
+  if (!pk || !d) return d;
+  if (has(d, pk)) return d.length < 120 && (d + ' Call 01603 407786 for a free quote.').length <= 165 ? d + ' Call 01603 407786 for a free quote.' : d;
   let out = `${sentence(norm(pk))}: ${/^[A-Z][a-z]+ [A-Z]/.test(d) ? d : d.charAt(0).toLowerCase() + d.slice(1)}`;
   if (out.length > 165) {
     const sentences = out.match(/[^.!?]+[.!?]+(\s|$)/g) || [out];
     let acc = ''; for (const x of sentences) { if ((acc + x).trim().length > 165) break; acc += x; }
     out = acc.trim().length >= 110 ? acc.trim() : out.slice(0, 162).replace(/\s+\S*$/, '') + '.';
   }
+  if (out.length < 120) for (const tail of [' Call 01603 407786 for a free quote.', ' Call 01603 407786.']) if ((out + tail).length <= 165) { out += tail; break; }
   return out;
 }
 /** Lead under the H1, keyword section before the enquiry band, keyword in the first photo's alt text */
@@ -77,7 +79,11 @@ export function decorateCrmHtml(html, sec, video) {
   }
   const block = blockHtml(sec, video);
   if (block) {
-    const at = [/<section class="section tint crm-enquiry"/, /<div class="crmblog-cta/, /<\/main>/].map((r) => h.search(r)).find((i) => i >= 0);
+    const end = [/<section class="section tint crm-enquiry"/, /<div class="crmblog-cta/, /<\/main>/].map((r) => h.search(r)).find((i) => i >= 0);
+    // after the second section below the H1, so it is read as main copy, unless the page ends first
+    let at = end;
+    const h1 = h.indexOf('</h1>');
+    if (h1 > 0) { let i = h.indexOf('</section>', h1); if (i > 0) i = h.indexOf('</section>', i + 10); if (i > 0 && (end == null || i < end)) at = i + 10; }
     h = at != null ? h.slice(0, at) + block + h.slice(at) : h + block;
   }
   if (sec?.primary) {

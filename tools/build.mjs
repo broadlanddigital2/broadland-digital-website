@@ -769,6 +769,43 @@ const write = (rel, data) => {
 };
 const built = new Map([...staticPaths].map((p) => [p, transform(captured.get(p), p)]));
 const IMG_SIZES = existsSync(join(ROOT, 'content/img-sizes.json')) ? JSON.parse(readFileSync(join(ROOT, 'content/img-sizes.json'), 'utf8')) : {};
+// Shop category pages: the WordPress theme left them as empty headings ("Fitted", "Supply Only"); list the products.
+{
+  const low = (x) => String(x || '').replace(/\.\s*$/, '').trim().toLowerCase();
+  const prods = wp.products.filter((p) => built.has(p.path)).map((p) => {
+    const h = built.get(p.path);
+    const prices = [...h.slice(0, h.indexOf('</head>')).matchAll(/"(?:price|lowPrice)"\s*:\s*"?(\d+(?:\.\d+)?)/g)].map((m) => +m[1]).filter((x) => x > 0);
+    const price = p.price > 0 ? p.price : prices.length ? Math.min(...prices) : 0;
+    return { path: p.path, title: p.title, cats: p.categories.map(low), img: p.image?.src || '', price, summary: p.summary || '' };
+  });
+  const card = (p) => {
+    const sz = IMG_SIZES[p.img] || [800, 600];
+    return `<a class="bdp-card" href="${p.path}/">${p.img ? `<span class="bdp-img"><img src="${esc(p.img)}" alt="${esc(p.title)}" width="${sz[0]}" height="${sz[1]}" loading="lazy" decoding="async"></span>` : ''}<span class="bdp-body"><span class="bdp-title">${esc(p.title)}</span>${p.summary ? `<span class="bdp-sum">${esc(p.summary)}</span>` : ''}<span class="bdp-price">${p.price ? `From £${String(p.price).replace(/\.0+$/, '')}` : 'See options and prices'}</span></span></a>`;
+  };
+  const grid = (list) => `<div class="bdp-grid">${list.map(card).join('')}</div>`;
+  for (const [path, h0] of built) {
+    if (!path.startsWith('/category/') || /\/page\/\d+$/.test(path)) continue;
+    const segs = path.split('/').slice(2);
+    const names = segs.map((seg, i) => (seg === 'shop' ? 'shop' : low(pageName('/category/' + segs.slice(0, i + 1).join('/'))))).filter(Boolean);
+    const mine = prods.filter((p) => names.every((n) => p.cats.includes(n)));
+    if (!mine.length) continue;
+    let h = h0, used = new Set();
+    // parent categories: a grid under each child heading
+    h = h.replace(/(<h2 class="section-two-title"[^>]*>\s*([^<]+?)\s*<\/h2>\s*<\/div>)/g, (m, all, child) => {
+      const list = mine.filter((p) => p.cats.includes(low(child)));
+      if (!list.length) return m;
+      list.forEach((p) => used.add(p.path));
+      return all + grid(list);
+    });
+    if (!used.size) {
+      const block = `<section class="bdp-wrap"><div class="container">${grid(mine)}</div></section>`;
+      const at = [/<section class="bdhub-band">/, /<footer\b/].map((r) => h.search(r)).find((i) => i >= 0);
+      if (at != null) h = h.slice(0, at) + block + h.slice(at);
+    }
+    built.set(path, h);
+  }
+}
+
 // Keyword copy blocks written per page (content/seo-sections/*.json): their keywords win over seo-keywords.json.
 const SEO_SECTIONS = {};
 for (const f of (existsSync(join(ROOT, 'content/seo-sections')) ? readdirSync(join(ROOT, 'content/seo-sections')) : []).filter((f) => f.endsWith('.json')).sort()) Object.assign(SEO_SECTIONS, JSON.parse(readFileSync(join(ROOT, 'content/seo-sections', f), 'utf8')));
