@@ -15,10 +15,22 @@ for f in glob.glob(os.path.join(DIST, '**/index.html'), recursive=True):
         m = re.search(r'\bsrc="(/wp-content/uploads/[^"?]+\.(?:png|jpe?g|webp|avif))"', tag, re.I)
         if m: seen[m.group(1)] = 1
     for m in re.finditer(r'url\((/wp-content/uploads/[^)\'"?]+\.(?:png|jpe?g|webp))\)', h, re.I): seen[m.group(1)] = 1
+# pictures the CRM's pages use (content/crm-image-refs.txt; the worker swaps them too)
+refs = os.path.join(ROOT, 'content/crm-image-refs.txt')
+if os.path.exists(refs):
+    for src in open(refs).read().split():
+        seen[src] = 1
+# product pictures shown in the shop category grids
+for src in re.findall(r'"src":\s*"(/wp-content/uploads/[^"]+)"', open(os.path.join(ROOT, 'content/wordpress.json'), encoding='utf-8').read()):
+    seen[src] = 1
 mapping = {}
 for src in sorted(seen):
     p = os.path.join(DIST, src.lstrip('/'))
     if not os.path.exists(p) or os.path.getsize(p) < 120_000: continue
+    name = hashlib.sha1(src.encode()).hexdigest()[:12] + '-' + os.path.splitext(os.path.basename(src))[0][:40] + '.webp'
+    if os.path.exists(os.path.join(OUT, name)):
+        mapping[src] = '/opt/' + name
+        continue
     try:
         im = Image.open(p)
         im.load()
@@ -28,7 +40,7 @@ for src in sorted(seen):
     if im.width > 1200: im = im.resize((1200, round(im.height * 1200 / im.width)), Image.LANCZOS)
     name = hashlib.sha1(src.encode()).hexdigest()[:12] + '-' + os.path.splitext(os.path.basename(src))[0][:40] + '.webp'
     dst = os.path.join(OUT, name)
-    im.save(dst, 'WEBP', quality=80, method=6)
+    im.save(dst, 'WEBP', quality=78, method=4)
     if os.path.getsize(dst) < os.path.getsize(p) * 0.9:
         mapping[src] = '/opt/' + name
         print(f'{os.path.getsize(p)//1024:>5}K → {os.path.getsize(dst)//1024:>4}K  {src}')

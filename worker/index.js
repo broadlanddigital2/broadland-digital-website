@@ -160,7 +160,10 @@ export default {
 // copy in the background, so CRM edits show within a few minutes and nobody waits for the CRM feed.
 const PAGE_FRESH_MS = 120_000;
 async function cachedPage(request, env, ctx, url) {
-  const cacheable = request.method === 'GET' && !url.search && !/^\/(api|_static|wp-|opt\/|img\/|_crm-page)/.test(url.pathname)
+  // ad and analytics tags (utm_…, gclid, fbclid…) don't change the page: same cached copy
+  const params = [...url.searchParams.keys()];
+  const trackingOnly = params.length && params.every((k) => /^(utm_[a-z]+|gclid|gbraid|wbraid|fbclid|msclkid|dclid|_gl|mc_[a-z]+|ref)$/i.test(k));
+  const cacheable = request.method === 'GET' && (!url.search || trackingOnly) && !/^\/(api|_static|wp-|opt\/|img\/|_crm-page)/.test(url.pathname)
     && !/\.(xml|txt|json|js|css|png|jpe?g|webp|svg|ico|pdf)$/i.test(url.pathname) && !(request.headers.get('Cookie') || '').includes('wordpress_logged_in');
   if (!cacheable) return route(request, env);
   const cache = caches.default;

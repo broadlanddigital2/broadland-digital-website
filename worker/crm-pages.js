@@ -1,6 +1,7 @@
 import SEO from './seo-sections.json';
 import { decorateCrmHtml, kwTitle, kwDesc, resizeStorageImages, sectorImages } from './seo-blocks.js';
 import SECTOR_IMAGES from './vehicle-sector-images.json';
+import OPT from '../content/opt-images.json';
 /**
  * CRM SEO pages (Marketing → SEO pages in the CRM) served live inside the site's own header and footer.
  *
@@ -152,6 +153,8 @@ function heroCrumbs(html, path, name) {
 // Images without width/height reserve a 16:9 box so the page doesn't jump while they load
 function sizeImages(html) {
   html = resizeStorageImages(html);
+  // light WebP copies of heavy WordPress pictures (tools/images/optimize.py)
+  html = html.replace(/(<img\b(?![^>]*srcset=)[^>]*\ssrc=")(\/wp-content\/uploads\/[^"?]+)/g, (m, a, src) => (OPT[src] ? a + OPT[src] : m));
   return html.replace(/<img\b[^>]*>/g, (tag) => (/\swidth=/.test(tag) && /\sheight=/.test(tag) ? tag
     : tag.replace(/\s(width|height)="[^"]*"/g, '').replace(/<img\b/, '<img width="1600" height="900"')));
 }

@@ -828,7 +828,7 @@ const IMG_SIZES = existsSync(join(ROOT, 'content/img-sizes.json')) ? JSON.parse(
     const h = built.get(p.path);
     const prices = [...h.slice(0, h.indexOf('</head>')).matchAll(/"(?:price|lowPrice)"\s*:\s*"?(\d+(?:\.\d+)?)/g)].map((m) => +m[1]).filter((x) => x > 0);
     const price = p.price > 0 ? p.price : prices.length ? Math.min(...prices) : 0;
-    return { path: p.path, title: p.title, cats: p.categories.map(low), img: p.image?.src || '', price, summary: p.summary || '' };
+    return { path: p.path, title: p.title, cats: p.categories.map(low), img: OPT[p.image?.src] || p.image?.src || '', price, summary: p.summary || '' };
   });
   const card = (p) => {
     const sz = IMG_SIZES[p.img] || [800, 600];

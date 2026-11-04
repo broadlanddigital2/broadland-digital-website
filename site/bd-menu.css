@@ -97,3 +97,6 @@ body.bdm-lock #masthead .main-navigation>.menu,body.bdm-lock #masthead .main-nav
 #masthead.sticky .header-flex-wrapper{padding-top:6px!important;padding-bottom:6px!important}
 #masthead.sticky .custom-logo{width:96px!important;height:auto!important}
 @media (max-width:575px){#masthead.sticky .custom-logo{width:84px!important}}
+/* No jump on load: the header sits in the page flow until it sticks; the spacer only holds its place once it's fixed */
+#masthead:not(.sticky){position:relative!important}
+#masthead:not(.sticky)~#spacing{height:0!important}
