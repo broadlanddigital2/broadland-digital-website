@@ -559,3 +559,47 @@ h1.bd-was4,h1.bd-was5,h1.bd-was6{font-weight:700}
 .bdsub-gallery--n2{grid-template-columns:repeat(2,minmax(0,1fr))!important}
 .bdsub-gallery--n1{grid-template-columns:minmax(0,760px)!important}
 .bdsub-gallery--n1 .bdsub-ph,.bdsub-gallery--n2 .bdsub-ph{aspect-ratio:3/2}
+
+/* Sub pages: "what we do" cards with icons */
+.bdv-inc{padding:90px 0 70px}
+.bdv-cards{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px}
+.bdv-cards li{position:relative;background:#fff;border:1px solid #ebe8f2;border-radius:20px;padding:30px 28px 28px;transition:transform .2s,box-shadow .2s,border-color .2s}
+.bdv-cards li:hover{transform:translateY(-3px);box-shadow:0 18px 40px rgba(42,45,50,.09);border-color:transparent}
+.bdv-ico{display:inline-grid;place-items:center;width:52px;height:52px;border-radius:14px;background:#f1ecff;color:#713fff;margin:0 0 18px}
+.bdv-cards h3{font-family:"Adelle",adelle,Georgia,serif;font-size:21px;line-height:1.25;margin:0 0 10px;color:#2a2d32}
+.bdv-cards p{font-size:16px;line-height:1.65;color:#4a4d55;margin:0}
+@media(max-width:1000px){.bdv-cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:640px){.bdv-cards{grid-template-columns:1fr}.bdv-inc{padding:60px 0 40px}}
+
+/* Sub pages: shop / quote banner */
+.bdshop{padding:30px 0 70px}
+.bdshop-in{position:relative;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);align-items:center;gap:30px;overflow:hidden;border-radius:28px;padding:56px 60px;color:#fff;
+  background:radial-gradient(120% 140% at 100% 0%,#9b6bff 0%,rgba(155,107,255,0) 55%),linear-gradient(135deg,#713fff 0%,#4b1fd6 55%,#2a1680 100%);box-shadow:0 30px 70px rgba(75,31,214,.28)}
+.bdshop-in::after{content:"";position:absolute;right:-120px;bottom:-160px;width:460px;height:460px;border-radius:50%;border:60px solid rgba(255,255,255,.06);pointer-events:none}
+.bdshop-in--text{grid-template-columns:1fr}
+.bdshop-eyebrow{display:block;font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.75);margin:0 0 12px}
+.bdshop h2{font-family:"Adelle",adelle,Georgia,serif;font-size:clamp(30px,3.4vw,46px);line-height:1.08;margin:0 0 14px;color:#fff}
+.bdshop p{font-size:18px;line-height:1.55;color:rgba(255,255,255,.88);margin:0 0 26px;max-width:520px}
+.bdshop-btn{background:#fff!important;color:#2a1680!important;border-color:#fff!important}
+.bdshop-btn:hover{transform:translateY(-1px);box-shadow:0 10px 24px rgba(0,0,0,.2)}
+.bdshop-img{position:relative;z-index:1;margin:0;display:flex;justify-content:center}
+.bdshop-img img{width:100%;max-width:440px;height:auto;filter:drop-shadow(0 24px 30px rgba(0,0,0,.3))}
+@media(max-width:900px){.bdshop-in{grid-template-columns:1fr;padding:40px 30px}.bdshop-img{order:-1}.bdshop-img img{max-width:320px}}
+
+/* Sub pages: read more */
+.bdsub-more{margin:0}
+.bdsub-morebtn{display:inline-flex;align-items:center;gap:8px;margin:8px 0 0;padding:10px 20px;border-radius:30px;border:1px solid #ddd8ea;background:#fff;color:#2a2d32;font:700 15px/1 azo-sans-web,Arial,sans-serif;cursor:pointer}
+.bdsub-morebtn::after{content:"";width:7px;height:7px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg) translateY(-2px)}
+.bdsub-morebtn[aria-expanded="true"]::after{transform:rotate(-135deg) translateY(-2px)}
+.bdsub-morebtn:hover{border-color:#713fff;color:#713fff}
+
+/* Body copy: a touch smaller and calmer */
+.bdsub .bdsub-intro-text p,.bdsub .bdsub-intro-text li{font-size:17px;line-height:1.7;color:#43464d}
+.bdsub .bdsub-intro-text .bdkw-lead{font-size:20px;line-height:1.5;color:#2a2d32}
+
+/* Inline links in copy */
+.bdsub-intro-text a,.bdkw a,.bdguide-copy a,.crm-main .crmseo-d p a,.crmblog p a,.bdv-inc p a{color:#5b2ee0;font-weight:600;text-decoration:underline;text-decoration-color:rgba(113,63,255,.35);text-decoration-thickness:2px;text-underline-offset:4px;transition:text-decoration-color .15s,color .15s}
+.bdsub-intro-text a:hover,.bdkw a:hover,.bdguide-copy a:hover,.crm-main .crmseo-d p a:hover,.crmblog p a:hover,.bdv-inc p a:hover{color:#713fff;text-decoration-color:#713fff}
+.bdshop-img{align-self:stretch}
+.bdshop-img img{max-width:none;width:100%;height:100%;min-height:280px;aspect-ratio:4/3;object-fit:cover;border-radius:20px;filter:none;box-shadow:0 24px 50px rgba(20,8,70,.35);transform:rotate(1.5deg)}
+@media(max-width:900px){.bdshop-img img{min-height:0;transform:none}}

@@ -600,7 +600,7 @@ ${imgs.length > 9 ? `<button type="button" class="bdsub-showall" onclick="this.p
     const pic = gal[1] || gal[0] || '';
     out = out.replace(/<section\b[^>]*class="container section-padding\s+section-one row no-gutters[^"]*"[^>]*>\s*<div class="section-one-content[^"]*">([\s\S]*?)<\/div>\s*<\/section>/, (m, inner) => {
       if (!inner.replace(/<!--[\s\S]*?-->/g, '').replace(/<[^>]+>/g, '').trim()) return '<section class="bdsub-intro bdsub-intro--empty"><div class="wrap"><div class="bdsub-intro-text"></div></div></section><!--bdsub-intro-end-->';
-      const img = pic ? pic.replace(/\ssizes="[^"]*"/, ' sizes="(max-width: 1000px) 100vw, 520px"').replace(/\sclass="[^"]*"/, '') : '';
+      const img = pic ? pic.replace(/\ssizes="[^"]*"/, ' sizes="(min-width: 1001px) 520px, 100vw"').replace(/\sclass="[^"]*"/, '') : '';
       return `<section class="bdsub-intro${img ? '' : ' bdsub-intro--solo'}"><div class="wrap"><div class="bdsub-intro-text section-one-content">${inner}</div>${img ? `<figure class="bdsub-intro-img">${img}</figure>` : ''}</div></section><!--bdsub-intro-end-->`;
     });
   }
@@ -608,10 +608,49 @@ ${imgs.length > 9 ? `<button type="button" class="bdsub-showall" onclick="this.p
   out = out.replace(/(<\/div>\s*)(<footer\b)/, `<section class="bdhub-band"><div class="wrap"><div><h2>Ready to talk about your project?</h2><p>Tell us what you need and we'll come back to you, usually the same working day.</p></div>
 <div class="bdhub-cta"><a class="bdhub-btn bdhub-btn--solid" href="/get-a-quote/?service=${cls}">Get a free quote</a><a class="bdhub-btn bdhub-btn--ghost" href="tel:${tel}">Call ${esc(menu.phone)}</a></div></div></section>
 $1$2`);
+  // "show more" (WordPress expand block) → the extra paragraphs, then one button underneath that toggles them
+  out = out.replace(/<div class="wp-block-ub-expand[\s\S]*?<div class="ub-expand-portion ub-expand-full[^"]*"[^>]*>([\s\S]*?)<a [^>]*ub-expand-toggle-button[^>]*>[\s\S]*?<\/a>\s*<\/div>\s*<\/div>/, (m, full) => {
+    const before = ((m.match(/ub-expand-partial[^>]*>([\s\S]*?)<a [^>]*ub-expand-toggle-button/) || [])[1] || '').replace(/<\/?div[^>]*>/g, '').trim();
+    const more = full.replace(/<\/?div[^>]*>/g, '').trim();
+    if (!more) return before;
+    return `${before}<div class="bdsub-more" hidden>${more}</div><button type="button" class="bdsub-morebtn" aria-expanded="false" onclick="var m=this.previousElementSibling,o=m.hidden;m.hidden=!o;this.setAttribute('aria-expanded',o);this.textContent=o?'Read less':'Read more'">Read more</button>`;
+  });
+  // "Visit the shop" bar → a banner with a product picture (or a quote banner where there's no shop)
+  out = out.replace(/<section class="shop">[\s\S]*?<\/section>/, (m) => {
+    const href = (m.match(/href="([^"]+)"/) || [])[1] || '';
+    // a real photo from this page's gallery (not the ones used in the intro)
+    const galSrcs = [...out.matchAll(/<a class="bdsub-ph[^"]*"[^>]*>\s*<img\b[^>]*\ssrc="([^"]+)"/g)].map((x) => x[1]);
+    const photo = galSrcs[7] || galSrcs[3] || galSrcs[2] || galSrcs[0] || '';
+    const prodImg = () => photo;
+    let b;
+    if (/liquid-wrapping/.test(href)) b = { eyebrow: 'Online shop', h: 'Shop Full Dip spray wrap.', p: 'Spray wrap colours, primers and glossifier for your own projects, ready to order online.', href: '/category/liquid-wrapping/shop/', btn: 'Shop spray wrap', img: photo };
+    else if (cls === 'signage' || /signage/.test(href) || /vehicle|livery|car-graphics|race-car/.test(path)) b = { eyebrow: 'Online shop', h: 'Buy van graphics online.', p: 'Fitted or supply-only packages for small, medium and large vans, from £95 + VAT.', href: '/category/signage/vehicle-graphics/', btn: 'Shop van graphics', img: photo };
+    else b = { eyebrow: 'Not sure what you need?', h: 'Tell us about your project.', p: "We'll suggest the right option and send a clear price, usually the same working day.", href: `/get-a-quote/?service=${cls}`, btn: 'Get a free quote', img: photo };
+    return `<section class="bdshop"><div class="wrap"><div class="bdshop-in${b.img ? '' : ' bdshop-in--text'}"><div class="bdshop-text"><span class="bdshop-eyebrow">${esc(b.eyebrow)}</span><h2>${esc(b.h)}</h2><p>${esc(b.p)}</p><a class="bdhub-btn bdshop-btn" href="${b.href}">${esc(b.btn)} →</a></div>${b.img ? `<figure class="bdshop-img"><img src="${esc(b.img)}" alt="" loading="lazy" width="1200" height="900" sizes="(min-width: 901px) 480px, 100vw"></figure>` : ''}</div></div></section>`;
+  });
   out = vehicleExtras(out, path, title);
+  // categories ("Explore …" tiles) straight after the intro, not halfway down the page
+  {
+    const tiles = (out.match(/<section class="bdhub-services">[\s\S]*?<\/section>/) || [''])[0];
+    if (tiles && out.includes('<!--bdsub-intro-end-->')) out = out.replace(tiles, '').replace('<!--bdsub-intro-end-->', tiles);
+    out = out.replace('<!--bdsub-intro-end-->', '');
+  }
   out = out.replace(wrapM[0], wrapM[0].replace(/class="category /, `class="bdhub bdsub ${cls} category `));
   // gallery zoom: a native <dialog>
   return out.replace(/<\/body>/i, `<script>document.addEventListener('click',function(e){var a=e.target.closest('[data-bd-zoom]');if(!a)return;e.preventDefault();var d=document.getElementById('bd-zoom');if(!d){d=document.createElement('dialog');d.id='bd-zoom';d.innerHTML='<button type="button" aria-label="Close">×</button><img alt="">';d.addEventListener('click',function(){d.close()});document.body.appendChild(d)}var im=a.querySelector('img');d.querySelector('img').src=a.href;d.querySelector('img').alt=im?im.alt:'';d.showModal()});</script>\n</body>`);
+}
+
+// Small line icons for the "what we do" cards, picked from the card's title
+function incIcon(t) {
+  const k = String(t).toLowerCase();
+  const p = /letter|vinyl|cut/.test(k) ? '<path d="M4 20h16M7 16l5-12 5 12M9 12h6"/>'
+    : /print|panel|photo/.test(k) ? '<rect x="5" y="3" width="14" height="7" rx="1"/><path d="M5 17H3v-5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v5h-2"/><rect x="7" y="14" width="10" height="7" rx="1"/>'
+    : /wrap|colour|full|part/.test(k) ? '<path d="M3 16v-4l2-5h10l4 5h2v4h-2"/><circle cx="7.5" cy="17" r="2"/><circle cx="16.5" cy="17" r="2"/><path d="M9.5 17h5"/>'
+    : /chapter|reflect|chevron|safety/.test(k) ? '<path d="M4 18l5-6-5-6M11 18l5-6-5-6M18 18l2-3"/>'
+    : /fleet|livery|consistent/.test(k) ? '<rect x="2" y="8" width="9" height="7" rx="1"/><rect x="13" y="8" width="9" height="7" rx="1"/><circle cx="5" cy="17" r="1.5"/><circle cx="16" cy="17" r="1.5"/>'
+    : /design|brand|logo/.test(k) ? '<path d="M12 3l2.5 5 5.5.8-4 3.9.9 5.5L12 15.6 7.1 18.2l.9-5.5-4-3.9 5.5-.8z"/>'
+    : '<circle cx="12" cy="12" r="8"/><path d="M8.5 12l2.5 2.5 4.5-5"/>';
+  return `<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
 }
 
 // Vehicle pages (content/vehicle.json): what's included, prices, links to the CRM guides/sectors/locations hubs,
@@ -621,7 +660,7 @@ function vehicleExtras(h, path, title) {
   if (!v) return h;
   const tel = menu.phone.replace(/\s/g, '');
   const included = v.included ? `<section class="bdv-inc"><div class="wrap"><div class="bdhub-head"><h2>${esc(v.includedTitle || 'What we do.')}</h2></div>
-<ul class="bdv-cards">${v.included.map(([a, b]) => `<li><h3>${esc(a)}</h3><p>${esc(b)}</p></li>`).join('')}</ul></div></section>` : '';
+<ul class="bdv-cards">${v.included.map(([a, b]) => `<li><span class="bdv-ico" aria-hidden="true">${incIcon(a)}</span><h3>${esc(a)}</h3><p>${esc(b)}</p></li>`).join('')}</ul></div></section>` : '';
   const pk = [
     ['Basic', '149', 'Single-colour cut vinyl: company name on the bonnet, both sides and the rear, with your web address and phone number on the lower side panels and rear doors.'],
     ['Standard', '210', 'Everything in Basic plus social media details, a second vinyl colour or panel infill, and a cut or printed logo (subject to complexity and hi-res files).'],
@@ -641,7 +680,7 @@ function vehicleExtras(h, path, title) {
   if (v.faqs?.length) ld.push({ '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: v.faqs.map(([q, a]) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })) });
   let out = h;
   // after the intro text
-  out = out.includes('<!--bdsub-intro-end-->') ? out.replace('<!--bdsub-intro-end-->', included) : out.replace(/(<section\b[^>]*class="container section-padding\s+section-one[^"]*"[^>]*>[\s\S]*?<\/section>)/, (m) => m + included);
+  out = out.includes('<!--bdsub-intro-end-->') ? out.replace('<!--bdsub-intro-end-->', '<!--bdsub-intro-end-->' + included) : out.replace(/(<section\b[^>]*class="container section-padding\s+section-one[^"]*"[^>]*>[\s\S]*?<\/section>)/, (m) => m + included);
   // before the gallery (or the closing band): prices, hubs, steps; FAQs just before the closing band
   const mid = prices + hubs + steps;
   out = /<section class="bdsub-gallery-sec">/.test(out) ? out.replace('<section class="bdsub-gallery-sec">', mid + '<section class="bdsub-gallery-sec">') : out.replace('<section class="bdhub-band">', mid + '<section class="bdhub-band">');
