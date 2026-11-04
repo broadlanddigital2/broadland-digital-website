@@ -1,0 +1,32 @@
+# Manual: Lighthouse (mobile and desktop) on live pages; summaries pushed to the speed-check-results branch.
+name: Speed check
+on:
+  workflow_dispatch:
+    inputs:
+      pages: { description: 'Comma-separated paths', required: false, default: '/,/vehicle-graphics/,/signage-home/,/signage-home/interior-signs/,/sectors/retail/,/vehicle-graphics/sectors/food-drink/,/product/basic-small-van-graphics/,/category/signage/vehicle-graphics/small-vans/' }
+permissions:
+  contents: write
+jobs:
+  speed:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: browser-actions/setup-chrome@v1
+        id: chrome
+      - run: npm i -g lighthouse@12
+      - run: |
+          mkdir -p out
+          IFS=',' read -ra P <<< "${{ inputs.pages }}"
+          for p in "${P[@]}"; do
+            n=$(echo "$p" | sed 's#[^a-z0-9]#_#g')
+            for f in mobile desktop; do
+              extra=""; [ "$f" = desktop ] && extra="--preset=desktop"
+              lighthouse "https://broadlanddigital.co.uk$p" $extra --only-categories=performance --output=json --output-path="out/$n-$f.json" \
+                --chrome-path="${{ steps.chrome.outputs.chrome-path }}" --chrome-flags="--headless=new --no-sandbox" --quiet || true
+            done
+          done
+          node tools/check/speed-summary.mjs out > out/summary.md
+          cat out/summary.md
+      - run: |
+          cd out && rm -f *-mobile.json.gz && git init -q -b speed-check-results && git -c user.name=ci -c user.email=ci@localhost add . && git -c user.name=ci -c user.email=ci@localhost commit -qm "Speed check"
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" speed-check-results
