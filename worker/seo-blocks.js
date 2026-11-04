@@ -103,7 +103,7 @@ export function decorateCrmHtml(html, sec, video) {
 }
 
 // CRM photos are stored full size; ask Supabase Storage for a resized, compressed copy (image transformations)
-const SB_IMG = /(https:\/\/[a-z0-9]+\.supabase\.co\/storage\/v1\/)object(\/public\/[^"'\s?)]+\.(?:jpe?g|png|webp))(?=["'\s)])/gi;
+const SB_IMG = /(https:\/\/[a-z0-9]+\.supabase\.co\/storage\/v1\/)object(\/public\/[^"'\s?)]+\.(?:jpe?g|png|webp))(?=["'\s)]|$)/gi;
 export function resizeStorageImages(html, width = 1400) {
   return String(html).replace(SB_IMG, (m, base, rest) => `${base}render/image${rest}?width=${width}&quality=72&resize=contain`);
 }
