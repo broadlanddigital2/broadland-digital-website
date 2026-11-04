@@ -81,7 +81,7 @@ export function finishSeo(pages, { trail, sizes = {}, faqs = {} }) {
     info.set(path, { title, desc, h1 });
   }
   const count = (k) => { const c = new Map(); for (const v of info.values()) if (v[k]) c.set(v[k], (c.get(v[k]) || 0) + 1); return c; };
-  const tc = count('title'), dc = count('desc');
+  const tc = count('title'), dc = count('desc'), hc = count('h1');
   const out = new Map();
   for (let [path, h] of pages) {
     const { title, desc, h1 } = info.get(path);
@@ -92,7 +92,7 @@ export function finishSeo(pages, { trail, sizes = {}, faqs = {} }) {
     let t = title, d = desc;
     const prices = path.startsWith('/product/') ? [...h.slice(0, h.indexOf('</head>')).matchAll(/"(?:price|lowPrice)"\s*:\s*"?(\d+(?:\.\d+)?)/g)].map((m) => +m[1]).filter((x) => x > 0) : [];
     // only where several products share a name (fitted / supply-only versions)
-    const price = prices.length && tc.get(title) > 1 ? String(Math.min(...prices)) : '';
+    const price = prices.length && (tc.get(title) > 1 || hc.get(h1) > 1) ? String(Math.min(...prices)) : '';
     const priced = price ? `${name.replace(/\.\s*$/, '')} – £${String(+price).replace(/\.0+$/, '')}` : name;
     if (t.length > 65 || t.length < 30 || tc.get(t) > 1 || pageN || (shopLike && !t.includes(BRAND))) t = titleFor(path, priced, names, pageN);
     if (!d || d.length < 120 || d.length > 165 || dc.get(d) > 1 || pageN) d = describe(path, priced, names);
