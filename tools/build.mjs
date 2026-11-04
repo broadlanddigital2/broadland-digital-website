@@ -769,7 +769,7 @@ const write = (rel, data) => {
 };
 const built = new Map([...staticPaths].map((p) => [p, transform(captured.get(p), p)]));
 const IMG_SIZES = existsSync(join(ROOT, 'content/img-sizes.json')) ? JSON.parse(readFileSync(join(ROOT, 'content/img-sizes.json'), 'utf8')) : {};
-for (const [p, h] of finishSeo(built, { trail, sizes: IMG_SIZES, faqs: JSON.parse(readFileSync(join(ROOT, 'content/faqs.json'), 'utf8')) })) write(p === '/' ? 'index.html' : `${p.slice(1)}/index.html`, h);
+for (const [p, h] of finishSeo(built, { trail, sizes: IMG_SIZES, faqs: JSON.parse(readFileSync(join(ROOT, 'content/faqs.json'), 'utf8')), keywords: JSON.parse(readFileSync(join(ROOT, 'content/seo-keywords.json'), 'utf8')) })) write(p === '/' ? 'index.html' : `${p.slice(1)}/index.html`, h);
 const sh = shell();
 write('_crm-page/index.html', sh);
 write('404.html', page404(sh));

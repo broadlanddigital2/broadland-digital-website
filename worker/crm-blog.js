@@ -11,7 +11,7 @@
 
 const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 // "<title> | <site name>", unless the title already names the business.
-const branded = (t, site) => { const core = String(site).toLowerCase().split(/\s+/).slice(0, 2).join(' '); return String(t).toLowerCase().includes(core) ? t : `${t} | ${site}`; };
+const branded = (t, site) => { const core = String(site).toLowerCase().split(/\s+/).slice(0, 2).join(' '); if (String(t).toLowerCase().includes(core)) return t; const full = `${t} | ${site}`; return full.length > 65 && String(t).length >= 30 ? t : full; };
 const date = (v) => (v ? new Date(v).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Europe/London' }) : '');
 
 /** Published posts from the CRM (cached at the edge for two minutes). */
@@ -80,6 +80,7 @@ ${p.image ? `<img src="${esc(p.image.url)}" alt="${esc(p.image.alt)}" width="${p
 <h1>${esc(opts.blogTitle)}</h1>
 <p class="crmblog-intro">${esc(opts.intro)}</p>
 ${posts.length ? `<div class="crmblog-grid">${cards}</div>` : `<p class="crmblog-empty">New posts are on their way. In the meantime, have a look at our <a href="${esc(opts.guidesPath || '/')}">guides</a>.</p>`}
+${opts.outroHtml || ''}
 </section>`;
 }
 

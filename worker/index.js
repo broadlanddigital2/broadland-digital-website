@@ -29,13 +29,19 @@ const BLOG = {
   shellPath: SHELL,
   siteName: 'Broadland Digital',
   blogName: 'Blog',
-  blogTitle: 'Broadland Digital blog',
+  blogTitle: 'Signage and vehicle graphics blog',
   kicker: 'Signage, print & design advice',
-  intro: 'Practical advice on signs, print and design for Norfolk and Suffolk businesses, from our Norwich studio and workshop.',
+  intro: 'Our signage and vehicle graphics blog: practical advice on signs, van graphics, print and design for Norfolk and Suffolk businesses, from our Norwich studio and workshop.',
+  outroHtml: `<div class="crmblog-about">
+<div><h2>Signage advice</h2><p>Planning a shop sign, fascia or window graphics? Our signage advice covers planning consent, materials, illumination, measuring up and how long outdoor signs last, written by the people who make and fit them. Start with our <a href="/signage-home/guides-and-advice/">signage guides</a> or <a href="/signage-home/compare/">material comparisons</a>.</p></div>
+<div><h2>Vehicle graphics advice</h2><p>Van graphics are one of the cheapest ways for a local business to be seen. Our vehicle graphics advice explains costs, coverage options from lettering to full wraps, lease van rules and aftercare. See <a href="/vehicle-graphics/">vehicle graphics</a> or download our <a href="/get-a-guide/">free vehicle graphics guide</a>.</p></div>
+<div><h2>Printing tips</h2><p>From business cards and leaflets to banners and pull-ups, our printing tips help you choose stock, finishes and sizes that suit the job and the budget. Browse <a href="/print-home/">print services</a> or <a href="/get-a-quote/">ask for a quote</a>.</p></div>
+</div>`,
   guidesPath: '/signage-home/guides-and-advice',
   ctaHtml: '<p><strong>Planning a sign or print job?</strong> Tell us what you need, or call 01603 407786.</p><p><a class="crmblog-btn" href="/get-a-quote">Get a quote</a> <a class="crmblog-btn2" href="/signage-home">Signage services</a></p>',
   css: `.crmblog{max-width:880px;margin:0 auto;padding:56px 32px 80px;color:#2a2d32;font-family:azo-sans-web,Arial,sans-serif}
 .crmblog-list{max-width:1240px}
+.crmblog-about{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:32px;margin:64px 0 0;padding:40px 0 0;border-top:1px solid #e1dde9}.crmblog-about h2{font-size:22px;margin:0 0 10px}.crmblog-about p{font-size:16px;line-height:1.65;margin:0}.crmblog-about a{color:#713fff}
 .crmblog-crumbs{font-size:13px;color:#5e6168;margin:0 0 22px}.crmblog-crumbs a{color:#5e6168}.crmblog-crumbs span:last-child{color:#2a2d32;font-weight:600}
 .crmblog-kicker,.crmblog-meta{display:block;margin:0 0 12px;color:#713fff;font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase}
 .crmblog h1{margin:0 0 18px;color:#2a2d32;font-family:adelle,Georgia,serif;font-size:clamp(40px,5.5vw,72px);line-height:1.05;font-weight:800;letter-spacing:-.02em}

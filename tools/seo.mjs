@@ -7,10 +7,23 @@ const BRAND = 'Broadland Digital';
 const decode = (t) => String(t || '').replace(/&amp;|&#0?38;/g, '&').replace(/&#8211;|&ndash;/g, '–').replace(/&#8217;|&rsquo;|&#039;|&#39;/g, '’')
   .replace(/&nbsp;/g, ' ').replace(/&quot;/g, '"').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
 const esc = (t) => String(t).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const fitDesc = (d, n = 165) => {
+  if (d.length <= n) return d;
+  const cut = d.slice(0, n);
+  const end = Math.max(cut.lastIndexOf('. '), cut.lastIndexOf(': '));
+  if (end >= 120) return cut.slice(0, end) + '.';
+  const sentences = d.match(/[^.!?]+[.!?]+(\s|$)/g) || [];
+  let acc = '';
+  for (const x of sentences) { if ((acc + x).trim().length > n) break; acc += x; }
+  acc = acc.trim();
+  for (const tail of [' Call 01603 407786 for a free quote.', ' Call 01603 407786.', ' Ask us for a quote.']) if (acc && acc.length < 120 && (acc + tail).length <= n && (acc + tail).length >= 120) return acc + tail;
+  if (acc.length >= 120) return acc;
+  return cut.slice(0, n - 1).replace(/\s+\S*$/, '').replace(/(\s+(and|or|the|to|a|an|our|call|for|with|of|in|on|from))+$/i, '').replace(/[,;:–-]\s*$/, '') + '.';
+};
 const clip = (t, n) => (t.length <= n ? t : t.slice(0, n).replace(/\s+\S*$/, '').replace(/[,;:–-]\s*$/, ''));
 
 // Utility pages: no value in search results.
-export const NOINDEX = /^\/(posts\/[^/]+|estimate|invoice|workspace|quote-requested|request-quote-thank-you|download-guide-thank-you|my-account|cart|checkout)(\/|$)/;
+export const NOINDEX = /^\/(category\/uncategorized|posts\/[^/]+|estimate|invoice|workspace|quote-requested|request-quote-thank-you|download-guide-thank-you|my-account|cart|checkout)(\/|$)/;
 
 const FAQ = {
   liquid: [
@@ -41,7 +54,7 @@ function describe(path, name, trailNames) {
     else if (/liquid/.test(path)) d = `${n} from Broadland Digital, Norwich: a peelable liquid wrap colour change applied at our workshop. See what's included and book online.`;
     else d = `${n} from Broadland Digital, Norwich: cut vinyl van graphics with your name, number and web address. Order online or ask us for a fitted quote.`;
   } else if (path.startsWith('/category/')) {
-    d = `Shop ${trailNames.join(' – ')} from Broadland Digital in Norwich. Compare options and prices online, or ask our team for a quote and advice.`;
+    d = `Shop ${trailNames.filter((x) => !/^(shop )?home$|^shop$/i.test(x)).join(' – ')} from Broadland Digital in Norwich. Compare options and prices online, or ask our team for a quote and advice.`;
   } else {
     d = `${n} from Broadland Digital in Norwich: design, print, signage, web and liquid wrapping under one roof. Call 01603 407786 or ask for a free quote.`;
   }
@@ -70,7 +83,148 @@ const SECTION_OF = (h, path) => {
 };
 const NO_FAQ = /^\/(|contact-us|get-a-quote|get-a-guide|privacy-policy|returns|refund_returns|shop|blog|posts\/.*|estimate|invoice|workspace|quote-requested|request-quote-thank-you|download-guide-thank-you|sample-page|norwich)$/;
 
-export function finishSeo(pages, { trail, sizes = {}, faqs = {} }) {
+// Heading order: no skipped levels (h2 → h5 becomes h2 → h3) and one H1 per page.
+// The old level stays as a class so the look doesn't change.
+// Extra copy for pages the WordPress capture left thin
+const GUIDE_FAQ = [
+  ['Is the vehicle graphics guide free?', 'Yes. Fill in the short form and we email you a link to the guide. There is no charge and no obligation to buy.'],
+  ['Does the guide cover vans and cars?', 'Yes. It covers small, medium and large vans as well as cars, with typical budgets for each size and the coverage options from cut vinyl lettering to a full wrap.'],
+  ['Can I use the guide if I want to fit my own graphics?', 'Yes. The preparation and aftercare sections apply whether we fit your graphics or you buy a supply-only kit and fit it yourself.'],
+  ['What happens after I read the guide?', 'When you are ready, send us a photo of your vehicle and your logo through the quote form and we will come back with a design and a fixed price.'],
+];
+const PAGE_EXTRA = {
+  '/get-a-guide': {
+    replace: [[/(<h[1-6][^>]*>)\s*Download our Vehicle Graphics how to guide\.\.?/, '$1Download our free vehicle graphics guide.']],
+    after: /(<section class="section-padding section-two row signage guide">[\s\S]*?<\/section>)/,
+    html: `<section class="bdsub-copy bdguide-copy"><div class="wrap">
+<h2>What is in our vehicle graphics guide?</h2>
+<p>Our free vehicle graphics guide is a plain-English, how-to guide for anyone planning graphics for a van, car or small fleet. It is written by the team who design, print and fit vehicle graphics every week at our Norwich workshop, so it answers the questions we are asked most: what graphics cost, what to put on the vehicle, which materials to choose and how to keep them looking good.</p>
+<ul>
+<li><strong>Budgets by vehicle size</strong> – typical prices for small, medium and large vans, from simple cut vinyl lettering to half and full wraps.</li>
+<li><strong>Design tips</strong> – what to include, how much text is too much, and how to make a van readable at a glance in traffic.</li>
+<li><strong>Types of graphics</strong> – cut vinyl, printed and laminated vinyl, reflective chapter 8 kits and full wraps, and where each one works best.</li>
+<li><strong>Preparation</strong> – how to get your vehicle ready so graphics stick properly and last.</li>
+<li><strong>Aftercare</strong> – washing, pressure washers and other simple habits that extend the life of your graphics.</li>
+</ul>
+<h2>A van graphics guide for trades and small businesses</h2>
+<p>Most of our vehicle work is for tradespeople and local businesses across Norwich and Norfolk: electricians, builders, gardeners, cleaners, caterers and delivery firms. The van graphics guide is written for them. It helps you plan a design that shows your name, services, phone number and web address clearly, and gives you a realistic idea of budget before you ask anyone for a quote.</p>
+<h2>A vehicle livery guide for fleets and brands</h2>
+<p>If you run several vehicles, the vehicle livery guide section covers keeping a consistent look across different makes and sizes, planning designs that can be updated when phone numbers or services change, and phasing graphics across a fleet as vehicles come in.</p>
+<h2>From the guide to your finished vehicle</h2>
+<p>When you are ready, <a href="/get-a-quote/">ask us for a free quote</a> with a photo of your vehicle and your logo. You can also browse <a href="/vehicle-graphics/">vehicle graphics</a>, compare <a href="/category/signage/vehicle-graphics/">van graphics packages and prices</a>, see ideas by <a href="/vehicle-graphics/sectors/">business sector</a>, or read our <a href="/signage-home/guides-and-advice/">signage guides and advice</a>.</p>
+</div></section>
+<section class="bdhub-faq"><div class="wrap"><h2>Questions about the vehicle graphics guide.</h2><div class="bdhub-faqs">${GUIDE_FAQ.map(([q, a]) => `<details><summary>${esc(q)}</summary><p>${esc(a)}</p></details>`).join('')}</div></div></section>`,
+    schema: { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: GUIDE_FAQ.map(([q, a]) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })) },
+  },
+};
+
+export function fixHeadings(html) {
+  const hasH1 = /<h1\b/.test(html);
+  let prev = hasH1 ? 0 : -1;
+  return html.replace(/<h([1-6])\b([^>]*)>([\s\S]*?)<\/h\1>/g, (m, lv, attrs, inner) => {
+    let L = +lv;
+    if (prev === -1) { L = 1; prev = 1; }
+    else if (prev === 0) { prev = L; return m; }
+    else if (L > prev + 1) L = prev + 1;
+    prev = L;
+    if (L === +lv) return m;
+    const a = /\sclass="/.test(attrs) ? attrs.replace(/\sclass="/, ` class="bd-was${lv} `) : `${attrs} class="bd-was${lv}"`;
+    return `<h${L}${a}>${inner}</h${L}>`;
+  });
+}
+
+// ---- Keywords (from the CRM's seo_page_keywords, copied to content/seo-keywords.json) ----
+const norm = (x) => decode(String(x || '')).toLowerCase().replace(/<[^>]+>/g, ' ').replace(/[’']/g, '').replace(/[^a-z0-9£]+/g, ' ').trim();
+const hasKw = (text, kw) => !!kw && (' ' + norm(text) + ' ').includes(' ' + norm(kw) + ' ');
+const PROPER = { norwich: 'Norwich', norfolk: 'Norfolk', suffolk: 'Suffolk', uk: 'UK', '3d': '3D', pvc: 'PVC', ppf: 'PPF', mot: 'MOT', kingsley: 'Kingsley', nardo: 'Nardo', laravel: 'Laravel', magento: 'Magento', lynn: 'Lynn', kings: 'Kings', yarmouth: 'Yarmouth', great: 'Great' };
+const SMALL = new Set(['and', 'or', 'of', 'for', 'in', 'to', 'the', 'a', 'vs', 'with', 'on']);
+const titleCase = (kw) => kw.split(' ').map((w, i) => PROPER[w] || (i && SMALL.has(w) ? w : w.replace(/(^|-)([a-z])/g, (m, a, b) => a + b.toUpperCase()))).join(' ');
+const sentenceCase = (kw) => { const t = kw.split(' ').map((w) => PROPER[w] || w).join(' '); return t[0].toUpperCase() + t.slice(1); };
+const NO_H1_KW = /^\/(|contact-us|returns|privacy-policy|blog|get-a-quote|shop|norwich|signage-home|design-home|print-home|liquid-wrapping-home)$/;
+const QWORD = /^(can|how|what|do|does|which|should|is|are|why|when)\b/;
+
+function applyKeywords(path, h, kw, usedTitles, price) {
+  const [pk, sec = []] = kw;
+  if (!pk || norm(pk).split(' ').length < 2) return h;
+  const K = titleCase(pk);
+  const BR = ' | ' + BRAND;
+  const head = h.slice(0, h.indexOf('</head>'));
+  const title = decode((head.match(/<title>([\s\S]*?)<\/title>/) || [])[1] || '');
+  // Title: lead with the keyword
+  if (!norm(title).startsWith(norm(pk))) {
+    const name = title.replace(/\s*\|.*$/, '').replace(/\s+–\s+£[\d.,]+$/, '').trim();
+    const nameWords = norm(name).split(' ').filter(Boolean);
+    const overlap = nameWords.filter((w) => norm(pk).split(' ').includes(w)).length / (nameWords.length || 1);
+    const extras = [price ? `£${price}` : '', overlap < 0.6 && name ? name : ''].filter(Boolean);
+    let t = '';
+    for (let n = extras.length; n >= 0 && !t; n--) {
+      const c = [K, ...extras.slice(0, n)].join(' – ') + BR;
+      if (c.length <= 65 && c.length >= 30 && !usedTitles.has(c)) t = c;
+    }
+    if (!t) { const c = K + ' | Signs & Print' + BR; if (c.length <= 65 && !usedTitles.has(c)) t = c; }
+    if (!t && (K + BR).length <= 65 && !usedTitles.has(K + BR)) t = K + BR;
+    if (t) {
+      usedTitles.delete(title); usedTitles.add(t);
+      h = h.replace(/<title>[\s\S]*?<\/title>/, `<title>${esc(t)}</title>`).replace(/(<meta (?:property="og:title"|name="twitter:title") content=")[^"]*"/g, `$1${esc(t)}"`);
+    }
+  }
+  // Description: mention the keyword up front
+  const desc = decode((head.match(/<meta name="description" content="([^"]*)"/) || [])[1] || '');
+  if (path.startsWith('/category/') && /^Shop /.test(desc)) {
+    const from = /norwich$/.test(pk) ? 'from Broadland Digital' : 'from Broadland Digital in Norwich';
+    let d = `${sentenceCase(pk)} ${from}. Compare options and prices online, order securely or ask our team for a quote and advice.`;
+    if (d.length > 165) d = `${sentenceCase(pk)} ${from}. Compare options and prices online or ask us for a quote.`;
+    d = fitDesc(d);
+    h = h.replace(/<meta name="description"[^>]*>/, `<meta name="description" content="${esc(d)}">`).replace(/(<meta (?:property="og:description"|name="twitter:description") content=")[^"]*"/g, `$1${esc(d)}"`);
+  } else if (desc && !hasKw(desc, pk)) {
+    let d = `${sentenceCase(pk)}: ${desc[0].toLowerCase() + desc.slice(1)}`;
+    if (/^[A-Z]{2}|^[A-Z][a-z]+ [A-Z]/.test(desc)) d = `${sentenceCase(pk)}: ${desc}`;
+    d = fitDesc(d);
+    h = h.replace(/<meta name="description"[^>]*>/, `<meta name="description" content="${esc(d)}">`).replace(/(<meta (?:property="og:description"|name="twitter:description") content=")[^"]*"/g, `$1${esc(d)}"`);
+  }
+  const cut = Math.max(0, h.indexOf('</header>'));
+  let body = h.slice(cut);
+  // H1: short category/product headings name the keyword ("Small Vehicles." → "Budget Small Vehicle Liquid Wrapping.")
+  const h1m = body.match(/<h1\b([^>]*)>([\s\S]*?)<\/h1>/);
+  if (h1m && !hasKw(h1m[2], pk) && !NO_H1_KW.test(path) && !/<(?!br\b)[a-z]/i.test(h1m[2])) {
+    const words = norm(h1m[2]).split(' ').filter(Boolean).length;
+    if (words <= 3 || /^\/(product|category)\//.test(path)) body = body.replace(h1m[0], `<h1${h1m[1]}>${esc(K)}.</h1>`);
+  }
+  // Subheadings: the FAQ heading names a secondary keyword
+  const headings = [...body.matchAll(/<h[23]\b[^>]*>([\s\S]*?)<\/h[23]>/g)].map((m) => m[1]);
+  if (sec.length && !sec.some((s2) => headings.some((x) => hasKw(x, s2)))) {
+    const s2 = sec.find((x) => !QWORD.test(x));
+    const q = sec.find((x) => QWORD.test(x));
+    const label = s2 ? `Questions about ${s2.split(' ').map((w) => PROPER[w] || w).join(' ')}.` : `${sentenceCase(q)}?`;
+    body = body.replace(/<h2>Questions\.<\/h2>/, `<h2>${esc(label)}</h2>`);
+  }
+  // Image alt text: describe the first photo with the keyword
+  const alts = [...body.matchAll(/<img\b[^>]*\salt="([^"]*)"/g)].map((m) => m[1]);
+  if (!alts.some((a) => hasKw(a, pk))) {
+    let done = false;
+    body = body.replace(/<img\b[^>]*>/g, (tag) => {
+      if (done || /logo|\.svg/i.test(tag) || /class="[^"]*(?:bdf|bdh-)/.test(tag)) return tag;
+      done = true;
+      const a = (tag.match(/\salt="([^"]*)"/) || [])[1];
+      const next = a ? `${sentenceCase(pk)} – ${decode(a)}` : sentenceCase(pk);
+      return a != null ? tag.replace(/\salt="[^"]*"/, ` alt="${esc(next)}"`) : tag.replace(/<img\b/, `<img alt="${esc(next)}"`);
+    });
+  }
+  return h.slice(0, cut) + body;
+}
+
+// Share image: pages without one (or with the placeholder) use their first photo
+function shareImage(h) {
+  const cut = Math.max(0, h.indexOf('</header>'));
+  const og = (h.match(/<meta property="og:image" content="([^"]*)"/) || [])[1];
+  if (og && !/placeholder/i.test(og)) return h;
+  const src = [...h.slice(cut).matchAll(/<img\b[^>]*\ssrc="([^"]+\.(?:jpe?g|png|webp))"/gi)].map((m) => m[1]).find((x) => !/logo|placeholder|icon/i.test(x));
+  const url = src ? (src.startsWith('http') ? src : 'https://broadlanddigital.co.uk' + (src.startsWith('/') ? '' : '/') + src) : 'https://broadlanddigital.co.uk/wp-content/uploads/2024/04/signage-15-scaled_v2-jpg.webp';
+  if (og) return h.replace(/(<meta property="og:image" content=")[^"]*"/, `$1${url}"`).replace(/(<meta name="twitter:image" content=")[^"]*"/, `$1${url}"`);
+  return h.replace('</head>', `<meta property="og:image" content="${url}">\n<meta name="twitter:image" content="${url}">\n</head>`);
+}
+
+export function finishSeo(pages, { trail, sizes = {}, faqs = {}, keywords = {} }) {
   const info = new Map();
   for (const [path, h] of pages) {
     const hd = h.slice(0, h.indexOf('</head>'));
@@ -101,6 +255,7 @@ export function finishSeo(pages, { trail, sizes = {}, faqs = {} }) {
       h = h.replace(/<title>[\s\S]*?<\/title>/, `<title>${esc(t)}</title>`)
         .replace(/(<meta (?:property="og:title"|name="twitter:title") content=")[^"]*"/g, `$1${esc(t)}"`);
     }
+    d = d.replace(/([a-z])\.(?=[A-Z])/g, '$1. ');
     if (d !== desc) {
       const tag = `<meta name="description" content="${esc(d)}">`;
       h = /<meta name="description"[^>]*>/.test(h) ? h.replace(/<meta name="description"[^>]*>/, tag) : h.replace('</head>', tag + '\n</head>');
@@ -136,6 +291,12 @@ export function finishSeo(pages, { trail, sizes = {}, faqs = {} }) {
       }
       return t2;
     });
+    const ex = PAGE_EXTRA[path];
+    if (ex && ex.after.test(body)) {
+      body = body.replace(ex.after, `$1${ex.html}`);
+      for (const [a, b] of ex.replace || []) body = body.replace(a, b);
+    }
+    body = fixHeadings(body);
     // FAQs on shop and product pages (with FAQPage schema), when the page has none
     if (shopLike && !/FAQPage/.test(head)) {
       const set = faqSet(path);
@@ -153,7 +314,18 @@ export function finishSeo(pages, { trail, sizes = {}, faqs = {} }) {
       out.set(path, (head + body).replace('</head>', `<script type="application/ld+json">${JSON.stringify(ld)}</script>\n</head>`));
       continue;
     }
-    out.set(path, head + body);
+    out.set(path, ex?.schema ? (head + body).replace('</head>', `<script type="application/ld+json">${JSON.stringify(ex.schema)}</script>\n</head>`) : head + body);
+  }
+  // Keywords and share images, once every page's title is known
+  const usedTitles = new Set([...out.values()].map((h) => decode((h.match(/<title>([\s\S]*?)<\/title>/) || [])[1] || '')));
+  for (const [path, h0] of out) {
+    let h = h0;
+    const kw = keywords[path];
+    if (kw && !NOINDEX.test(path) && !/\/page\/\d+$/.test(path)) {
+      const price = (decode((h.match(/<title>([\s\S]*?)<\/title>/) || [])[1] || '').match(/–\s+£([\d.,]+)/) || [])[1] || '';
+      h = applyKeywords(path, h, kw, usedTitles, price);
+    }
+    out.set(path, shareImage(h));
   }
   return out;
 }

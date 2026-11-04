@@ -20,7 +20,7 @@ const MATCH = {
 const slash = (p) => (p === '/' || p.endsWith('/') ? p : p + '/');
 
 function card(href, kind, title, desc, img) {
-  return `<a class="bdr-card" href="${esc(href)}">${img ? `<span class="bdr-img"><img src="${esc(img)}" alt="" loading="lazy"></span>` : ''}`
+  return `<a class="bdr-card" href="${esc(href)}">${img ? `<span class="bdr-img"><img src="${esc(img)}" alt="${esc(title || '')}" width="800" height="450" loading="lazy" decoding="async"></span>` : ''}`
     + `<span class="bdr-body"><span class="bdr-kind">${esc(kind)}</span><span class="bdr-title">${esc(title)}</span>${desc ? `<span class="bdr-desc">${esc(desc)}</span>` : ''}</span></a>`;
 }
 

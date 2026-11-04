@@ -497,3 +497,18 @@ p{font-size:18px;line-height:1.65}
 .bdk-formcard .bdf-done{background:#f4f2f9;border-color:#e1dde9}
 @media(max-width:1100px){.bdk .wrap{padding:0 50px}.bdk-grid,.bdk-grid--2{grid-template-columns:1fr}}
 @media(max-width:700px){.bdk .wrap{padding:0 20px}.bdk-card{padding:24px 20px}.bdk-map,.bdk-map iframe{min-height:320px}}
+
+/* Headings re-levelled for SEO keep their old look */
+.bd-was4{font-size:1.25rem;line-height:1.35}
+.bd-was5{font-size:1.1rem;line-height:1.35}
+.bd-was6{font-size:1rem;line-height:1.4}
+h1.bd-was4,h1.bd-was5,h1.bd-was6{font-weight:700}
+.crm-main img:not([style*="height"]){height:auto}
+.bdguide-copy{padding:60px 0 20px}
+.bdguide-copy .wrap{max-width:860px}
+.bdguide-copy h2{font-size:clamp(1.4rem,2.4vw,1.9rem);line-height:1.2;margin:34px 0 12px}
+.bdguide-copy h2:first-child{margin-top:0}
+.bdguide-copy p,.bdguide-copy li{font-size:1.05rem;line-height:1.7;color:#3a3542}
+.bdguide-copy ul{padding-left:1.2em;margin:14px 0}
+.bdguide-copy li{margin:6px 0}
+.bdguide-copy a{color:inherit;text-decoration:underline;text-underline-offset:3px}

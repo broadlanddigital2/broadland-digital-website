@@ -146,6 +146,12 @@ function heroCrumbs(html, path, name) {
   return hero ? out.replace(hero[0], hero[0] + nav) : html;
 }
 
+// Images without width/height reserve a 16:9 box so the page doesn't jump while they load
+function sizeImages(html) {
+  return html.replace(/<img\b[^>]*>/g, (tag) => (/\swidth=/.test(tag) && /\sheight=/.test(tag) ? tag
+    : tag.replace(/\s(width|height)="[^"]*"/g, '').replace(/<img\b/, '<img width="1600" height="900"')));
+}
+
 function fill(shell, inner) {
   return shell.replace(/(<div[^>]*data-crm-blog="slot"[^>]*>)\s*<\/div>/i, (_m, open) => open + inner + '</div>');
 }
@@ -178,7 +184,7 @@ export async function crmPageResponse(request, env, opts) {
   if (!shellRes.ok) return null;
   const shell = await shellRes.text();
   const bar = preview ? `<div style="position:sticky;top:84px;z-index:40;padding:10px 16px;background:#ffd84d;color:#111;font:600 14px/1.4 system-ui,sans-serif;text-align:center">Preview from the CRM — not published${preview.note ? ' · ' + esc(preview.note) : ''}</div>` : '';
-  const inner = bar + withForms(heroCrumbs(String(page.html || ''), path, String(page.title || '').replace(/\s*[|–]\s*Broadland Digital.*$/i, '') || page.h1), shell);
+  const inner = bar + withForms(heroCrumbs(sizeImages(String(page.html || '')), path, String(page.title || '').replace(/\s*[|–]\s*Broadland Digital.*$/i, '') || page.h1), shell);
   const html = setHead(fill(shell, inner), {
     title: page.metaTitle || page.title, description: page.metaDescription, url: opts.origin + (page.path || path) + (opts.trailingSlash && (page.path || path) !== '/' ? '/' : ''),
     image: page.image || '', schema: enrichSchema(page.schema, { origin: opts.origin, path, page, trail: heroCrumbs.trail, html: String(page.html || '') }), noindex: !!preview, css, vars,
