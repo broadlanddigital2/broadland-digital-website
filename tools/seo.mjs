@@ -238,6 +238,18 @@ export function fixLd(h, path) {
       }
     }
   }
+  // every page-level entity carries the page's main picture (its share image)
+  const og = (h.match(/<meta property="og:image" content="([^"]+)"/) || [])[1];
+  if (og) {
+    const abs = og.startsWith('http') ? og : 'https://broadlanddigital.co.uk' + og;
+    for (const x of all) {
+      if (Object.keys(x.n).length <= 2 && x.n['@id']) continue;
+      if (['WebPage', 'CollectionPage', 'ContactPage', 'ItemPage', 'AboutPage'].some((t) => isType(x.n, t))) {
+        if (!x.n.primaryImageOfPage) x.n.primaryImageOfPage = { '@type': 'ImageObject', url: abs };
+        if (!x.n.image) x.n.image = abs;
+      } else if (['Article', 'BlogPosting', 'Service', 'LocalBusiness'].some((t) => isType(x.n, t)) && !x.n.image) x.n.image = abs;
+    }
+  }
   for (const x of all) if (isType(x.n, 'Organization') && !x.n.url && !(Object.keys(x.n).length <= 2 && x.n['@id'])) x.n.url = 'https://broadlanddigital.co.uk/';
   // drop removed nodes (from @graph arrays or as values)
   const prune = (n) => { if (Array.isArray(n)) { for (let i = n.length - 1; i >= 0; i--) { if (remove.has(n[i])) n.splice(i, 1); else prune(n[i]); } } else if (n && typeof n === 'object') { for (const [k, v] of Object.entries(n)) { if (remove.has(v)) delete n[k]; else prune(v); } } };
