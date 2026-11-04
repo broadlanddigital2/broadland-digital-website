@@ -36,8 +36,19 @@ export function blockHtml(s, video, pics = []) {
     return `<span class="bdkw-img">${img}</span>`;
   };
   return `<section class="bdkw${items.length && pics.length >= items.length ? ' bdkw--pics' : ''}"><div class="bdkw-wrap">${s?.heading ? `<h2>${safe(s.heading)}</h2>` : ''}${videoHtml(video)}`
-    + (items.length ? `<div class="bdkw-grid">${items.map((i, n) => `<div class="bdkw-card">${pic(n)}<div class="bdkw-txt"><h3>${safe(i.h)}</h3><p>${safe(i.p)}</p></div></div>`).join('')}</div>` : '')
-    + (s?.close ? `<p class="bdkw-close">${safe(s.close)}</p>` : '') + '</div></section>';
+    + (items.length ? `<div class="bdkw-grid">${items.map((i, n) => { const x = pullLinks(i.p); return `<div class="bdkw-card">${pic(n)}<div class="bdkw-txt"><h3>${safe(i.h)}</h3><p>${safe(x.text)}</p>${x.links.map((l) => `<a class="bdkw-cardlink" href="${esc(l.href)}">${esc(l.label)}<span aria-hidden="true">→</span></a>`).join('')}</div></div>`; }).join('')}</div>` : '')
+    + (s?.close ? (() => { const x = pullLinks(s.close); return `<div class="bdkw-closeband"><p class="bdkw-close">${safe(x.text)}</p>${x.links.length ? `<div class="bdkw-btns">${x.links.map((l, k) => `<a class="bdkw-btn${k ? " bdkw-btn--ghost" : ""}" href="${esc(l.href)}">${esc(l.label)}</a>`).join('')}</div>` : ''}</div>`; })() : '') + '</div></section>';
+}
+
+// Links inside a sentence become buttons: the words stay in the sentence (unlinked), the link moves to a button.
+function pullLinks(html) {
+  const links = [];
+  const text = String(html || '').replace(/<a\s+href="(\/[^"<>]*)"\s*>([\s\S]*?)<\/a>/g, (m, href, label) => {
+    const l = label.replace(/<[^>]+>/g, '').trim();
+    links.push({ href, label: l.charAt(0).toUpperCase() + l.slice(1) });
+    return l;
+  });
+  return { text, links };
 }
 // Styles: site/bd-pages.css (.bdkw…)
 

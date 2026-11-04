@@ -603,3 +603,18 @@ h1.bd-was4,h1.bd-was5,h1.bd-was6{font-weight:700}
 .bdshop-img{align-self:stretch}
 .bdshop-img img{max-width:none;width:100%;height:100%;min-height:280px;aspect-ratio:4/3;object-fit:cover;border-radius:20px;filter:none;box-shadow:0 24px 50px rgba(20,8,70,.35);transform:rotate(1.5deg)}
 @media(max-width:900px){.bdshop-img img{min-height:0;transform:none}}
+
+/* Keyword blocks: links as buttons */
+.bdkw-txt{display:flex;flex-direction:column;height:100%}
+.bdkw-card{height:100%}
+.bdkw-cardlink{align-self:flex-start;display:inline-flex;align-items:center;gap:10px;margin-top:auto;padding-top:18px;color:#5b2ee0!important;font-weight:700;font-size:15px;text-decoration:none!important}
+.bdkw-cardlink span{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:50%;background:#f1ecff;transition:transform .2s,background .2s}
+.bdkw-cardlink:hover span{transform:translateX(3px);background:#713fff;color:#fff}
+.bdkw-closeband{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:20px 40px;margin-top:30px;padding:26px 30px;background:#fff;border-radius:20px;box-shadow:0 12px 34px rgba(42,45,50,.06)}
+.bdkw-closeband .bdkw-close{margin:0;flex:1 1 420px}
+.bdkw-btns{display:flex;flex-wrap:wrap;gap:12px}
+.bdkw-btn{display:inline-flex;align-items:center;gap:8px;padding:13px 24px;border-radius:30px;background:#713fff;color:#fff!important;font-weight:700;font-size:15px;text-decoration:none!important;border:1px solid #713fff;transition:transform .15s,box-shadow .15s,background .15s}
+.bdkw-btn::after{content:"→"}
+.bdkw-btn:hover{transform:translateY(-1px);box-shadow:0 10px 24px rgba(113,63,255,.28)}
+.bdkw-btn--ghost{background:#fff;color:#2a2d32!important;border-color:#ddd8ea}
+.bdkw-btn--ghost:hover{border-color:#713fff;color:#713fff!important;box-shadow:none}
