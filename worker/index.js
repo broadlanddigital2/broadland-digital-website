@@ -87,7 +87,7 @@ async function route(request, env) {
 
   // Uploads: from dist/ when copied in, otherwise from the old WordPress site while it is still running elsewhere.
   // Pictures and theme files don't change at the same address: let browsers and Cloudflare keep them (30 days).
-  if (path.startsWith('/opt/')) return longCache(await env.ASSETS.fetch(request));
+  if (path.startsWith('/opt/') || path.startsWith('/img/')) return longCache(await env.ASSETS.fetch(request));
   if (path.startsWith('/wp-content/')) {
     const res = await env.ASSETS.fetch(request);
     if (res.status !== 404) return longCache(res);

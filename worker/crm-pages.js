@@ -1,5 +1,6 @@
 import SEO from './seo-sections.json';
-import { decorateCrmHtml, kwTitle, kwDesc, resizeStorageImages } from './seo-blocks.js';
+import { decorateCrmHtml, kwTitle, kwDesc, resizeStorageImages, sectorImages } from './seo-blocks.js';
+import SECTOR_IMAGES from './vehicle-sector-images.json';
 /**
  * CRM SEO pages (Marketing → SEO pages in the CRM) served live inside the site's own header and footer.
  *
@@ -187,10 +188,10 @@ export async function crmPageResponse(request, env, opts) {
   if (!shellRes.ok) return null;
   const shell = await shellRes.text();
   const bar = preview ? `<div style="position:sticky;top:84px;z-index:40;padding:10px 16px;background:#ffd84d;color:#111;font:600 14px/1.4 system-ui,sans-serif;text-align:center">Preview from the CRM — not published${preview.note ? ' · ' + esc(preview.note) : ''}</div>` : '';
-  const inner = bar + withForms(heroCrumbs(decorateCrmHtml(sizeImages(String(page.html || '')), preview ? null : SEO.sections[path], preview ? null : SEO.videos[path]), path, String(page.title || '').replace(/\s*[|–]\s*Broadland Digital.*$/i, '') || page.h1), shell);
+  const inner = bar + withForms(heroCrumbs(decorateCrmHtml(sizeImages(sectorImages(String(page.html || ''), path, SECTOR_IMAGES)), preview ? null : SEO.sections[path], preview ? null : SEO.videos[path]), path, String(page.title || '').replace(/\s*[|–]\s*Broadland Digital.*$/i, '') || page.h1), shell);
   const html = setHead(fill(shell, inner), {
     title: kwTitle(page.metaTitle || page.title, preview ? '' : SEO.sections[path]?.primary), description: kwDesc(page.metaDescription, preview ? '' : SEO.sections[path]?.primary), url: opts.origin + (page.path || path) + (opts.trailingSlash && (page.path || path) !== '/' ? '/' : ''),
-    image: page.image || '', schema: enrichSchema(page.schema, { origin: opts.origin, path, page, trail: heroCrumbs.trail, html: String(page.html || '') }), noindex: !!preview, css, vars,
+    image: (SECTOR_IMAGES[path]?.hero ? opts.origin + SECTOR_IMAGES[path].hero.src : '') || page.image || '', schema: enrichSchema(page.schema, { origin: opts.origin, path, page, trail: heroCrumbs.trail, html: String(page.html || '') }), noindex: !!preview, css, vars,
   });
   return new Response(request.method === 'HEAD' ? null : html, {
     headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': preview ? 'no-store' : 'public, max-age=120' },

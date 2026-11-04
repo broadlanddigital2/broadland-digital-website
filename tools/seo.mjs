@@ -123,20 +123,28 @@ const PAGE_EXTRA = {
 export function addBlocks(body, sec, video) {
   if (!sec && !video) return body;
   const lead = leadHtml(sec);
-  if (lead) {
+  if (lead && body.includes('<div class="bdsub-intro-text')) {
+    // sub pages: the lead opens the intro, beside its photo
+    body = body.replace(/(<div class="bdsub-intro-text[^"]*">)/, `$1${lead}`).replace('bdsub-intro bdsub-intro--empty', 'bdsub-intro bdsub-intro--solo');
+  } else if (lead) {
     const h1end = body.indexOf('</h1>');
     const secEnd = h1end >= 0 ? body.indexOf('</section>', h1end) : -1;
     const nextH = h1end >= 0 ? body.slice(h1end + 5).search(/<h[1-6]\b/) : -1;
     if (secEnd > 0 && secEnd - h1end < 6000 && (nextH < 0 || h1end + 5 + nextH > secEnd)) body = body.slice(0, secEnd + 10) + `<div class="bdkw-leadband">${lead}</div>` + body.slice(secEnd + 10);
     else if (h1end >= 0) body = body.slice(0, h1end + 5) + lead + body.slice(h1end + 5);
   }
-  const block = blockHtml(sec, video);
+  // photos for the keyword cards: the page's own gallery / content photos not already shown near the top
+  const used = new Set([...body.slice(0, Math.max(0, body.indexOf('bdkw-leadband') + 1) || body.indexOf('</h1>') + 2000).matchAll(/<img\b[^>]*\ssrc="([^"]+)"/g)].map((m) => m[1]));
+  for (const m of (body.match(/<figure class="bdsub-intro-img">[\s\S]*?<\/figure>/) || [''])[0].matchAll(/\ssrc="([^"]+)"/g)) used.add(m[1]);
+  const gallery = [...body.matchAll(/<a class="bdsub-ph[^"]*"[^>]*>\s*<img\b[^>]*>/g)].map((m) => m[0].match(/<img\b[^>]*>/)[0]);
+  const pics = gallery.filter((t) => !used.has((t.match(/\ssrc="([^"]+)"/) || [])[1])).slice(2);
+  const block = blockHtml(sec, video, pics);
   if (block) {
     // high enough that it is read as main copy (crawlers and the CRM audit only read the first ~1,300 words):
     // after the second section below the hero, or before the FAQs / closing band / footer if that comes first
     const end = [/<section class="bdhub-faq/, /<section class="bdhub-band">/, /<footer\b/, /<\/main>/].map((r) => body.search(r)).find((i) => i >= 0);
     let at = end;
-    const lb = body.indexOf('bdkw-leadband');
+    const lb = body.indexOf('bdkw-leadband') >= 0 ? body.indexOf('bdkw-leadband') : body.indexOf('<section class="bdsub-intro');
     if (lb > 0) { let i = body.indexOf('</section>', lb); if (i > 0) i = body.indexOf('</section>', i + 10); if (i > 0 && (end == null || i < end)) at = i + 10; }
     if (at != null) body = body.slice(0, at) + block + body.slice(at);
     else { const last = body.lastIndexOf('</section>'); if (last >= 0) body = body.slice(0, last + 10) + block + body.slice(last + 10); }

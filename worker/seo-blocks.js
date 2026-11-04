@@ -25,11 +25,18 @@ export function videoHtml(v) {
   return `<figure class="bdkw-video"><div class="bdkw-frame"><iframe src="${esc(src)}" title="${esc(v.title || 'Video')}" loading="lazy" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>${v.caption ? `<figcaption>${esc(v.caption)}</figcaption>` : ''}</figure>`;
 }
 
-export function blockHtml(s, video) {
+// pics: optional <img> tags from the page, one per card
+export function blockHtml(s, video, pics = []) {
   if (!s?.heading && !video) return '';
   const items = (s?.items || []).filter((i) => i && i.h && i.p);
-  return `<section class="bdkw"><div class="bdkw-wrap">${s?.heading ? `<h2>${safe(s.heading)}</h2>` : ''}${videoHtml(video)}`
-    + (items.length ? `<div class="bdkw-grid">${items.map((i) => `<div class="bdkw-card"><h3>${safe(i.h)}</h3><p>${safe(i.p)}</p></div>`).join('')}</div>` : '')
+  const pic = (i) => {
+    const t = pics.length >= items.length ? pics[i] : '';
+    if (!t) return '';
+    const img = t.replace(/\ssizes="[^"]*"/, '').replace(/\sclass="[^"]*"/, '').replace(/\sloading="[^"]*"/, '').replace(/<img\b/, '<img loading="lazy" sizes="(max-width: 700px) 100vw, 400px"');
+    return `<span class="bdkw-img">${img}</span>`;
+  };
+  return `<section class="bdkw${items.length && pics.length >= items.length ? ' bdkw--pics' : ''}"><div class="bdkw-wrap">${s?.heading ? `<h2>${safe(s.heading)}</h2>` : ''}${videoHtml(video)}`
+    + (items.length ? `<div class="bdkw-grid">${items.map((i, n) => `<div class="bdkw-card">${pic(n)}<div class="bdkw-txt"><h3>${safe(i.h)}</h3><p>${safe(i.p)}</p></div></div>`).join('')}</div>` : '')
     + (s?.close ? `<p class="bdkw-close">${safe(s.close)}</p>` : '') + '</div></section>';
 }
 // Styles: site/bd-pages.css (.bdkw…)
@@ -108,3 +115,30 @@ export function resizeStorageImages(html, width = 1400) {
   return String(html).replace(SB_IMG, (m, base, rest) => `${base}render/image${rest}?width=${width}&quality=72&resize=contain`);
 }
 
+
+// ---- Vehicle sector photos (worker/vehicle-sector-images.json: page → hero / card / extra images) ----
+const imgTag = (tag, e) => tag.replace(/\ssrcset="[^"]*"/, '').replace(/\ssizes="[^"]*"/, '').replace(/\ssrc="[^"]*"/, ` src="${esc(e.src)}"`)
+  .replace(/\salt="[^"]*"/, ` alt="${esc(e.alt)}"`).replace(/\s(width|height)="[^"]*"/g, '').replace(/<img\b/, '<img width="1600" height="900"');
+const keyOf = (href) => String(href || '').replace(/^https?:\/\/[^/]+/, '').replace(/[?#].*$/, '').replace(/\/+$/, '') || '/';
+export function sectorImages(html, path, map) {
+  if (!map) return html;
+  const cardImg = (p) => { const m = map[keyOf(p)]; return m && (m.card || (m.extra || [])[0] || m.hero); };
+  let h = String(html);
+  // cards that link to a sector page show that page's card photo
+  h = h.replace(/<a class="subsector-card"([^>]*)href="([^"]+)"([^>]*)>\s*(<img\b[^>]*>)/g, (m, a, href, b, tag) => { const e = cardImg(href); return e ? `<a class="subsector-card"${a}href="${href}"${b}>${imgTag(tag, e)}` : m; });
+  h = h.replace(/<article class="card"[^>]*>[\s\S]*?<\/article>/g, (art) => {
+    const href = (art.match(/href="([^"]+)"/) || [])[1]; const e = cardImg(href);
+    return e ? art.replace(/<img\b[^>]*>/, (t) => imgTag(t, e)) : art;
+  });
+  const me = map[keyOf(path)];
+  if (!me) return h;
+  // hero, then the page's own pictures (not cards) in order
+  if (me.hero) h = h.replace(/(<div class="sector-hero-image[^"]*">\s*)(<img\b[^>]*>)/, (m, a, tag) => a + imgTag(tag, me.hero));
+  const own = [...(me.extra || []), ...(me.card ? [me.card] : [])];
+  let i = 0;
+  h = h.replace(/<a class="subsector-card"[\s\S]*?<\/a>|<article class="card"[\s\S]*?<\/article>|<div class="sector-hero-image[\s\S]*?<\/div>|<img\b[^>]*>/g, (m) => {
+    if (!m.startsWith('<img') || i >= own.length) return m;
+    return imgTag(m, own[i++]);
+  });
+  return h;
+}

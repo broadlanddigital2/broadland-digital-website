@@ -1,0 +1,870 @@
+{
+"/vehicle-graphics/sectors": {
+"hero": {
+"src": "/img/vehicle-sectors/sectors-1.webp",
+"alt": "Line-up of different business vehicles in Broadland Digital graphics (trade van, tipper, coffee van, minibus, pickup) outside the Norwich workshop, side views"
+},
+"card": {
+"src": "/img/vehicle-sectors/sectors-2.webp",
+"alt": "Collage-style single photo of a fitter applying printed vinyl to a van side panel in the Norwich workshop"
+},
+"extra": [
+{
+"src": "/img/vehicle-sectors/sectors-3.webp",
+"alt": "Mixed small fleet (car, van and trailer) in matching livery, showing one layout scaled across vehicle types"
+}
+]
+},
+"/vehicle-graphics/sectors/agriculture-rural": {
+"hero": {
+"src": "/img/vehicle-sectors/agriculture-rural-1.webp",
+"alt": "Farm pickup with canopy and a branded livestock trailer in a Norfolk farmyard, side view showing farm name and phone number"
+},
+"card": {
+"src": "/img/vehicle-sectors/agriculture-rural-2.webp",
+"alt": "Horsebox with yard name and cut vinyl pattern along the side, parked at a showground"
+},
+"extra": [
+{
+"src": "/img/vehicle-sectors/agriculture-rural-3.webp",
+"alt": "Tree surgeon’s tipper van and chipper trailer at the roadside with company branding and rear reflective markings"
+}
+]
+},
+"/vehicle-graphics/sectors/automotive": {
+"hero": {
+"src": "/img/vehicle-sectors/automotive-1.webp",
+"alt": "Garage forecourt in Norfolk with a branded courtesy car, a mobile mechanic van and a recovery truck lined up, side views"
+},
+"card": {
+"src": "/img/vehicle-sectors/automotive-2.webp",
+"alt": "Recovery truck with company name, 24-hour phone number and reflective lettering, photographed at dusk"
+},
+"extra": [
+{
+"src": "/img/vehicle-sectors/automotive-3.webp",
+"alt": "Valeting van with a gloss printed wrap parked beside a freshly detailed car"
+}
+]
+},
+"/vehicle-graphics/sectors/construction-plant": {
+"hero": {
+"src": "/img/vehicle-sectors/construction-plant-1.webp",
+"alt": "Branded 3.5-tonne tipper and a matching flatbed scaffold wagon on a building site in Norfolk, side views with company name, phone and fleet number"
+},
+"card": {
+"src": "/img/vehicle-sectors/construction-plant-2.webp",
+"alt": "Skip loader lorry with cab door branding and fleet number, a skip on the hook arms, photographed in a yard"
+},
+"extra": [
+{
+"src": "/img/vehicle-sectors/construction-plant-3.webp",
+"alt": "Rear of a tipper truck showing reflective chevron kit, fleet number and company web address in cut vinyl"
+}
+]
+},
+"/vehicle-graphics/sectors/events-leisure": {
+"hero": {
+"src": "/img/vehicle-sectors/events-leisure-1.webp",
+"alt": "Event production van and branded trailer unloading at a Norfolk outdoor festival site, side view with company branding"
+},
+"card": {
+"src": "/img/vehicle-sectors/events-leisure-2.webp",
+"alt": "Sports club minibus in club colours with crest and sponsor logos, parked at a playing field"
+},
+"extra": [
+{
+"src": "/img/vehicle-sectors/events-leisure-3.webp",
+"alt": "Promotional vehicle with a bold campaign wrap parked at a showground entrance"
+}
+]
+},
+"/vehicle-graphics/sectors/food-drink": {
+"hero": {
+"src": "/img/vehicle-sectors/food-drink-1.webp",
+"alt": "Wrapped coffee van and catering trailer at a Norfolk food market, serving hatches open, customers queuing, brand clearly visible above the hatch"
+},
+"card": {
+"src": "/img/vehicle-sectors/food-drink-2.webp",
+"alt": "Classic ice cream van with bright printed graphics parked on a seafront promenade"
+},
+"extra": [
+{
+"src": "/img/vehicle-sectors/food-drink-3.webp",
+"alt": "Serving side of a catering trailer showing brand panel above the hatch and a separate removable menu board"
+}
+]
+},
+"/vehicle-graphics/sectors/health-care-public": {
+"hero": {
+"src": "/img/vehicle-sectors/health-care-public-1.webp",
+"alt": "Small mixed fleet outside a Norfolk community centre: a home care car with door logo, a charity minibus and a council van, all in matching branding"
+},
+"card": {
+"src": "/img/vehicle-sectors/health-care-public-2.webp",
+"alt": "School minibus with school name and crest on the side, parked at a school gate, no children visible"
+},
+"extra": [
+{
+"src": "/img/vehicle-sectors/health-care-public-3.webp",
+"alt": "Driver’s door of a home care company car with a modest logo and phone number in cut vinyl"
+}
+]
+},
+"/vehicle-graphics/sectors/logistics-transport": {
+"hero": {
+"src": "/img/vehicle-sectors/logistics-transport-1.webp",
+"alt": "Branded Luton removals van and a white courier van parked at a Norfolk industrial estate loading bay, side views with large name and web address"
+},
+"card": {
+"src": "/img/vehicle-sectors/logistics-transport-2.webp",
+"alt": "Rigid lorry with box body graphics and fleet number on the cab door, three-quarter view on a road"
+},
+"extra": [
+{
+"src": "/img/vehicle-sectors/logistics-transport-3.webp",
+"alt": "Rear of a minibus with one-way vision graphic across the rear window and contact details below"
+}
+]
+},
+"/vehicle-graphics/sectors/retail-local-services": {
+"hero": {
+"src": "/img/vehicle-sectors/retail-local-services-1.webp",
+"alt": "Florist’s van with a printed floral design parked outside a Norwich shopfront with matching signage"
+},
+"card": {
+"src": "/img/vehicle-sectors/retail-local-services-2.webp",
+"alt": "Mobile dog grooming van with friendly printed graphics, parked on a residential driveway"
+},
+"extra": [
+{
+"src": "/img/vehicle-sectors/retail-local-services-3.webp",
+"alt": "Small hatchback with door graphics for a mobile hairdresser: name, service line and phone number"
+}
+]
+},
+"/vehicle-graphics/sectors/trades-home-services": {
+"hero": {
+"src": "/img/vehicle-sectors/trades-home-services-1.webp",
+"alt": "Three white trade vans (plumbing, electrical, roofing) parked on a suburban Norfolk street, side views showing name, trade line and phone number in vinyl"
+},
+"card": {
+"src": "/img/vehicle-sectors/trades-home-services-2.webp",
+"alt": "Close-up of a Ford Transit Custom’s rear doors with a large phone number and web address in cut vinyl, ladder rack visible on the roof"
+},
+"extra": [
+{
+"src": "/img/vehicle-sectors/trades-home-services-3.webp",
+"alt": "Fitter applying cut vinyl lettering to a sliding side door of a tradesman’s van in the Norwich workshop"
+}
+]
+},
+"/vehicle-graphics/sectors/logistics-transport/courier-delivery-van-graphics": {
+"hero": {
+"src": "/img/vehicle-sectors/courier-delivery-van-graphics-1.webp",
+"alt": "Medium panel van for a same-day courier, side view, name, service line and phone number graphics, parked at a business park loading bay"
+},
+"extra": [
+{
+"src": "/img/vehicle-sectors/courier-delivery-van-graphics-2.webp",
+"alt": "Rear doors of a courier van with large phone number and web address, kept clear of handles and hinges"
+},
+{
+"src": "/img/vehicle-sectors/courier-delivery-van-graphics-3.webp",
+"alt": "Small fleet of electric delivery vans with matching courier livery lined up in a depot"
+}
+]
+},
+"/vehicle-graphics/sectors/trades-home-services/builder-roofer-van-graphics": {
+"hero": {
+"src": "/img/vehicle-sectors/builder-roofer-van-graphics-1.webp",
+"alt": "Building firm’s crew-cab Transit and matching pickup parked outside an extension under construction, consistent name and logo on both"
+},
+"extra": [
+{
+"src": "/img/vehicle-sectors/builder-roofer-van-graphics-2.webp",
+"alt": "Toyota Hilux or Ford Ranger pickup for a roofing company, door lettering and phone number on the tailgate, ladders on a rack"
+},
+{
+"src": "/img/vehicle-sectors/builder-roofer-van-graphics-3.webp",
+"alt": "Builder’s van beside a matching site board on scaffolding, same logo and colours"
+}
+]
+},
+"/vehicle-graphics/sectors/trades-home-services/electrician-van-graphics": {
+"hero": {
+"src": "/img/vehicle-sectors/electrician-van-graphics-1.webp",
+"alt": "Grey Vauxhall Vivaro for an electrical contractor, side view, logo and ‘EV chargers · Solar · Rewires’ line, parked on a new-build driveway with a wall charger visible"
+},
+"extra": [
+{
+"src": "/img/vehicle-sectors/electrician-van-graphics-2.webp",
+"alt": "Electric van side view showing graphics laid out around the charging flap, with phone number on the lower panel"
+}
+],
+"card": {
+"src": "/img/vehicle-sectors/electrician-van-graphics-3.webp",
+"alt": "Small electrician’s van in a business park car park with clean two-colour lettering"
+}
+},
+"/vehicle-graphics/sectors/trades-home-services/plumbing-heating-van-graphics": {
+"hero": {
+"src": "/img/vehicle-sectors/plumbing-heating-van-graphics-1.webp",
+"alt": "White Ford Transit Custom for a plumbing and heating firm, side view, name, logo, ‘Boilers · Heating · Bathrooms’ line and phone number, parked outside a suburban house"
+},
+"extra": [
+{
+"src": "/img/vehicle-sectors/plumbing-heating-van-graphics-2.webp",
+"alt": "Rear doors of a plumbing van with a large phone number, website and registration logo area, pipe tube visible on the roof"
+}
+],
+"card": {
+"src": "/img/vehicle-sectors/plumbing-heating-van-graphics-3.webp",
+"alt": "Small plumbing service van (Caddy or Berlingo) on a driveway with simple one-colour lettering"
+}
+},
+"/vehicle-graphics/sectors/automotive/mobile-mechanic-van-graphics": {
+"hero": {
+"src": "/img/vehicle-sectors/mobile-mechanic-van-graphics-1.webp",
+"alt": "Mobile mechanic panel van with “mobile servicing & repairs” graphics parked on a suburban driveway beside a customer’s car with the bonnet up"
+},
+"extra": [
+{
+"src": "/img/vehicle-sectors/mobile-mechanic-van-graphics-2.webp",
+"alt": "Rear doors of a mobile mechanic van listing main services, area covered and phone number"
+},
+{
+"src": "/img/vehicle-sectors/mobile-mechanic-van-graphics-3.webp",
+"alt": "Mobile tyre fitting van at dusk with reflective rear lettering visible"
+}
+]
+},
+"/vehicle-graphics/sectors/logistics-transport/removals-van-graphics": {
+"hero": {
+"src": "/img/vehicle-sectors/removals-van-graphics-1.webp",
+"alt": "7.5-tonne removals box lorry with a printed box wrap parked outside a house with a 'sold' sign, crew carrying furniture"
+},
+"extra": [
+{
+"src": "/img/vehicle-sectors/removals-van-graphics-2.webp",
+"alt": "Side view of a Luton box van showing name on the Luton peak and large contact details on the box side"
+}
+],
+"card": {
+"src": "/img/vehicle-sectors/removals-van-graphics-3.webp",
+"alt": "Removals survey van with matching cut vinyl graphics outside a storage depot"
+}
+},
+"/vehicle-graphics/sectors/trades-home-services/cleaning-property-maintenance-van-graphics": {
+"hero": {
+"src": "/img/vehicle-sectors/cleaning-property-maintenance-van-graphics-1.webp",
+"alt": "Two small cleaning-company cars and a Berlingo van in matching livery parked outside an office building"
+},
+"extra": [
+{
+"src": "/img/vehicle-sectors/cleaning-property-maintenance-van-graphics-2.webp",
+"alt": "Side of a small hatchback with logo and service line on the doors and phone number on the rear door"
+}
+],
+"card": {
+"src": "/img/vehicle-sectors/cleaning-property-maintenance-van-graphics-3.webp",
+"alt": "Property maintenance van outside a terraced rental property, clean two-colour graphics"
+}
+},
+"/vehicle-graphics/sectors/trades-home-services/landscaper-gardener-van-graphics": {
+"hero": {
+"src": "/img/vehicle-sectors/landscaper-gardener-van-graphics-1.webp",
+"alt": "Landscaping firm’s Transit tipper towing a box trailer, both lettered with name, green panel and phone number, parked beside a newly laid patio"
+},
+"extra": [
+{
+"src": "/img/vehicle-sectors/landscaper-gardener-van-graphics-2.webp",
+"alt": "Rear of a box trailer with a printed garden photograph, business name and phone number"
+}
+],
+"card": {
+"src": "/img/vehicle-sectors/landscaper-gardener-van-graphics-3.webp",
+"alt": "Small gardener’s van on a residential street with a leaf logo and simple lettering"
+}
+},
+"/vehicle-graphics/sectors/automotive/car-dealer-vehicle-graphics": {
+"hero": {
+"src": "/img/vehicle-sectors/car-dealer-vehicle-graphics-1.webp",
+"alt": "Line of dealership demonstrator cars with matching door panel graphics outside a showroom forecourt"
+},
+"extra": [
+{
+"src": "/img/vehicle-sectors/car-dealer-vehicle-graphics-2.webp",
+"alt": "Close-up of a demonstrator car front door with dealership name and a removable offer panel"
+},
+{
+"src": "/img/vehicle-sectors/car-dealer-vehicle-graphics-3.webp",
+"alt": "Car transporter with dealership livery on the cab and headboard, loaded with cars"
+}
+]
+},
+"/vehicle-graphics/sectors/construction-plant/scaffolding-vehicle-graphics": {
+"hero": {
+"src": "/img/vehicle-sectors/scaffolding-vehicle-graphics-1.webp",
+"alt": "Scaffolding company's flatbed lorry loaded with tube and boards, parked outside a house with name and phone number on cab and sideboards"
+},
+"extra": [
+{
+"src": "/img/vehicle-sectors/scaffolding-vehicle-graphics-2.webp",
+"alt": "Side view of a scaffolding dropside lorry showing lettering on cab doors, flat sideboards and headboard"
+}
+],
+"card": {
+"src": "/img/vehicle-sectors/scaffolding-vehicle-graphics-3.webp",
+"alt": "Scaffolding crew van with matching cut vinyl graphics parked beside a scaffold with a company banner"
+}
+},
+"/vehicle-graphics/sectors/food-drink/ice-cream-van-graphics": {
+"hero": {
+"src": "/img/vehicle-sectors/ice-cream-van-graphics-1.webp",
+"alt": "Classic white ice cream van conversion with bright printed cone and lolly illustrations, serving side, parked on a seafront promenade in sunshine"
+},
+"extra": [
+{
+"src": "/img/vehicle-sectors/ice-cream-van-graphics-2.webp",
+"alt": "Close-up of an ice cream van serving hatch with a swappable printed menu and price panel beside it"
+},
+{
+"src": "/img/vehicle-sectors/ice-cream-van-graphics-3.webp",
+"alt": "Rear of an ice cream van showing large trading name, booking phone number and a clear rear warning panel"
+}
+]
+},
+"/vehicle-graphics/sectors/food-drink/mobile-coffee-van-graphics": {
+"hero": {
+"src": "/img/vehicle-sectors/mobile-coffee-van-graphics-1.webp",
+"alt": "Compact coffee van such as a Volkswagen Caddy with rear doors open as a serving bar, branded side graphics, on a market square in the morning"
+},
+"extra": [
+{
+"src": "/img/vehicle-sectors/mobile-coffee-van-graphics-2.webp",
+"alt": "Rear-door coffee bar with a menu board and QR code beside the serving counter, graphics visible on the open doors"
+},
+{
+"src": "/img/vehicle-sectors/mobile-coffee-van-graphics-3.webp",
+"alt": "Three-wheeled coffee tuk-tuk with a simple cut-vinyl logo and name, parked at a country show"
+}
+]
+},
+"/vehicle-graphics/sectors/construction-plant/groundworks-plant-graphics": {
+"hero": {
+"src": "/img/vehicle-sectors/groundworks-plant-graphics-1.webp",
+"alt": "Groundworks contractor's 360 excavator and matching pickup on a muddy site, company name and fleet number on the counterweight and doors"
+},
+"extra": [
+{
+"src": "/img/vehicle-sectors/groundworks-plant-graphics-2.webp",
+"alt": "Close side view of a site dumper and mini excavator showing large fleet numbers and hire phone number placed clear of safety decals"
+},
+{
+"src": "/img/vehicle-sectors/groundworks-plant-graphics-3.webp",
+"alt": "Plant hire yard with a row of machines carrying matching cut vinyl names and fleet numbers"
+}
+]
+},
+"/vehicle-graphics/sectors/health-care-public/home-care-car-graphics": {
+"hero": {
+"src": "/img/vehicle-sectors/home-care-car-graphics-1.webp",
+"alt": "Small hatchback for a home care agency, side view, discreet agency logo and phone number on the front doors, parked on a quiet residential street"
+},
+"extra": [
+{
+"src": "/img/vehicle-sectors/home-care-car-graphics-2.webp",
+"alt": "Rear of a care agency hatchback with phone number and web address on the tailgate and a separate 'now recruiting carers' line"
+}
+],
+"card": {
+"src": "/img/vehicle-sectors/home-care-car-graphics-3.webp",
+"alt": "Three matching care agency cars of different models parked outside a small office, with consistent door branding"
+}
+},
+"/vehicle-graphics/sectors/trades-home-services/decorator-van-graphics": {
+"hero": {
+"src": "/img/vehicle-sectors/decorator-van-graphics-1.webp",
+"alt": "Painter and decorator’s Transit Custom on a driveway, side view, deep green colour band with cream lettering, name, ‘Interior & exterior decorating’ and phone number"
+},
+"extra": [
+{
+"src": "/img/vehicle-sectors/decorator-van-graphics-2.webp",
+"alt": "Rear doors of a decorator’s van showing phone number, website and Instagram handle, ladders on the roof"
+},
+{
+"src": "/img/vehicle-sectors/decorator-van-graphics-3.webp",
+"alt": "Close-up of a decorator’s van panel with crisp two-colour cut vinyl lettering"
+}
+]
+},
+"/vehicle-graphics/sectors/trades-home-services/window-cleaner-van-graphics": {
+"hero": {
+"src": "/img/vehicle-sectors/window-cleaner-van-graphics-1.webp",
+"alt": "Window cleaner’s Peugeot Partner on a residential street, side view, name, ‘Window & gutter cleaning’ line and large phone number, water-fed poles on the roof"
+},
+"extra": [
+{
+"src": "/img/vehicle-sectors/window-cleaner-van-graphics-2.webp",
+"alt": "Window cleaning van with rear doors open showing the hose reel, side panel lettering still readable"
+}
+],
+"card": {
+"src": "/img/vehicle-sectors/window-cleaner-van-graphics-3.webp",
+"alt": "Window cleaner at work with a water-fed pole, branded van parked behind"
+}
+},
+"/vehicle-graphics/sectors/construction-plant/skip-hire-lorry-graphics": {
+"hero": {
+"src": "/img/vehicle-sectors/skip-hire-lorry-graphics-1.webp",
+"alt": "Skip loader lorry lowering a builders' skip onto a residential driveway, company name, 'Skip hire' and phone number on the cab"
+},
+"extra": [
+{
+"src": "/img/vehicle-sectors/skip-hire-lorry-graphics-2.webp",
+"alt": "Side view of a hook-lift lorry cab with name and number graphics, chains and lifting arms visible behind"
+},
+{
+"src": "/img/vehicle-sectors/skip-hire-lorry-graphics-3.webp",
+"alt": "Row of freshly painted skips with matching cut vinyl company name and phone number on the long sides"
+}
+]
+},
+"/vehicle-graphics/sectors/retail-local-services/dog-groomer-pet-van-graphics": {
+"hero": {
+"src": "/img/vehicle-sectors/dog-groomer-pet-van-graphics-1.webp",
+"alt": "Converted mobile dog grooming van (Ford Transit Custom), side view, friendly illustrated dog, services list and phone number, parked on a suburban driveway"
+},
+"extra": [
+{
+"src": "/img/vehicle-sectors/dog-groomer-pet-van-graphics-2.webp",
+"alt": "Side of a grooming conversion showing graphics set around a water filler cap, vent and hook-up socket"
+}
+],
+"card": {
+"src": "/img/vehicle-sectors/dog-groomer-pet-van-graphics-3.webp",
+"alt": "Dog walker's small van or estate car with simple name, area served and phone number, parked by a countryside footpath"
+}
+},
+"/vehicle-graphics/sectors/trades-home-services/locksmith-van-graphics": {
+"hero": {
+"src": "/img/vehicle-sectors/locksmith-van-graphics-1.webp",
+"alt": "Dark grey Volkswagen Caddy for a locksmith, side view, bold light lettering with name, ‘Lockouts · Lock changes’ line and large phone number, outside a front door at dusk"
+},
+"extra": [
+{
+"src": "/img/vehicle-sectors/locksmith-van-graphics-2.webp",
+"alt": "Rear of a locksmith’s small van at night with reflective lettering catching headlights"
+}
+],
+"card": {
+"src": "/img/vehicle-sectors/locksmith-van-graphics-3.webp",
+"alt": "Auto locksmith’s hatchback with door graphics parked beside a customer’s car"
+}
+},
+"/vehicle-graphics/sectors/trades-home-services/pest-control-van-graphics": {
+"hero": {
+"src": "/img/vehicle-sectors/pest-control-van-graphics-1.webp",
+"alt": "White Citroën Berlingo for a pest control company, side view, calm two-colour graphics with name, ‘Pest control & prevention’ line and phone number, outside a suburban house"
+},
+"extra": [
+{
+"src": "/img/vehicle-sectors/pest-control-van-graphics-2.webp",
+"alt": "Two versions of the same pest control van side by side: discreet lettering only, and a bolder version with a small insect icon"
+}
+],
+"card": {
+"src": "/img/vehicle-sectors/pest-control-van-graphics-3.webp",
+"alt": "Pest control pickup on a farm track with door lettering and tailgate phone number"
+}
+},
+"/vehicle-graphics/sectors/automotive/recovery-breakdown-truck-graphics": {
+"hero": {
+"src": "/img/vehicle-sectors/recovery-breakdown-truck-graphics-1.webp",
+"alt": "Slide-bed recovery truck with clear company livery and large phone number, loading a car at the roadside in daylight"
+},
+"extra": [
+{
+"src": "/img/vehicle-sectors/recovery-breakdown-truck-graphics-2.webp",
+"alt": "Recovery truck headboard and cab doors showing name, 24-hour phone number and logo, rear three-quarter view"
+},
+{
+"src": "/img/vehicle-sectors/recovery-breakdown-truck-graphics-3.webp",
+"alt": "Two recovery trucks and a support van in matching livery parked in a yard at dusk, reflective lettering visible"
+}
+]
+},
+"/vehicle-graphics/sectors/automotive/valeting-detailing-van-graphics": {
+"hero": {
+"src": "/img/vehicle-sectors/valeting-detailing-van-graphics-1.webp",
+"alt": "Mobile valeting van with clean branded graphics parked on a driveway beside a freshly detailed car, water tank visible through open rear doors"
+},
+"extra": [
+{
+"src": "/img/vehicle-sectors/valeting-detailing-van-graphics-2.webp",
+"alt": "Detailer’s demo car with a satin colour-change wrap and small logo on the doors, in a studio unit"
+},
+{
+"src": "/img/vehicle-sectors/valeting-detailing-van-graphics-3.webp",
+"alt": "Estate car and matching branded box trailer used by a mobile detailer"
+}
+]
+},
+"/vehicle-graphics/sectors/construction-plant/tipper-truck-graphics": {
+"hero": {
+"src": "/img/vehicle-sectors/tipper-truck-graphics-1.webp",
+"alt": "Eight-wheel tipper with company livery on the cab and large name and phone number on the body sides, at an aggregates yard"
+},
+"extra": [
+{
+"src": "/img/vehicle-sectors/tipper-truck-graphics-2.webp",
+"alt": "Rear three-quarter view of a 3.5-tonne tipper van showing cab door graphics and lettering below the body top rail"
+}
+],
+"card": {
+"src": "/img/vehicle-sectors/tipper-truck-graphics-3.webp",
+"alt": "Two tippers from the same fleet side by side, showing consistent cab livery and body lettering"
+}
+},
+"/vehicle-graphics/sectors/food-drink/catering-trailer-graphics": {
+"hero": {
+"src": "/img/vehicle-sectors/catering-trailer-graphics-1.webp",
+"alt": "Catering trailer with hatch and awning open at a county show, bold printed graphics saying what it sells above the hatch"
+},
+"extra": [
+{
+"src": "/img/vehicle-sectors/catering-trailer-graphics-2.webp",
+"alt": "Side of a catering trailer showing menu board positions either side of the serving hatch"
+},
+{
+"src": "/img/vehicle-sectors/catering-trailer-graphics-3.webp",
+"alt": "Converted horsebox drinks bar with a fresh colour wrap and cut-vinyl name, hitched to a matching branded towing vehicle"
+}
+]
+},
+"/vehicle-graphics/sectors/agriculture-rural/farm-vehicle-graphics": {
+"hero": {
+"src": "/img/vehicle-sectors/farm-vehicle-graphics-1.webp",
+"alt": "Double-cab pickup in a Norfolk farmyard, side view, farm name and logo on the front doors and a 'farm shop' line on the rear doors"
+},
+"extra": [
+{
+"src": "/img/vehicle-sectors/farm-vehicle-graphics-2.webp",
+"alt": "Rear of a farm pickup with a hard-top canopy showing the web address and phone number on the canopy and tailgate"
+}
+],
+"card": {
+"src": "/img/vehicle-sectors/farm-vehicle-graphics-3.webp",
+"alt": "Small van for a farm shop or egg round parked in a market town, with produce-branded graphics"
+}
+},
+"/vehicle-graphics/sectors/agriculture-rural/tree-surgeon-arborist-van-graphics": {
+"hero": {
+"src": "/img/vehicle-sectors/tree-surgeon-arborist-van-graphics-1.webp",
+"alt": "Tree surgery crew's tipper with a chipper hitched, parked on a residential street, business name on the cab doors and phone number on the tailgate"
+},
+"extra": [
+{
+"src": "/img/vehicle-sectors/tree-surgeon-arborist-van-graphics-2.webp",
+"alt": "Close-up of a tipper cab door and headboard with an arborist business logo and web address"
+}
+],
+"card": {
+"src": "/img/vehicle-sectors/tree-surgeon-arborist-van-graphics-3.webp",
+"alt": "Double-cab pickup and crew van for an arborist business in matching livery beside woodland"
+}
+},
+"/vehicle-graphics/sectors/logistics-transport/coach-minibus-graphics": {
+"hero": {
+"src": "/img/vehicle-sectors/coach-minibus-graphics-1.webp",
+"alt": "Full-size 56-seater touring coach with an operator livery wrap, side view, parked at a school gate"
+},
+"extra": [
+{
+"src": "/img/vehicle-sectors/coach-minibus-graphics-2.webp",
+"alt": "16-seat minibus side view showing operator name and web address on the lower panels below the windows"
+}
+],
+"card": {
+"src": "/img/vehicle-sectors/coach-minibus-graphics-3.webp",
+"alt": "Accessible community minibus with tail lift and friendly cut vinyl graphics outside a village hall"
+}
+},
+"/vehicle-graphics/sectors/logistics-transport/hgv-lorry-curtainside-graphics": {
+"hero": {
+"src": "/img/vehicle-sectors/hgv-lorry-curtainside-graphics-1.webp",
+"alt": "Tractor unit and box trailer in a haulier's livery on a dual carriageway, large logo and web address on the trailer side"
+},
+"extra": [
+{
+"src": "/img/vehicle-sectors/hgv-lorry-curtainside-graphics-2.webp",
+"alt": "Rigid curtainside lorry, side view, showing cab door livery and fleet number with conspicuity markings left clear"
+},
+{
+"src": "/img/vehicle-sectors/hgv-lorry-curtainside-graphics-4.webp",
+"alt": "Haulage yard with tractor units carrying matching cab livery and fleet numbers"
+}
+],
+"card": {
+"src": "/img/vehicle-sectors/hgv-lorry-curtainside-graphics-3.webp",
+"alt": "Rear doors of a fridge trailer with operator name and web address placed around rear marker plates and lights"
+}
+},
+"/vehicle-graphics/sectors/automotive/garage-mot-courtesy-car-graphics": {
+"hero": {
+"src": "/img/vehicle-sectors/garage-mot-courtesy-car-graphics-1.webp",
+"alt": "Small hatchback courtesy car with garage name, services line and phone number, parked outside an independent garage workshop"
+},
+"extra": [
+{
+"src": "/img/vehicle-sectors/garage-mot-courtesy-car-graphics-2.webp",
+"alt": "Rear of a courtesy car showing phone number, web address and a “courtesy car” line on the boot"
+},
+{
+"src": "/img/vehicle-sectors/garage-mot-courtesy-car-graphics-3.webp",
+"alt": "Garage collection van and two courtesy cars in matching livery lined up on the forecourt"
+}
+]
+},
+"/vehicle-graphics/sectors/food-drink/brewery-drinks-delivery-graphics": {
+"hero": {
+"src": "/img/vehicle-sectors/brewery-drinks-delivery-graphics-1.webp",
+"alt": "Brewery Luton van with tail lift, large label-style logo and illustration on the box, unloading kegs outside a village pub"
+},
+"extra": [
+{
+"src": "/img/vehicle-sectors/brewery-drinks-delivery-graphics-2.webp",
+"alt": "Cab door of a drinks delivery van with logo and trade orders phone number, close-up"
+},
+{
+"src": "/img/vehicle-sectors/brewery-drinks-delivery-graphics-3.webp",
+"alt": "Small electric panel van with matching brewery livery parked outside a taproom"
+}
+]
+},
+"/vehicle-graphics/sectors/retail-local-services/florist-van-graphics": {
+"hero": {
+"src": "/img/vehicle-sectors/florist-van-graphics-1.webp",
+"alt": "Small white or pastel van for a florist, side view, elegant script name, floral print panel and Instagram handle, parked outside a country wedding venue"
+},
+"extra": [
+{
+"src": "/img/vehicle-sectors/florist-van-graphics-2.webp",
+"alt": "Rear doors of a florist's small van showing web address, social handle and phone number, with a bucket of flowers being unloaded"
+},
+{
+"src": "/img/vehicle-sectors/florist-van-graphics-3.webp",
+"alt": "Close-up of printed floral graphics on a van side panel, showing print sharpness and colour"
+}
+]
+},
+"/vehicle-graphics/sectors/retail-local-services/mobile-hairdresser-beauty-car-graphics": {
+"hero": {
+"src": "/img/vehicle-sectors/mobile-hairdresser-beauty-car-graphics-1.webp",
+"alt": "Small hatchback (e.g. Fiat 500 or Ford Fiesta) for a mobile hairdresser, side view, elegant door lettering, logo and Instagram handle, parked outside a terraced house"
+},
+"extra": [
+{
+"src": "/img/vehicle-sectors/mobile-hairdresser-beauty-car-graphics-2.webp",
+"alt": "Rear of a small hatchback showing a booking web address and social handle on the boot lid"
+},
+{
+"src": "/img/vehicle-sectors/mobile-hairdresser-beauty-car-graphics-3.webp",
+"alt": "Mobile beauty therapist's small van with salon-colour logo and services line, parked on a residential street"
+}
+]
+},
+"/vehicle-graphics/sectors/events-leisure/sports-club-minibus-graphics": {
+"hero": {
+"src": "/img/vehicle-sectors/sports-club-minibus-graphics-1.webp",
+"alt": "White 17-seat Ford Transit minibus for a local football club, side view, club crest, colours band and sponsor logos, parked beside a grass pitch"
+},
+"extra": [
+{
+"src": "/img/vehicle-sectors/sports-club-minibus-graphics-2.webp",
+"alt": "Rear of a club minibus with club name, web address and main sponsor logo, emergency exit marking visible and uncovered"
+}
+],
+"card": {
+"src": "/img/vehicle-sectors/sports-club-minibus-graphics-3.webp",
+"alt": "Close-up of a removable sponsor panel on the lower side of a club minibus"
+}
+},
+"/vehicle-graphics/sectors/health-care-public/charity-community-vehicle-graphics": {
+"hero": {
+"src": "/img/vehicle-sectors/charity-community-vehicle-graphics-1.webp",
+"alt": "White panel van for a food bank or community charity, side view, charity name, one-line purpose and 'volunteer with us' web address, outside a community hall"
+},
+"extra": [
+{
+"src": "/img/vehicle-sectors/charity-community-vehicle-graphics-2.webp",
+"alt": "Rear doors of a charity van showing a donate or volunteer call to action, registered charity number and a neat strip of funder logos"
+}
+],
+"card": {
+"src": "/img/vehicle-sectors/charity-community-vehicle-graphics-3.webp",
+"alt": "Community transport minibus with its accessible ramp lowered and the livery kept clear of the ramp and handles"
+}
+},
+"/vehicle-graphics/sectors/health-care-public/school-minibus-graphics": {
+"hero": {
+"src": "/img/vehicle-sectors/school-minibus-graphics-1.webp",
+"alt": "White 17-seat minibus for a school, side view, school name and crest below the window line in school colours, parked by the school entrance"
+},
+"extra": [
+{
+"src": "/img/vehicle-sectors/school-minibus-graphics-2.webp",
+"alt": "Rear of a school minibus with clear space for required signs and exit markings, and a small web address"
+}
+],
+"card": {
+"src": "/img/vehicle-sectors/school-minibus-graphics-3.webp",
+"alt": "Close-up of a school crest reproduced in vinyl on a minibus front door"
+}
+},
+"/vehicle-graphics/sectors/retail-local-services/security-company-vehicle-graphics": {
+"hero": {
+"src": "/img/vehicle-sectors/security-company-vehicle-graphics-1.webp",
+"alt": "Dark grey or white patrol car for a private security company, side view, bold company name in its own brand colours with reflective lettering, on an industrial estate at dusk"
+},
+"extra": [
+{
+"src": "/img/vehicle-sectors/security-company-vehicle-graphics-2.webp",
+"alt": "Rear of a security patrol vehicle at night, company name and 24-hour number shown in reflective vinyl in headlight glare"
+}
+],
+"card": {
+"src": "/img/vehicle-sectors/security-company-vehicle-graphics-3.webp",
+"alt": "Small van for an alarm and CCTV installer, side view with logo, services line and phone number, outside a commercial unit"
+}
+},
+"/vehicle-graphics/sectors/agriculture-rural/agricultural-contractor-graphics": {
+"hero": {
+"src": "/img/vehicle-sectors/agricultural-contractor-graphics-1.webp",
+"alt": "Agricultural contractor's tractor and grain trailer in a stubble field, matching business name and phone number on the trailer side and tractor bonnet"
+},
+"extra": [
+{
+"src": "/img/vehicle-sectors/agricultural-contractor-graphics-2.webp",
+"alt": "Rear of a farm trailer on a country lane with the phone number placed clear of lights, number plate and reflectors"
+}
+],
+"card": {
+"src": "/img/vehicle-sectors/agricultural-contractor-graphics-3.webp",
+"alt": "Contractor's service van and double-cab pickup in matching livery parked in a farmyard"
+}
+},
+"/vehicle-graphics/sectors/agriculture-rural/horsebox-trailer-graphics": {
+"hero": {
+"src": "/img/vehicle-sectors/horsebox-trailer-graphics-1.webp",
+"alt": "7.5-tonne horsebox at a showground, side view, yard name and sweeping stripe graphics along the body, ramp closed"
+},
+"extra": [
+{
+"src": "/img/vehicle-sectors/horsebox-trailer-graphics-2.webp",
+"alt": "Close-up of horse names in cut vinyl on a horsebox groom's door, with rivets and panel seams visible"
+},
+{
+"src": "/img/vehicle-sectors/horsebox-trailer-graphics-3.webp",
+"alt": "Box trailer with printed business graphics hitched to a pickup at a country show"
+}
+]
+},
+"/vehicle-graphics/sectors/health-care-public/council-public-sector-fleet-graphics": {
+"hero": {
+"src": "/img/vehicle-sectors/council-public-sector-fleet-graphics-1.webp",
+"alt": "Line-up of a council fleet at a depot: electric car, panel van and tipper in matching corporate livery with fleet numbers"
+},
+"extra": [
+{
+"src": "/img/vehicle-sectors/council-public-sector-fleet-graphics-2.webp",
+"alt": "Side of a council panel van with crest, service name such as 'Housing repairs', contact details and fleet number in consistent positions"
+}
+],
+"card": {
+"src": "/img/vehicle-sectors/council-public-sector-fleet-graphics-3.webp",
+"alt": "Rear of a council highways tipper with Chapter 8 rear chevrons and fleet number"
+}
+},
+"/vehicle-graphics/sectors/health-care-public/mobile-healthcare-van-graphics": {
+"hero": {
+"src": "/img/vehicle-sectors/mobile-healthcare-van-graphics-1.webp",
+"alt": "Mobile health clinic van or small bus in plain brand colours, side view, service name and 'drop-in clinic' wording, parked in a community car park, with no emergency-style markings"
+},
+"extra": [
+{
+"src": "/img/vehicle-sectors/mobile-healthcare-van-graphics-2.webp",
+"alt": "Entrance side of a mobile clinic unit with door, step and awning open, and eye-level service and booking information beside the door"
+}
+],
+"card": {
+"src": "/img/vehicle-sectors/mobile-healthcare-van-graphics-3.webp",
+"alt": "White panel van used for pharmacy or medical deliveries, rear view, organisation logo and phone number on the rear doors"
+}
+},
+"/vehicle-graphics/sectors/events-leisure/event-company-vehicle-graphics": {
+"hero": {
+"src": "/img/vehicle-sectors/event-company-vehicle-graphics-1.webp",
+"alt": "Luton box van and matching box trailer for a marquee and event hire company, side view, bold logo and event photography, parked on a showground field"
+},
+"extra": [
+{
+"src": "/img/vehicle-sectors/event-company-vehicle-graphics-2.webp",
+"alt": "Rear of an event company's box van with shutter open during a load-out, web address and phone number on the panels around it"
+}
+],
+"card": {
+"src": "/img/vehicle-sectors/event-company-vehicle-graphics-3.webp",
+"alt": "Small van for a sound and lighting hire business, side view with logo and services line, outside a village hall"
+}
+},
+"/vehicle-graphics/sectors/events-leisure/promotional-vehicle-graphics": {
+"hero": {
+"src": "/img/vehicle-sectors/promotional-vehicle-graphics-1.webp",
+"alt": "Fully wrapped promotional hatchback (e.g. Mini) with bold campaign graphics and a product image, side view, in a town-centre square"
+},
+"extra": [
+{
+"src": "/img/vehicle-sectors/promotional-vehicle-graphics-2.webp",
+"alt": "Rear of a promotional van at an outdoor event with a large QR code, hashtag and web address, people gathered nearby"
+},
+{
+"src": "/img/vehicle-sectors/promotional-vehicle-graphics-3.webp",
+"alt": "Wrapped sampling van with an open side door and branded display, parked at a summer show"
+}
+]
+},
+"/vehicle-graphics/sectors/retail-local-services/it-telecoms-engineer-van-graphics": {
+"hero": {
+"src": "/img/vehicle-sectors/it-telecoms-engineer-van-graphics-1.webp",
+"alt": "Medium panel van for an IT support and data cabling company, side view, clean modern livery with services line and web address, parked outside an office building"
+},
+"extra": [
+{
+"src": "/img/vehicle-sectors/it-telecoms-engineer-van-graphics-2.webp",
+"alt": "Rear doors of a telecoms engineer's van with web address, phone number and a QR code, roof ladder visible"
+}
+],
+"card": {
+"src": "/img/vehicle-sectors/it-telecoms-engineer-van-graphics-3.webp",
+"alt": "Small van and company car for an IT firm side by side, showing the same livery repeated across both vehicles"
+}
+},
+"/vehicle-graphics/sectors/retail-local-services/retail-delivery-van-graphics": {
+"hero": {
+"src": "/img/vehicle-sectors/retail-delivery-van-graphics-1.webp",
+"alt": "White Luton box van with tail lift for a furniture and bed shop, side view, shop name, product photography and web address, parked outside a house"
+},
+"extra": [
+{
+"src": "/img/vehicle-sectors/retail-delivery-van-graphics-2.webp",
+"alt": "Medium panel van for a hardware or appliance shop, three-quarter rear view, rear doors showing web address and phone number"
+}
+],
+"card": {
+"src": "/img/vehicle-sectors/retail-delivery-van-graphics-3.webp",
+"alt": "Refrigerated small van for a farm shop or butcher, side view with logo and 'local delivery' wording, outside a village shop"
+}
+}
+}

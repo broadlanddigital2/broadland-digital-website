@@ -578,7 +578,8 @@ ${heroImg ? `<figure class="bdhub-hero-img">${heroImg}</figure>` : ''}
   });
   // inspiration gallery → grid
   out = out.replace(/<section\b[^>]*class="container section-padding\s+section-three row"[^>]*>[\s\S]*?<\/section>/, (block) => {
-    const gTitle = decode(((block.match(/<h3 class="section-three-title">([\s\S]*?)<\/h3>/) || [])[1] || 'Inspiration.').replace(/<br\s*\/?>/g, ' ').replace(/<[^>]+>/g, '')).replace(/\s+/g, ' ').trim();
+    const pageWord = title.replace(/\.\s*$/, '').trim();
+    const gTitle = pageWord ? `${pageWord.charAt(0).toUpperCase()}${pageWord.slice(1).toLowerCase()} we've produced.` : 'Inspiration.';
     const imgs = [...block.matchAll(/<img\b[^>]*>/g)].map((m) => m[0]);
     if (!imgs.length) return '';
     const big = (tag) => { const ss = (tag.match(/srcset="([^"]*)"/) || [])[1] || ''; const c = ss.split(',').map((x) => x.trim().split(/\s+/)).filter((x) => x[1]).sort((a, b) => parseInt(b[1]) - parseInt(a[1])); const fit = c.find((x) => parseInt(x[1]) <= 1600); return (fit || c[c.length - 1] || [(tag.match(/src="([^"]+)"/) || [])[1]])[0]; };
@@ -588,10 +589,21 @@ ${heroImg ? `<figure class="bdhub-hero-img">${heroImg}</figure>` : ''}
       return `<a class="bdsub-ph${i >= 9 ? ' bdsub-more' : ''}" href="${big(tag)}" data-bd-zoom aria-label="${alt ? esc(decode(alt)) + ' — ' : ''}enlarge photo">${t}</a>`;
     }).join('');
     return `<section class="bdsub-gallery-sec"><div class="wrap"><div class="bdhub-head"><h2>${esc(gTitle)}</h2></div>
-<div class="bdsub-gallery" data-open="false">${cells}</div>
+<div class="bdsub-gallery${imgs.length < 3 ? ` bdsub-gallery--n${imgs.length}` : ''}" data-open="false">${cells}</div>
 ${imgs.length > 9 ? `<button type="button" class="bdsub-showall" onclick="this.previousElementSibling.dataset.open='true';this.remove()">Show all ${imgs.length} photos</button>` : ''}
 </div></section>`;
   });
+  // intro: text beside a photo from the page's own gallery (not the hero photo)
+  if (!['/contact-us', '/get-a-quote'].includes(path)) {
+    const heroSrc = (heroImg.match(/\ssrc="([^"]+)"/) || [])[1] || '';
+    const gal = [...out.matchAll(/<a class="bdsub-ph[^"]*"[^>]*>(<img\b[^>]*>)/g)].map((m) => m[1]).filter((t) => !heroSrc || !t.includes(heroSrc));
+    const pic = gal[1] || gal[0] || '';
+    out = out.replace(/<section\b[^>]*class="container section-padding\s+section-one row no-gutters[^"]*"[^>]*>\s*<div class="section-one-content[^"]*">([\s\S]*?)<\/div>\s*<\/section>/, (m, inner) => {
+      if (!inner.replace(/<!--[\s\S]*?-->/g, '').replace(/<[^>]+>/g, '').trim()) return '<section class="bdsub-intro bdsub-intro--empty"><div class="wrap"><div class="bdsub-intro-text"></div></div></section><!--bdsub-intro-end-->';
+      const img = pic ? pic.replace(/\ssizes="[^"]*"/, ' sizes="(max-width: 1000px) 100vw, 520px"').replace(/\sclass="[^"]*"/, '') : '';
+      return `<section class="bdsub-intro${img ? '' : ' bdsub-intro--solo'}"><div class="wrap"><div class="bdsub-intro-text section-one-content">${inner}</div>${img ? `<figure class="bdsub-intro-img">${img}</figure>` : ''}</div></section><!--bdsub-intro-end-->`;
+    });
+  }
   // closing band before the page wrapper ends (= before the footer)
   out = out.replace(/(<\/div>\s*)(<footer\b)/, `<section class="bdhub-band"><div class="wrap"><div><h2>Ready to talk about your project?</h2><p>Tell us what you need and we'll come back to you, usually the same working day.</p></div>
 <div class="bdhub-cta"><a class="bdhub-btn bdhub-btn--solid" href="/get-a-quote/?service=${cls}">Get a free quote</a><a class="bdhub-btn bdhub-btn--ghost" href="tel:${tel}">Call ${esc(menu.phone)}</a></div></div></section>
@@ -629,7 +641,7 @@ function vehicleExtras(h, path, title) {
   if (v.faqs?.length) ld.push({ '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: v.faqs.map(([q, a]) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })) });
   let out = h;
   // after the intro text
-  out = out.replace(/(<section\b[^>]*class="container section-padding\s+section-one[^"]*"[^>]*>[\s\S]*?<\/section>)/, (m) => m + included);
+  out = out.includes('<!--bdsub-intro-end-->') ? out.replace('<!--bdsub-intro-end-->', included) : out.replace(/(<section\b[^>]*class="container section-padding\s+section-one[^"]*"[^>]*>[\s\S]*?<\/section>)/, (m) => m + included);
   // before the gallery (or the closing band): prices, hubs, steps; FAQs just before the closing band
   const mid = prices + hubs + steps;
   out = /<section class="bdsub-gallery-sec">/.test(out) ? out.replace('<section class="bdsub-gallery-sec">', mid + '<section class="bdsub-gallery-sec">') : out.replace('<section class="bdhub-band">', mid + '<section class="bdhub-band">');
