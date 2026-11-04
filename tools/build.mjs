@@ -100,8 +100,15 @@ function localPath(href) {
   return (p === '/' ? '/' : p + (slash || !/^\/(blog|api)(\/|$)/.test(p) ? '/' : '')) + (query ? '?' + query : '') + (frag ? '#' + frag : '');
 }
 
+// Landing pages in WordPress (e.g. /get-a-quote) had only the logo in their header: give them the site's full header
+// (taken from the Signage hub, so menu, phone and "Get a quote" match the rest of the site).
+const FULL_HEADER_PAGES = ['/get-a-quote'];
 function transform(html, path) {
   let h = html;
+  if (FULL_HEADER_PAGES.includes(path) && captured.get('/signage-home')) {
+    const full = (captured.get('/signage-home').match(/<header\b[^>]*id="masthead"[\s\S]*?<\/header>/) || [])[0];
+    if (full) h = h.replace(/<header\b[^>]*id="masthead"[\s\S]*?<\/header>/, () => full);
+  }
   // Cloudflare Rocket Loader renamed every script type; WP Rocket added markers.
   h = h.replace(/\stype=["'][0-9a-f]{16,}-text\/javascript["']/g, '').replace(/\sdata-rocket-[a-z-]+(=("[^"]*"|'[^']*'))?/g, '')
     .replace(/\sdata-minify="1"/g, '').replace(/\sdata-cfasync="false"/g, '');
@@ -159,7 +166,7 @@ function transform(html, path) {
     .replace(/url\((\/wp-content\/uploads\/[^)'"?]+)\)/g, (m, src) => (OPT[src] ? `url(${OPT[src]})` : m));
   h = h.replace(/\ssizes="\(max-width: \d+px\) 100vw, \d+px"/g, ' sizes="(max-width: 1366px) 100vw, 1166px"')
     .replace(/<img\b(?![^>]*\b(?:loading|fetchpriority)=)(?![^>]*custom-logo)/g, '<img loading="lazy"');
-  if (path === '/get-a-quote') h = quotePage(h);
+  if (path === '/get-a-quote') h = quotePage(h).replace(/(<ul[^>]*class="menu bdh-links"[\s\S]*?<\/ul>)/, (m) => m.replace(/\saria-current="[^"]*"/g, ''));
   // Long legal pages: slightly smaller text (site/bd-pages.css .bd-legal)
   if (['/privacy-policy', '/returns', '/refund_returns'].includes(path)) h = h.replace(/class="category page\b/, 'class="category page bd-legal');
   h = h.replace(/<\/head>/i, `<link rel="stylesheet" href="/_static/bd-pages.css?v=${PAGES_V}">\n</head>`);
