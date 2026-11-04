@@ -22,6 +22,9 @@
   },
   // Live: broadlanddigital.co.uk and www are served by this worker (www redirects to the bare domain in
   // worker/index.js). The DNS records stay as they are (proxied); to go back to WordPress, remove these routes.
+  // Keep the preview address (broadland-digital-website.justin-b8f.workers.dev) on: with routes set, deploys
+  // otherwise switch it off.
+  "workers_dev": true,
   "routes": [
     { "pattern": "broadlanddigital.co.uk/*", "zone_name": "broadlanddigital.co.uk" },
     { "pattern": "www.broadlanddigital.co.uk/*", "zone_name": "broadlanddigital.co.uk" }
