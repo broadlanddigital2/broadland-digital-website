@@ -12,7 +12,7 @@
 //
 // Pages the CRM manages (Marketing → SEO pages) and the blog are not built here: the worker serves them live inside
 // dist/_crm-page, a copy of a WordPress page with its content taken out (see worker/crm-pages.js).
-import { finishSeo, NOINDEX as SEO_NOINDEX } from './seo.mjs';
+import { finishSeo, pruneAssets, NOINDEX as SEO_NOINDEX } from './seo.mjs';
 import { readFileSync, writeFileSync, mkdirSync, rmSync, existsSync, readdirSync, statSync, copyFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { dirname, join, relative } from 'node:path';
@@ -870,7 +870,7 @@ for (const [p, h] of FINISHED) write(p === '/' ? 'index.html' : `${p.slice(1)}/i
 // photo pools for the worker's CRM pages (keyword cards)
 writeFileSync(join(ROOT, 'worker/seo-sections.json'), JSON.stringify({ sections: SEO_SECTIONS, videos: VIDEOS, pools: Object.fromEntries([...(FINISHED.pools || new Map())].map(([k, list]) => [k, list.map((t) => ({ src: (t.match(/\ssrc="([^"]+)"/) || [])[1], alt: decode((t.match(/\salt="([^"]*)"/) || [])[1] || '') })).filter((x) => x.src)])) }) + '\n');
 const sh = shell();
-write('_crm-page/index.html', sh);
+write('_crm-page/index.html', pruneAssets(sh));
 write('404.html', page404(sh));
 write('_static/bd-forms.js', formsJs);
 write('_static/bd-consent.js', consentJs);
@@ -916,6 +916,33 @@ writeFileSync(join(ROOT, 'worker/static-paths.json'), JSON.stringify([...staticP
     return readFileSync(fp, 'utf8').replace(/url\(\s*(['"]?)(?!data:|https?:|\/\/|\/|#)([^'")]+)\1\s*\)/g, (m, q, u) => `url(${q}${new URL(u, 'https://x' + dir).pathname}${q})`)
       .replace(/\/\*# sourceMappingURL=[^*]*\*\//g, '');
   };
+  // Bootstrap is 190 KB; the pages use a small part of it. Keep only rules whose classes appear in a page or a script.
+  const used = new Set();
+  for (const f of files) for (const m of readFileSync(f, 'utf8').matchAll(/class=["']([^"']+)["']/g)) for (const c of m[1].split(/\s+/)) if (c) used.add(c);
+  const jsWords = (d) => { if (!existsSync(d)) return; for (const f of readdirSync(d)) { const p = join(d, f); if (statSync(p).isDirectory()) jsWords(p); else if (f.endsWith('.js')) for (const w of readFileSync(p, 'utf8').match(/[a-zA-Z][\w-]{1,40}/g) || []) used.add(w); } };
+  jsWords(join(DIST, '_static')); jsWords(join(DIST, 'wp-content/themes')); jsWords(join(DIST, 'wp-content/cache/min/1/wp-content/themes'));
+  const SAFE = /^(show|showing|hide|hiding|active|open|collapse|collapsing|collapsed|fade|modal|dropdown|navbar|offcanvas|was-validated|is-|disabled|sticky|visually-hidden|sr-only)/;
+  const splitTop = (sel) => { const out = []; let depth = 0, cur = ''; for (const ch of sel) { if (ch === '(') depth++; if (ch === ')') depth--; if (ch === ',' && !depth) { out.push(cur); cur = ''; } else cur += ch; } out.push(cur); return out; };
+  const purge = (css) => {
+    let out = '', i = 0;
+    while (i < css.length) {
+      const open = css.indexOf('{', i);
+      if (open < 0) break;
+      const head = css.slice(i, open).trim();
+      // find the matching close brace
+      let depth = 1, j = open + 1;
+      while (j < css.length && depth) { if (css[j] === '{') depth++; else if (css[j] === '}') depth--; j++; }
+      const inner = css.slice(open + 1, j - 1);
+      if (head.startsWith('@media') || head.startsWith('@supports') || head.startsWith('@layer')) { const p = purge(inner); if (p.trim()) out += `${head}{${p}}`; }
+      else if (head.startsWith('@')) out += `${head}{${inner}}`;
+      else {
+        const keep = splitTop(head).filter((sel) => { const cls = [...sel.matchAll(/\.([a-zA-Z_][\w-]*)/g)].map((m) => m[1]); return cls.every((c) => used.has(c) || SAFE.test(c)); });
+        if (keep.length) out += `${keep.join(',')}{${inner}}`;
+      }
+      i = j;
+    }
+    return out;
+  };
   for (const f of files) {
     let h = readFileSync(f, 'utf8');
     const headEnd = h.indexOf('</head>');
@@ -943,8 +970,9 @@ writeFileSync(join(ROOT, 'worker/static-paths.json'), JSON.stringify([...staticP
       if (/qbw1hzk\.css/.test(href)) { fontTag = href; head = head.replace(tag, ''); continue; }
       if (!keep(href)) { head = head.replace(tag, ''); continue; }
       if (/^https?:|^\/\//.test(href)) continue;
-      const css = readCss(href);
+      let css = readCss(href);
       if (css == null) continue;
+      if (/bootstrap\.min\.css/.test(href) && !/_crm-page|404\.html/.test(f) && !process.env.NO_PURGE) css = purge(css);
       local.push({ tag, href, media, css });
     }
     if (local.length > 1) {
