@@ -1,3 +1,4 @@
+import { leadHtml, blockHtml } from '../worker/seo-blocks.js';
 // SEO finishing pass over every built page (tools/build.mjs calls finishSeo once all pages are built), for the points
 // the CRM's SEO optimiser scores: titles 30–65 characters, unique and ending "| Broadland Digital"; meta descriptions
 // 120–165 characters and unique; one H1; alt text and width/height on every image; FAQs (with FAQPage schema) on shop
@@ -118,6 +119,26 @@ const PAGE_EXTRA = {
   },
 };
 
+// Keyword copy: a lead paragraph under the hero, and the keyword section above the FAQs / closing band / footer.
+export function addBlocks(body, sec, video) {
+  if (!sec && !video) return body;
+  const lead = leadHtml(sec);
+  if (lead) {
+    const h1end = body.indexOf('</h1>');
+    const secEnd = h1end >= 0 ? body.indexOf('</section>', h1end) : -1;
+    const nextH = h1end >= 0 ? body.slice(h1end + 5).search(/<h[1-6]\b/) : -1;
+    if (secEnd > 0 && secEnd - h1end < 6000 && (nextH < 0 || h1end + 5 + nextH > secEnd)) body = body.slice(0, secEnd + 10) + `<div class="bdkw-leadband">${lead}</div>` + body.slice(secEnd + 10);
+    else if (h1end >= 0) body = body.slice(0, h1end + 5) + lead + body.slice(h1end + 5);
+  }
+  const block = blockHtml(sec, video);
+  if (block) {
+    const at = [/<section class="bdhub-faq/, /<section class="bdhub-band">/, /<footer\b/, /<\/main>/].map((r) => body.search(r)).find((i) => i >= 0);
+    if (at != null) body = body.slice(0, at) + block + body.slice(at);
+    else { const last = body.lastIndexOf('</section>'); if (last >= 0) body = body.slice(0, last + 10) + block + body.slice(last + 10); }
+  }
+  return body;
+}
+
 export function fixHeadings(html) {
   const hasH1 = /<h1\b/.test(html);
   let prev = hasH1 ? 0 : -1;
@@ -224,7 +245,7 @@ function shareImage(h) {
   return h.replace('</head>', `<meta property="og:image" content="${url}">\n<meta name="twitter:image" content="${url}">\n</head>`);
 }
 
-export function finishSeo(pages, { trail, sizes = {}, faqs = {}, keywords = {} }) {
+export function finishSeo(pages, { trail, sizes = {}, faqs = {}, keywords = {}, sections = {}, videos = {} }) {
   const info = new Map();
   for (const [path, h] of pages) {
     const hd = h.slice(0, h.indexOf('</head>'));
@@ -270,7 +291,7 @@ export function finishSeo(pages, { trail, sizes = {}, faqs = {}, keywords = {} }
     const cut = Math.max(0, h.indexOf('</header>'));
     const head = h.slice(0, cut);
     let body = h.slice(cut);
-    const altBase = (name || '').replace(/\.\s*$/, '');
+    const altBase = (name || '').replace(/\.\s*$/, '').replace(/([a-z])\.(?=[A-Z])/g, '$1. ');
     body = body.replace(/<img\b[^>]*\ssrc="(?:|[^"]*woo-block-design\.png[^"]*)"[^>]*>/g, '').replace(/(\ssrc=")\/assets\/images\//g, '$1/wp-content/themes/bd-2022/assets/images/');
     body = body.replace(/<img\b[^>]*>/g, (tag) => {
       let t2 = tag;
@@ -296,6 +317,7 @@ export function finishSeo(pages, { trail, sizes = {}, faqs = {}, keywords = {} }
       body = body.replace(ex.after, `$1${ex.html}`);
       for (const [a, b] of ex.replace || []) body = body.replace(a, b);
     }
+    if (!NOINDEX.test(path)) body = addBlocks(body, sections[path], videos[path]);
     body = fixHeadings(body);
     // FAQs on shop and product pages (with FAQPage schema), when the page has none
     if (shopLike && !/FAQPage/.test(head)) {

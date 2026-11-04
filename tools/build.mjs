@@ -769,7 +769,14 @@ const write = (rel, data) => {
 };
 const built = new Map([...staticPaths].map((p) => [p, transform(captured.get(p), p)]));
 const IMG_SIZES = existsSync(join(ROOT, 'content/img-sizes.json')) ? JSON.parse(readFileSync(join(ROOT, 'content/img-sizes.json'), 'utf8')) : {};
-for (const [p, h] of finishSeo(built, { trail, sizes: IMG_SIZES, faqs: JSON.parse(readFileSync(join(ROOT, 'content/faqs.json'), 'utf8')), keywords: JSON.parse(readFileSync(join(ROOT, 'content/seo-keywords.json'), 'utf8')) })) write(p === '/' ? 'index.html' : `${p.slice(1)}/index.html`, h);
+// Keyword copy blocks written per page (content/seo-sections/*.json): their keywords win over seo-keywords.json.
+const SEO_SECTIONS = {};
+for (const f of (existsSync(join(ROOT, 'content/seo-sections')) ? readdirSync(join(ROOT, 'content/seo-sections')) : []).filter((f) => f.endsWith('.json')).sort()) Object.assign(SEO_SECTIONS, JSON.parse(readFileSync(join(ROOT, 'content/seo-sections', f), 'utf8')));
+const VIDEOS = existsSync(join(ROOT, 'content/videos.json')) ? JSON.parse(readFileSync(join(ROOT, 'content/videos.json'), 'utf8')) : {};
+const SEO_KW = JSON.parse(readFileSync(join(ROOT, 'content/seo-keywords.json'), 'utf8'));
+for (const [p, x] of Object.entries(SEO_SECTIONS)) if (x.primary) SEO_KW[p] = [x.primary, x.secondary || []];
+writeFileSync(join(ROOT, 'worker/seo-sections.json'), JSON.stringify({ sections: SEO_SECTIONS, videos: VIDEOS }) + '\n');
+for (const [p, h] of finishSeo(built, { trail, sizes: IMG_SIZES, faqs: JSON.parse(readFileSync(join(ROOT, 'content/faqs.json'), 'utf8')), keywords: SEO_KW, sections: SEO_SECTIONS, videos: VIDEOS })) write(p === '/' ? 'index.html' : `${p.slice(1)}/index.html`, h);
 const sh = shell();
 write('_crm-page/index.html', sh);
 write('404.html', page404(sh));
@@ -786,7 +793,7 @@ let publicCopied = 0;
 if (existsSync(join(ROOT, 'site/public'))) for (const f of walk(join(ROOT, 'site/public'))) { const rel = relative(join(ROOT, 'site/public'), f); mkdirSync(dirname(join(OUT, rel)), { recursive: true }); copyFileSync(f, join(OUT, rel)); publicCopied++; }
 
 // Sitemap (the worker adds the CRM's pages and blog posts), robots.txt
-const indexable = [...staticPaths].filter((p) => !/thank-you|quote-requested/.test(p) && !SEO_NOINDEX.test(p) && !/<meta name="robots" content="[^"]*noindex/.test(captured.get(p))).sort();
+const indexable = [...staticPaths].filter((p) => !/thank-you|quote-requested|\/page\/\d+$/.test(p) && !SEO_NOINDEX.test(p) && !/<meta name="robots" content="[^"]*noindex/.test(captured.get(p))).sort();
 write('sitemap.xml', `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${indexable.map((p) => `<url><loc>${ORIGIN}${p === '/' ? '/' : p + '/'}</loc>${lastmod.get(p) ? `<lastmod>${lastmod.get(p).slice(0, 10)}</lastmod>` : ''}</url>`).join('\n')}\n</urlset>\n`);
 write('robots.txt', `User-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /_crm-page/\n\nSitemap: ${ORIGIN}/sitemap.xml\n`);
 

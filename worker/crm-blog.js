@@ -1,3 +1,5 @@
+import SEO from './seo-sections.json';
+import { decorateCrmHtml, kwTitle, kwDesc } from './seo-blocks.js';
 /**
  * CRM blog (shared by the Le Man Cave, Auto Opulence, Race Car Graphics and Broadland Digital workers; keep the copies in step).
  *
@@ -149,9 +151,10 @@ export async function blogResponse(request, env, opts) {
 
   if (path === base) {
     const posts = (await fetchPosts(opts)) || [];
-    const title = `${opts.blogTitle} | ${opts.siteName}`;
-    const html = setHead(fill(shell, listHtml(opts, posts), title), {
-      title, description: opts.description || opts.intro, url: origin + base, image: posts[0]?.image?.url,
+    const kw = SEO.sections[base];
+    const title = kwTitle(`${opts.blogTitle} | ${opts.siteName}`, kw?.primary);
+    const html = setHead(fill(shell, decorateCrmHtml(listHtml(opts, posts), kw, SEO.videos[base]), title), {
+      title, description: kwDesc(opts.description || opts.intro, kw?.primary), url: origin + base, image: posts[0]?.image?.url,
       jsonLd: { '@context': 'https://schema.org', '@graph': [
         { '@type': 'Blog', name: opts.blogTitle, url: origin + base, publisher: { '@type': 'Organization', name: opts.siteName, url: origin },
           blogPost: posts.slice(0, 20).map((p) => ({ '@type': 'BlogPosting', headline: p.title, url: origin + p.path, datePublished: p.publishedAt })) },
@@ -169,8 +172,10 @@ export async function blogResponse(request, env, opts) {
     return new Response(nf.ok ? await nf.text() : 'Not found', { status: 404, headers: { 'Content-Type': 'text/html; charset=utf-8' } });
   }
   const biz = posts.business || null;
-  const html = setHead(fill(shell, postHtml(opts, p, biz), branded(p.metaTitle || p.title, opts.siteName)), {
-    title: branded(p.metaTitle || p.title, opts.siteName), description: p.metaDescription || p.excerpt, url: origin + p.path, image: p.image?.url,
+  const kw = SEO.sections[path];
+  const ptitle = kwTitle(branded(p.metaTitle || p.title, opts.siteName), kw?.primary);
+  const html = setHead(fill(shell, decorateCrmHtml(postHtml(opts, p, biz), kw, SEO.videos[path]), ptitle), {
+    title: ptitle, description: kwDesc(p.metaDescription || p.excerpt, kw?.primary), url: origin + p.path, image: p.image?.url,
     jsonLd: { '@context': 'https://schema.org', '@graph': [
       { '@type': 'BlogPosting', headline: p.title, description: p.metaDescription || p.excerpt, url: origin + p.path, mainEntityOfPage: origin + p.path,
         datePublished: p.publishedAt, dateModified: p.updatedAt || p.publishedAt, image: p.image ? [p.image.url] : undefined, keywords: (p.keywords || []).join(', '),
