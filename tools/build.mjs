@@ -12,6 +12,7 @@
 //
 // Pages the CRM manages (Marketing → SEO pages) and the blog are not built here: the worker serves them live inside
 // dist/_crm-page, a copy of a WordPress page with its content taken out (see worker/crm-pages.js).
+import { finishSeo, NOINDEX as SEO_NOINDEX } from './seo.mjs';
 import { readFileSync, writeFileSync, mkdirSync, rmSync, existsSync, readdirSync, statSync, copyFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { dirname, join, relative } from 'node:path';
@@ -766,7 +767,9 @@ const write = (rel, data) => {
   if (typeof data === 'string' && rel.endsWith('.html')) data = data.replace(/<script\b(?![^>]*data-cfasync)/g, '<script data-cfasync="false"');
   writeFileSync(f, data);
 };
-for (const p of staticPaths) write(p === '/' ? 'index.html' : `${p.slice(1)}/index.html`, transform(captured.get(p), p));
+const built = new Map([...staticPaths].map((p) => [p, transform(captured.get(p), p)]));
+const IMG_SIZES = existsSync(join(ROOT, 'content/img-sizes.json')) ? JSON.parse(readFileSync(join(ROOT, 'content/img-sizes.json'), 'utf8')) : {};
+for (const [p, h] of finishSeo(built, { trail, sizes: IMG_SIZES, faqs: JSON.parse(readFileSync(join(ROOT, 'content/faqs.json'), 'utf8')) })) write(p === '/' ? 'index.html' : `${p.slice(1)}/index.html`, h);
 const sh = shell();
 write('_crm-page/index.html', sh);
 write('404.html', page404(sh));
@@ -783,7 +786,7 @@ let publicCopied = 0;
 if (existsSync(join(ROOT, 'site/public'))) for (const f of walk(join(ROOT, 'site/public'))) { const rel = relative(join(ROOT, 'site/public'), f); mkdirSync(dirname(join(OUT, rel)), { recursive: true }); copyFileSync(f, join(OUT, rel)); publicCopied++; }
 
 // Sitemap (the worker adds the CRM's pages and blog posts), robots.txt
-const indexable = [...staticPaths].filter((p) => !/thank-you|quote-requested/.test(p) && !/<meta name="robots" content="[^"]*noindex/.test(captured.get(p))).sort();
+const indexable = [...staticPaths].filter((p) => !/thank-you|quote-requested/.test(p) && !SEO_NOINDEX.test(p) && !/<meta name="robots" content="[^"]*noindex/.test(captured.get(p))).sort();
 write('sitemap.xml', `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${indexable.map((p) => `<url><loc>${ORIGIN}${p === '/' ? '/' : p + '/'}</loc>${lastmod.get(p) ? `<lastmod>${lastmod.get(p).slice(0, 10)}</lastmod>` : ''}</url>`).join('\n')}\n</urlset>\n`);
 write('robots.txt', `User-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /_crm-page/\n\nSitemap: ${ORIGIN}/sitemap.xml\n`);
 

@@ -74,7 +74,11 @@
     "/category/liquid-wrapping/shop": "/shop",
     "/product/ttest": "/shop",
     "/category/uncategorized": "/shop",
-    "/category/liquid-wrapping/shop/plasti-dip-spray-wrap": "/category/liquid-wrapping/shop/full-dip-liquid-wrap"
+    "/category/liquid-wrapping/shop/plasti-dip-spray-wrap": "/category/liquid-wrapping/shop/full-dip-liquid-wrap",
+    "/signage-home/large-format-print": "/large-format-print-posters",
+    "/signage-home/site-safety-signs": "/site-safety",
+    "/signage-home/window-graphics": "/signage-home/building-signage-shop-signs",
+    "/signage-home/a-boards-pavement-signs": "/signage-home/exterior-building-signs"
   },
   "breadcrumbs": {
     "_about": "Breadcrumb names and parents where the page's own title or address doesn't give a good trail.",

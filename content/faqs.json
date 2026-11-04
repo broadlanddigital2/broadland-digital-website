@@ -1,0 +1,33 @@
+{
+  "_note": "FAQs added (with FAQPage schema) by tools/seo.mjs to pages that have none: by section (the page's colour class / path). Facts from the existing site only.",
+  "signage": [
+    ["Do you design, make and fit signs?", "Yes. Our in-house team designs the sign, produces it at our Norwich workshop and can fit it for you, or supply it ready to fit."],
+    ["What do you need for a quote?", "Photos of where the sign will go, rough sizes, your logo or brand files, and when you need it. We'll come back with options and a price."],
+    ["Can I see materials before ordering?", "Yes. Arrange a visit to our workshop at Vulcan House, Vulcan Road North, Norwich, NR6 6AQ (Monday–Friday, 8:30am–5pm) to see samples and finishes."],
+    ["Do you work outside Norwich?", "Yes. We make signs for businesses across Norfolk and Suffolk; ask us about delivery and fitting for your location."]
+  ],
+  "print": [
+    ["Do you print small quantities?", "Yes. Digital print suits short runs and quick turnarounds; for larger quantities we'll advise whether litho printing is better value."],
+    ["Can you design my print too?", "Yes. Our design team can create flyers, brochures, business cards and more, or print from your own print-ready files."],
+    ["What finishing options do you offer?", "We offer a range of finishing, including laminating and binding options. Tell us what the print is for and we'll recommend a finish."],
+    ["What file format should I send?", "A print-ready PDF with bleed is best. If you're not sure, send what you have and we'll check it before printing."]
+  ],
+  "design": [
+    ["Do you design from scratch?", "Yes. We can create a logo, branding or marketing design from a brief, or update and refresh something you already have."],
+    ["What do I get at the end?", "Final files ready for print and digital use. Tell us where the design will be used so we supply the right formats."],
+    ["Can you print and produce what you design?", "Yes. Design, print, signage and vehicle graphics are all done under one roof in Norwich, so the design carries straight through to production."],
+    ["How do revisions work?", "We share proofs for you to comment on and refine before anything is finalised or printed."]
+  ],
+  "web": [
+    ["What kinds of website do you build?", "Ecommerce websites, easy-to-edit CMS websites and bespoke software systems, plus web hosting."],
+    ["Can I update the website myself?", "Yes. CMS websites are built so you can edit pages, images and products yourself."],
+    ["Do you host websites?", "Yes, we offer web hosting. Ask us about hosting for a site we build or one you already have."],
+    ["How do we get started?", "Tell us what the site needs to do, any examples you like and your timescale, and we'll talk through options and a quote."]
+  ],
+  "liquid-wrapping": [
+    ["What is liquid wrapping?", "A sprayed-on, peelable coating that changes the colour or finish of a vehicle or its parts without a permanent respray."],
+    ["Can liquid wrap be removed?", "Yes. It's designed to peel off without damaging the original paintwork underneath, provided that paint is in sound, factory condition."],
+    ["Which package should I choose?", "Budget, Standard, Premium and Ultra differ in how much is removed and masked and in the finish. Tell us the vehicle and the look you want and we'll recommend one."],
+    ["Can I do it myself?", "Yes. Our shop sells Full Dip liquid wrap colours, primers and glossifier, or we can do the work at our Norwich workshop."]
+  ]
+}
