@@ -17,6 +17,7 @@ jobs:
       - run: |
           mkdir -p out
           IFS=',' read -ra P <<< "${{ inputs.pages }}"
+          for p in "${P[@]}"; do curl -s -o /dev/null "https://broadlanddigital.co.uk$p"; done; sleep 2
           for p in "${P[@]}"; do
             n=$(echo "$p" | sed 's#[^a-z0-9]#_#g')
             for f in mobile desktop; do
