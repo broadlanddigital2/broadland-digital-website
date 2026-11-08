@@ -29,6 +29,13 @@ export async function handleForms(request, env = {}) {
   let b;
   try { b = await request.json(); } catch { return json({ error: 'Something went wrong with the form.' }, 400); }
   if (clean(b.website, 200)) return json({ ok: true }); // honeypot filled in: a bot, quietly ignored
+  // Spam bots (e.g. 'Ivan Petrov', Nov 2026): the page script sends how long the page was open and whether a person
+  // used the mouse, keyboard or touch screen. Forms sent by a script, in under 4 seconds or with no interaction are
+  // quietly ignored (the bot is told it worked, so it doesn't adapt). The CRM monitor's test skips this.
+  if (b.monitor !== true && (!(Number(b.elapsed) >= 4000) || Number(b.human) !== 1)) {
+    console.log('Form ignored as spam', JSON.stringify({ elapsed: b.elapsed ?? null, human: b.human ?? null, page: clean(b.page_url, 200) }));
+    return json({ ok: true, message: 'Thank you, your message has been sent. We will be in touch shortly.' });
+  }
 
   const d = {
     kind: SUBJECTS[b.form] ? b.form : 'contact',
@@ -46,6 +53,8 @@ export async function handleForms(request, env = {}) {
   const digits = d.phone.replace(/\D/g, '');
   if (d.kind !== 'guide' && !d.phone) return bad('phone', 'Please enter a phone number so we can call you back.');
   if (d.phone && (/[a-z]/i.test(d.phone) || digits.length < 10 || digits.length > 13)) return bad('phone', 'Please enter a full UK phone number, e.g. 01603 407786.');
+  // UK numbers only (0…, +44 or 0044); the spam bots use made-up US numbers such as +1 202 555 0143.
+  if (d.phone && !/^(\+?44|0044|0)/.test(d.phone.replace(/[\s()-]/g, ''))) return bad('phone', 'Please enter a UK phone number, e.g. 01603 407786 or 07700 900123.');
 
   const [first, ...rest] = d.name.split(/\s+/);
   const details = [

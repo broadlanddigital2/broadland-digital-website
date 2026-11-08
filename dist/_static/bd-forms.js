@@ -24,7 +24,11 @@
     return '';
   }
 
+  // Spam check: how long the page was open, and whether a person used the mouse, keyboard or touch screen on it.
+  var OPENED = Date.now(), HUMAN = 0;
+  ['pointerdown', 'keydown', 'touchstart'].forEach(function (ev) { window.addEventListener(ev, function (e) { if (e.isTrusted) HUMAN = 1; }, { passive: true, capture: true }); });
   function send(data) {
+    data.elapsed = Date.now() - OPENED; data.human = HUMAN;
     return fetch('/api/forms', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
       .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { return { ok: r.ok, j: j }; }); })
       .catch(function () { return { ok: false, j: { error: 'We couldn’t reach our server. Please check your connection and try again.' } }; });
