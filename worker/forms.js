@@ -59,6 +59,19 @@ export async function handleForms(request, env = {}) {
     `\nSent from: ${d.pageTitle || 'website'}${d.pageUrl ? ' (' + d.pageUrl + ')' : ''}`,
   ].filter(Boolean).join('\n');
 
+  // CRM monitor (Monitoring → form checks): the same checks as a real enquiry, then the CRM confirms the form key with
+  // its monitor token. Nothing is saved, emailed or copied to Boxly.
+  if (b.monitor === true) {
+    const r = await fetch(CRM_FORMS_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ form_key: FORM_KEY, subject: SUBJECTS[d.kind](d), details, email: d.email, name: d.name, page_url: d.pageUrl, monitor: true, monitor_token: String(b.monitor_token || '') }),
+    }).catch(() => null);
+    const j = r ? await r.json().catch(() => ({})) : {};
+    if (!r || !r.ok || !j.monitor) return json({ error: j.error || 'CRM check failed' + (r ? ' (HTTP ' + r.status + ')' : '') }, 502);
+    return json({ ok: true, monitor: true, email_configured: !!j.email_configured, boxly_configured: !!(String(env.BOXLY_EMAIL || '').trim() && env.SENDGRID_API_KEY) });
+  }
+
   const [crm, boxly] = await Promise.all([
     fetch(CRM_FORMS_URL, {
       method: 'POST',
