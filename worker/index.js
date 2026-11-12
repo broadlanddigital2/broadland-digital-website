@@ -129,6 +129,19 @@ async function route(request, env) {
   if (crm) return request.method === 'GET' ? withSectorLinks(crm, key, FEED_KEY) : crm;
   if (key === '/_crm-page') return new Response('Not found', { status: 404 });
   if (!STATIC.has(key) && redirects[key]) return redirect(redirects[key], url);
+  // Crawl trap left by the old WordPress menu's relative links: crawlers still request addresses such as
+  // /sectors/healthcare/Print-home or /search/Liquid-Wrapping-home/…/Web-Dev-home (Google, Bing, Meta, ClaudeBot;
+  // 20–45% of crawler visits in Nov 2026). Cut the address at the first of those capitalised menu segments and send
+  // the crawler to the real page it came from, so it stops inventing new ones. Real addresses are lower-case.
+  if (!STATIC.has(key)) {
+    const segs = key.split('/').filter(Boolean);
+    const cut = segs.findIndex((seg) => /^(?:(?:Print|Design|Web-Dev|Signage|Liquid-Wrapping)(?:-home|-h|-)?|P)$/.test(seg));
+    if (cut >= 0) {
+      const rest = segs.slice(0, cut);
+      const target = !rest.length || /^(search|my-account|cart|checkout)$/.test(rest[0]) ? '/' : '/' + rest.join('/') + '/';
+      return redirect(target, url);
+    }
+  }
   // A permanent redirect to the "/" address (the static files would answer with a temporary one).
   if (STATIC.has(key) && key !== '/' && !path.endsWith('/')) return redirect(key + '/', url);
   if (!STATIC.has(key) && (/^\/product\/.+-\d+$/.test(key) || key.startsWith('/product-category/'))) return redirect('/shop', url);
