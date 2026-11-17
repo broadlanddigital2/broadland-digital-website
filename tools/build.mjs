@@ -965,6 +965,27 @@ function vanProductPrices(h) {
 // Shop page sections (/shop): one card per van graphics package (lowest fitted and supply-only "From" prices, a
 // link per van size), one card per liquid wrapping package (no published prices: quoted per vehicle), and the Full
 // Dip spray wrap range as compact colour cards grouped into colours, primers and glossifier.
+// "Shop by category": three equal cards (picture, then wording, what it costs and a button), in place of photo tiles
+// with the words over the picture.
+function shopCategoryCards() {
+  const van = [...VAN_PRODUCTS.values()];
+  const lowVan = Math.min(...van.filter((p) => p.price).map((p) => +p.price));
+  const vanImg = (van.find((p) => p.tier === 'pro' && p.size === 'small' && p.fit === 'fitted') || van[0]).img;
+  const fd = wp.products.filter((p) => p.path.startsWith('/product/full-dip-'));
+  const colours = fd.filter((p) => p.categories.includes('Full Dip Solid Colours')).length;
+  const dipImg = (wp.products.find((p) => /full-dip-cherry-red/.test(p.path)) || {}).image?.src || '';
+  const cards = [
+    { cls: 'van', href: '/category/signage/vehicle-graphics/', kicker: 'Van graphics', title: 'Van graphics packages', img: vanImg, alt: 'Pro van graphics on a small van',
+      text: 'Basic, Standard and Pro packages for small, medium and large vans, fitted at our Norwich workshop or supplied for you to fit.', meta: `From £${lowVan} + VAT`, btn: 'Shop van graphics' },
+    { cls: 'lw', href: '/category/liquid-wrapping/', kicker: 'Liquid wrapping', title: 'Liquid wrapping packages', img: OPT['/wp-content/uploads/2024/04/category-fimage-liquid-wrap.png'] || '/wp-content/uploads/2024/04/category-fimage-liquid-wrap.png', alt: 'A car being liquid wrapped in our spray booth',
+      text: 'Budget, Standard, Premium and Ultra colour changes, sprayed at our workshop and priced by vehicle size.', meta: 'Quoted per vehicle', btn: 'Shop liquid wrapping' },
+    { cls: 'dip', href: '/category/liquid-wrapping/shop/', kicker: 'Spray wrap', title: 'Full Dip spray wrap', img: dipImg, alt: 'Full Dip spray wrap in cherry red',
+      text: 'Spray wrap colours, primers and glossifier for wheels, trims and your own colour-change projects.', meta: `${colours} colours, primers and glossifier`, btn: 'Shop spray wrap' },
+  ];
+  return cards.map((c) => { const sz = IMG_SIZES_EARLY[c.img] || [1200, 800];
+    return `<a class="bdsh-cat bdsh-cat--${c.cls}" href="${c.href}"><span class="bdsh-cat-img">${c.img ? `<img src="${esc(c.img)}" alt="${esc(c.alt)}" width="${sz[0]}" height="${sz[1]}" loading="lazy" decoding="async">` : ''}</span>
+<span class="bdsh-cat-body"><span class="bdvg-tier">${esc(c.kicker)}</span><span class="bdsh-cat-t">${esc(c.title)}</span><span class="bdsh-cat-d">${esc(c.text)}</span><span class="bdsh-cat-meta">${esc(c.meta)}</span><span class="bdsh-cat-go">${esc(c.btn)} <i aria-hidden="true">${BIG_ARROW}</i></span></span></a>`; }).join('');
+}
 function shopVanSection() {
   const prods = [...VAN_PRODUCTS.values()];
   const fitWord = { fitted: 'Fitted', 'supply-only': 'Supply only' };
@@ -1052,8 +1073,8 @@ function shopPage(h) {
 <figure class="bdhub-hero-img"><img src="${esc(prodImg(/basic-small-van-graphics$/))}" alt="Van graphics package from the Broadland Digital shop" width="1200" height="900" fetchpriority="high"></figure>
 </div></section>
 <section class="bdhub-intro"><div class="wrap"><h2>How the shop works.</h2><div class="bdhub-text"><p>Each package has a fixed starting price for a typical vehicle of that size. Choose the package, add your details and we will confirm the layout, artwork and price for your vehicle before anything is made.</p><p>Fitted packages are applied at our Norwich workshop. Supply-only kits are for fitting yourself, and Full Dip spray wrap is for your own projects.</p></div></div></section>
-<section class="bdhub-services"><div class="wrap"><div class="bdhub-head"><h2>Shop by category.</h2><a class="bdhub-textlink" href="/get-a-quote/">Need something made to measure? Ask us →</a></div>
-<div class="bdhub-tiles n3">${tiles.map(([href, t, d, src]) => `<a class="bdhub-tile" href="${href}"><img src="${esc(src)}" alt="${esc(t)}" loading="lazy" width="800" height="600"><span class="bdhub-tile-in"><span class="bdhub-tile-title">${esc(t)}</span><span class="bdhub-tile-desc">${esc(d)}</span><span class="bdhub-tile-go">Shop now <i aria-hidden="true">${BIG_ARROW}</i></span></span></a>`).join('')}</div></div></section>
+<section class="bdsh-cats-sec"><div class="wrap"><div class="bdhub-head"><h2>Shop by category.</h2><a class="bdhub-textlink" href="/get-a-quote/">Need something made to measure? Ask us →</a></div>
+<div class="bdsh-cats">${shopCategoryCards()}</div></div></section>
 ${shopVanSection()}
 ${shopLiquidSection()}
 ${shopSpraySection()}

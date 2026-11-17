@@ -2611,6 +2611,25 @@ h1.bd-was4,h1.bd-was5,h1.bd-was6{font-weight:700}
 .bdsh-dip:focus-visible,.bdsh-sizes a:focus-visible{outline:3px solid var(--c);outline-offset:3px}
 @media(max-width:1100px){.bdvg-grid--4{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:700px){.bdvg-grid--4{grid-template-columns:1fr}.bdsh-dips{grid-template-columns:repeat(2,minmax(0,1fr))}}
+/* Shop by category (/shop) */
+.bdsh-cats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px}
+.bdsh-cat{display:flex;flex-direction:column;background:#fff;border:1px solid #e6e3ee;border-radius:20px;overflow:hidden;color:var(--ink)!important;text-decoration:none!important;transition:transform .2s,box-shadow .2s}
+.bdsh-cat:hover{transform:translateY(-3px);box-shadow:0 18px 40px rgba(42,45,50,.10)}
+.bdsh-cat:focus-visible{outline:3px solid var(--c);outline-offset:3px}
+.bdsh-cat-img{display:block;aspect-ratio:16/10;overflow:hidden;background:var(--c)}
+.bdsh-cat-img img{display:block;width:100%;height:100%;object-fit:cover;transition:transform .4s}
+.bdsh-cat:hover .bdsh-cat-img img{transform:scale(1.04)}
+.bdsh-cat--dip .bdsh-cat-img{background:#dbdbdb}
+.bdsh-cat--dip .bdsh-cat-img img{object-fit:contain;padding:0}
+.bdsh-cat-body{display:flex;flex-direction:column;gap:10px;padding:24px 26px 26px;flex:1}
+.bdsh-cat-t{font-family:"Adelle",adelle,Georgia,serif;font-size:25px;font-weight:800;line-height:1.15}
+.bdsh-cat-d{font-size:16px;line-height:1.55;color:#4a4d53;flex:1}
+.bdsh-cat-meta{font-family:"Adelle",adelle,Georgia,serif;font-size:21px;font-weight:800;color:var(--c)}
+.bdsh-cat-go{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:6px;padding-top:16px;border-top:1px solid #eeecf3;font-weight:700}
+.bdsh-cat-go i{display:inline-flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:50%;background:var(--c);color:#fff;font-style:normal;transition:transform .2s}
+.bdsh-cat:hover .bdsh-cat-go i{transform:translateX(4px)}
+@media(max-width:1000px){.bdsh-cats{grid-template-columns:1fr 1fr}}
+@media(max-width:700px){.bdsh-cats{grid-template-columns:1fr}}
 
 /* /_static/bd-footer.css */
 /* Broadland Digital footer and enquiry form (built from content/menu.json; replaces the theme's footer).
