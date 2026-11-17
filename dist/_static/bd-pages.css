@@ -699,3 +699,48 @@ h1.bd-was4,h1.bd-was5,h1.bd-was6{font-weight:700}
 .bdvg-from{font-size:.45em;font-weight:600;color:#5d6066;vertical-align:middle}
 @media(max-width:1100px){.bdvg-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.bdvg-card,.bdvg-card--wrap{grid-column:span 1}.bdvg-card--wrap{flex-direction:column}.bdvg-card--wrap .bdvg-img{aspect-ratio:4/3;flex:none}}
 @media(max-width:700px){.bdvg-grid,.bdvg-fits{grid-template-columns:1fr}.bdhub section.bdvg-size{padding:56px 0}.bdvg-filter .wrap{flex-direction:column;align-items:flex-start}}
+
+/* ---------- Van graphics product pages (tools/build.mjs vanProductPage) ---------- */
+.bdvp-buy{display:flex;flex-wrap:wrap;align-items:center;gap:12px 24px;margin:0 0 26px}
+.bdvp-price{display:flex;flex-direction:column;padding:14px 22px;border-radius:16px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.3)}
+.bdvp-price span{font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;opacity:.85}
+.bdvp-price b{font-family:"Adelle",adelle,Georgia,serif;font-size:38px;font-weight:800;line-height:1.1}
+.bdvp-price small{font-size:14px;opacity:.85}
+.bdvp-alt{color:#fff!important;font-weight:700;text-decoration:none;border-bottom:2px solid rgba(255,255,255,.6)}
+.bdvp-alt:hover{border-bottom-color:#fff}
+.bdvg-chips .bdvg-off{display:inline-block;padding:9px 18px;border-radius:30px;border:1px dashed #ddd8ea;color:#a3a5ab;font-size:15px;font-weight:600;letter-spacing:0;text-transform:none;margin:0}
+.bdvp-ticks{list-style:none;margin:22px 0;padding:0;display:grid;gap:12px}
+.bdvp-ticks li{position:relative;padding-left:38px;font-size:18px;line-height:1.5;color:var(--ink)}
+.bdvp-ticks li::before{content:"✓";position:absolute;left:0;top:1px;display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--c);color:#fff;font-size:14px;font-weight:800}
+.bdvp-facts{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:26px 0 0}
+.bdvp-facts div{padding:18px 20px;border-radius:16px;background:#f4f3f7}
+.bdvp-facts dt{font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--c);margin:0 0 6px}
+.bdvp-facts dd{margin:0;font-size:16px;line-height:1.5;color:#4a4d53}
+.bdvp-table-sec{background:#f4f3f7}
+.bdvp-scroll{overflow-x:auto;border-radius:20px;border:1px solid #e6e3ee;background:#fff}
+.bdvp-table{width:100%;min-width:720px;border-collapse:collapse;font-size:16px}
+.bdvp-table th,.bdvp-table td{padding:16px 18px;border-bottom:1px solid #eeecf3;text-align:left;vertical-align:top}
+.bdvp-table thead th{font-family:"Adelle",adelle,Georgia,serif;font-size:19px;color:var(--ink);background:#faf9fc}
+.bdvp-table thead th small{display:block;font-family:azo-sans-web,Arial,sans-serif;font-size:13px;font-weight:400;color:#5d6066;margin-top:4px}
+.bdvp-table thead th.on{color:var(--c)}
+.bdvp-table tbody th{font-family:"Adelle",adelle,Georgia,serif;font-size:19px;color:var(--ink);white-space:nowrap}
+.bdvp-table tbody tr:last-child>*{border-bottom:0}
+.bdvp-table tbody tr.on{background:color-mix(in srgb,var(--c) 6%,#fff)}
+.bdvp-table td{display:table-cell}
+.bdvp-table td a{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:6px 10px;margin:0 -10px;border-radius:10px;color:var(--ink)!important;text-decoration:none!important}
+.bdvp-table td a:hover{background:#f4f3f7}
+.bdvp-table td a[aria-current]{background:var(--c);color:#fff!important}
+.bdvp-table td a[aria-current] span,.bdvp-table td a[aria-current] b{color:#fff}
+.bdvp-table td span{font-size:13px;color:#5d6066}
+.bdvp-table td b{font-family:"Adelle",adelle,Georgia,serif;font-size:18px;color:var(--c);white-space:nowrap}
+.bdvp-table td b.bdvp-q{font-family:azo-sans-web,Arial,sans-serif;font-size:15px;color:#5d6066}
+.bdvp-others{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:20px}
+.bdvp-other{display:flex;flex-direction:column;background:#fff;border:1px solid #e6e3ee;border-radius:18px;overflow:hidden;color:var(--ink)!important;text-decoration:none!important;transition:transform .2s,box-shadow .2s}
+.bdvp-other:hover{transform:translateY(-3px);box-shadow:0 14px 34px rgba(42,45,50,.10)}
+.bdvp-other .bdvg-img img{display:block;width:100%;height:100%;object-fit:cover}
+.bdvp-other-in{display:flex;flex-direction:column;gap:6px;padding:18px 20px 20px}
+.bdvp-other-t{font-family:"Adelle",adelle,Georgia,serif;font-size:19px;font-weight:800;line-height:1.2}
+.bdvp-other-p{font-family:"Adelle",adelle,Georgia,serif;font-size:19px;font-weight:800;color:var(--c)}
+.bdvp-other-p small{font-family:azo-sans-web,Arial,sans-serif;font-size:13px;font-weight:400;color:#5d6066}
+@media(max-width:1100px){.bdvp-others{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:700px){.bdvp-others,.bdvp-facts{grid-template-columns:1fr}.bdvp-price b{font-size:32px}}

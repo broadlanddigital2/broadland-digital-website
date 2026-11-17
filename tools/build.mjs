@@ -178,7 +178,7 @@ function transform(html, path) {
   if (path === '/contact-us') h = contactPage(h);
   if (path === '/shop') h = shopPage(h);
   if (/^\/category\/signage\/vehicle-graphics(\/|$)/.test(path)) h = vanShopPage(h, path);
-  if (VAN_PRODUCTS.has(path)) h = vanProductPrices(h);
+  if (VAN_PRODUCTS.has(path)) h = vanProductPage(h, path);
   if (path === '/get-a-quote') h = quotePage(h).replace(/(<ul[^>]*class="menu bdh-links"[\s\S]*?<\/ul>)/, (m) => m.replace(/\saria-current="[^"]*"/g, ''));
   // Long legal pages: slightly smaller text (site/bd-pages.css .bd-legal)
   if (['/privacy-policy', '/returns', '/refund_returns'].includes(path)) h = h.replace(/class="category page\b/, 'class="category page bd-legal');
@@ -841,6 +841,7 @@ ${filter}
 ${groups}
 ${intro}
 ${steps}
+<!--bdvg-faq-->
 <section class="bdhub-band"><div class="wrap"><div><h2>Not sure which package?</h2><p>Send the make and model of your van and a rough idea of what you want on it, and we'll recommend a package and confirm the price.</p></div>
 <div class="bdhub-cta"><a class="bdhub-btn bdhub-btn--solid" href="/get-a-quote/?service=signage">Get a free quote</a><a class="bdhub-btn bdhub-btn--ghost" href="tel:${tel}">Call ${esc(menu.phone)}</a></div></div></section>
 </div>
@@ -849,6 +850,107 @@ ${steps}
   const listed = sizes.flatMap((z) => VAN_TIERS.flatMap((t) => ['fitted', 'supply-only'].filter((f) => !fit || f === fit).map((f) => find(z.key, t.key, f)).filter(Boolean)));
   const ld = { '@context': 'https://schema.org', '@type': 'ItemList', name: h1.replace(/\.$/, ''), itemListElement: listed.map((p, i) => ({ '@type': 'ListItem', position: i + 1, url: `${ORIGIN}${p.path}/`, name: `${p.title} (${fitWord[p.fit].toLowerCase()})` })) };
   return (h.slice(0, start) + body + h.slice(end)).replace(/<\/head>/i, `<script type="application/ld+json">${JSON.stringify(ld).replace(/</g, '\\u003c')}</script>\n</head>`);
+}
+// ---------- Van graphics product pages (/product/basic-small-van-graphics/ …) ----------
+// The WooCommerce product template (banner, slider, text, a broken live-price builder, two price tables and tabbed
+// "more information") becomes the shop's look: hero with the "From" price and Enquire now, size and fitting switches
+// to the matching product, what's included, examples of our work, one price table for every package and van size,
+// how it works, FAQs, other packages for the same van and the closing band. Enquire now fills in the enquiry form.
+function vanProductPage(h, path) {
+  const me = VAN_PRODUCTS.get(path);
+  const start = h.search(/<div[^>]*class="category page-product/);
+  const end = h.indexOf('<footer', start);
+  if (!me || !me.tier || !me.size || start < 0 || end < 0) return vanProductPrices(h);
+  const src = h.slice(start, end);
+  const tel = menu.phone.replace(/\s/g, '');
+  const prods = [...VAN_PRODUCTS.values()];
+  const find = (sz, tier, f) => prods.find((p) => p.size === sz && p.tier === tier && p.fit === f);
+  const tier = VAN_TIERS.find((t) => t.key === me.tier), size = VAN_SIZES.find((z) => z.key === me.size);
+  const fitWord = { fitted: 'Fitted', 'supply-only': 'Supply only' };
+  const wrap = /wrap/.test(me.tier);
+  const crumbs = (src.match(/<nav class="bdc"[\s\S]*?<\/nav>/) || [''])[0];
+  const h1 = decode(((src.match(/<h1 class="banner-title">([\s\S]*?)<\/h1>/) || [])[1] || '').replace(/<[^>]+>/g, '')).replace(/\s+/g, ' ').trim() || me.title + '.';
+  const text = (x) => decode(String(x).replace(/<br\s*\/?>/g, ' ').replace(/<[^>]+>/g, '')).replace(/\s+/g, ' ').trim();
+  // the product's own wording: description (without "You are viewing our … option"), what it comprises of
+  const descBlock = (src.match(/<section class="container section-padding row no-gutters">([\s\S]*?)<\/section>/) || [])[1] || '';
+  const paras = [...descBlock.matchAll(/<p>([\s\S]*?)<\/p>/g)].map((m) => text(m[1])).filter((t) => t && !/^You are viewing/i.test(t))
+    .map((t) => t.replace(/\s*If you are unsure[^.]*\.\s*/i, ' ').trim());
+  const about = ((src.match(/<div id="about-content"[^>]*>([\s\S]*?)<\/div>/) || [])[1] || '').split(/\n|<br\s*\/?>/).map(text).filter(Boolean);
+  const vi = about.findIndex((l) => /^Vehicle size types/i.test(l));
+  const includes = about.slice(1, vi < 0 ? undefined : vi).map((l) => l.replace(/\.$/, '').replace(/^Web, address/, 'Web address'));
+  const gallery = [...((src.match(/<section class="container section-padding section-one row no-gutters"[^>]*>([\s\S]*?)<\/section>/) || [])[1] || '').matchAll(/<img\b[^>]*>/g)].map((m) => m[0])
+    .filter((t, i, a) => a.findIndex((x) => (x.match(/\ssrc="([^"]+)"/) || [])[1] === (t.match(/\ssrc="([^"]+)"/) || [])[1]) === i);
+  const other = find(me.size, me.tier, me.fit === 'fitted' ? 'supply-only' : 'fitted');
+  const priceTxt = (p) => (p.price ? `from £${p.price} + VAT` : 'quoted per van');
+  const enquire = `${me.title} – ${fitWord[me.fit].toLowerCase()} (${priceTxt(me)})`;
+  const sz = IMG_SIZES_EARLY[me.img] || [1080, 1080];
+  // hero lead: the description's opening sentences (about two lines); the rest stays under "What's included"
+  const sents = (paras[0] || tier.text).match(/[^.!?]+[.!?]+/g) || [paras[0] || tier.text];
+  let lead = ''; for (const x of sents) { if (lead && (lead + x).length > 220) break; lead += x; }
+  lead = lead.trim();
+  const restOfFirst = (paras[0] || '').slice(lead.length).trim();
+  if (restOfFirst) paras.splice(1, 0, restOfFirst);
+  // switches: the same package for another van size / the other fitting option
+  const chip = (p, label, on) => (p ? `<a href="${p.path}/"${on ? ' aria-current="page"' : ''}>${esc(label)}</a>` : `<span class="bdvg-off" title="Not available">${esc(label)}</span>`);
+  const switches = `<nav class="bdvg-filter" aria-label="Choose van size and fitting"><div class="wrap">
+<div class="bdvg-chips"><span>Van size</span>${VAN_SIZES.map((z) => chip(find(z.key, me.tier, me.fit) || find(z.key, me.tier, 'fitted'), z.name, z.key === me.size)).join('')}</div>
+<div class="bdvg-chips"><span>Fitting</span>${['fitted', 'supply-only'].map((f) => chip(find(me.size, me.tier, f), fitWord[f], f === me.fit)).join('')}</div>
+</div></nav>`;
+  const hero = `<section class="bdhub-hero bdvp-hero"><div class="wrap"><div class="bdhub-hero-text">${crumbs}
+<span class="bdhub-eyebrow">${esc(tier.name)} package · ${esc(size.name)}</span>
+<h1>${esc(h1)}</h1>
+<p class="bdhub-lead">${esc(lead)}</p>
+<div class="bdvp-buy"><div class="bdvp-price"><span>${fitWord[me.fit]}</span>${me.price ? `<b>From £${esc(me.price)}</b><small>+ VAT</small>` : '<b>Quoted per van</b><small>Send photos of your van for a price</small>'}</div>
+${other ? `<a class="bdvp-alt" href="${other.path}/">${other.fit === 'fitted' ? 'Rather we fit it?' : 'Fitting it yourself?'} ${fitWord[other.fit]} ${priceTxt(other)} →</a>` : ''}</div>
+<div class="bdhub-cta"><a class="bdhub-btn bdhub-btn--solid" href="#enquiry" data-enquire="${esc(enquire)}">${wrap ? 'Ask for a wrap quote' : 'Enquire now'}</a><a class="bdhub-btn bdhub-btn--ghost" href="tel:${tel}">Call ${esc(menu.phone)}</a></div></div>
+${me.img ? `<figure class="bdhub-hero-img bdvg-hero-img bdvg-hero-img--fill"><img src="${esc(me.img)}" alt="${esc(me.title)} package" width="${sz[0]}" height="${sz[1]}" fetchpriority="high"></figure>` : ''}
+</div></section>`;
+  const facts = [
+    ['Suits', `${size.name} like the ${size.like}`],
+    ['Fitting', me.fit === 'fitted' ? 'Fitted at our Norwich workshop, or at your premises within 30 miles' : 'Printed and cut in-house, supplied for you or your fitter to apply'],
+    ['Materials', '3M and Metamark vinyl, lasting up to 7 years when looked after'],
+    ['Proof first', 'Nothing is printed until you approve the layout on your van'],
+  ];
+  const included = `<section class="bdhub-intro"><div class="wrap bdvp-inc"><h2>What's included.</h2><div class="bdhub-text">
+${paras.slice(1).map((t) => `<p>${esc(t)}</p>`).join('') || `<p>${esc(tier.text)}</p>`}
+${includes.length ? `<ul class="bdvp-ticks">${includes.map((l) => `<li>${esc(l)}</li>`).join('')}</ul>` : ''}
+<dl class="bdvp-facts">${facts.map(([a, b]) => `<div><dt>${esc(a)}</dt><dd>${esc(b)}</dd></div>`).join('')}</dl>
+</div></div></section>`;
+  const big = (tag) => { const ss = (tag.match(/srcset="([^"]*)"/) || [])[1] || ''; const c = ss.split(',').map((x) => x.trim().split(/\s+/)).filter((x) => x[1]).sort((a, b) => parseInt(b[1]) - parseInt(a[1])); const fit = c.find((x) => parseInt(x[1]) <= 1600); return (fit || c[c.length - 1] || [(tag.match(/src="([^"]+)"/) || [])[1]])[0]; };
+  const work = gallery.length ? `<section class="bdsub-gallery-sec"><div class="wrap"><div class="bdhub-head"><h2>Vans we've done.</h2><a class="bdhub-textlink" href="/vehicle-graphics/">More vehicle graphics →</a></div>
+<div class="bdsub-gallery${gallery.length < 3 ? ` bdsub-gallery--n${gallery.length}` : ''}">${gallery.map((tag) => {
+    const alt = decode((tag.match(/alt="([^"]*)"/) || [])[1] || '').replace(/^.*?–\s*/, '');
+    const t = tag.replace(/\ssizes="[^"]*"/, ' sizes="(max-width: 600px) 50vw, (max-width: 1000px) 33vw, 380px"').replace(/\sstyle="[^"]*"/, '').replace(/\sclass="[^"]*"/, '').replace(/\sdecoding="[^"]*"/, '').replace(/\sloading="[^"]*"/, '').replace(/\salt="[^"]*"/, ` alt="${esc(alt ? `${alt} – van graphics by Broadland Digital` : `${me.title} example`)}"`).replace(/<img\b/, '<img loading="lazy" decoding="async"');
+    return `<a class="bdsub-ph" href="${big(tag)}" data-bd-zoom aria-label="${esc(alt || me.title)} — enlarge photo">${t}</a>`;
+  }).join('')}</div></div></section>` : '';
+  // one price table: every package and van size, fitted and supply only
+  const cell = (z, t) => {
+    const rows = ['fitted', 'supply-only'].map((f) => find(z.key, t.key, f)).filter(Boolean);
+    return `<td>${rows.map((p) => `<a href="${p.path}/"${p.path === me.path ? ' aria-current="page"' : ''}><span>${fitWord[p.fit]}</span>${p.price ? `<b>From £${esc(p.price)}</b>` : '<b class="bdvp-q">Quoted</b>'}</a>`).join('')}</td>`;
+  };
+  const table = `<section class="bdvp-table-sec"><div class="wrap"><div class="bdhub-head"><h2>Prices for every van.</h2><a class="bdhub-textlink" href="${VAN_BASE}/">Compare all packages →</a></div>
+<div class="bdvp-scroll"><table class="bdvp-table"><thead><tr><th scope="col">Package</th>${VAN_SIZES.map((z) => `<th scope="col"${z.key === me.size ? ' class="on"' : ''}>${esc(z.name)}<small>${esc(z.like.replace(' and ', ', '))}</small></th>`).join('')}</tr></thead>
+<tbody>${VAN_TIERS.map((t) => `<tr${t.key === me.tier ? ' class="on"' : ''}><th scope="row">${esc(t.name)}</th>${VAN_SIZES.map((z) => cell(z, t)).join('')}</tr>`).join('')}</tbody></table></div>
+<p class="bdv-note">All prices are "from" prices for a typical van of that size, plus VAT. Wraps are fitted only and quoted for your vehicle. We confirm the price for your van and design before anything is made.</p></div></section>`;
+  const steps = `<section class="bdhub-steps"><div class="wrap"><div class="bdhub-head"><h2>How it works.</h2></div><ol>${VEH.steps.map(([a, b]) => `<li><h3>${esc(a)}</h3><p>${esc(b)}</p></li>`).join('')}</ol></div></section>`;
+  const others = VAN_TIERS.filter((t) => t.key !== me.tier).map((t) => find(me.size, t.key, me.fit) || find(me.size, t.key, 'fitted')).filter(Boolean);
+  const more = `<section class="bdvp-more"><div class="wrap"><div class="bdhub-head"><h2>Other packages for ${esc(size.name.toLowerCase())}.</h2><a class="bdhub-textlink" href="${vanCatPath(me.size, '')}/">All ${esc(size.name.toLowerCase())} packages →</a></div>
+<div class="bdvp-others">${others.map((p) => { const t = VAN_TIERS.find((x) => x.key === p.tier); const s2 = IMG_SIZES_EARLY[p.img] || [1080, 1080]; return `<a class="bdvp-other" href="${p.path}/"><span class="bdvg-img">${p.img ? `<img src="${esc(p.img)}" alt="${esc(p.title)}" width="${s2[0]}" height="${s2[1]}" loading="lazy" decoding="async">` : ''}</span><span class="bdvp-other-in"><span class="bdvg-tier">${esc(t.name)}</span><span class="bdvp-other-t">${esc(p.title)}</span><span class="bdvp-other-p">${p.price ? `From £${esc(p.price)} <small>+ VAT · ${fitWord[p.fit].toLowerCase()}</small>` : 'Quoted per van'}</span></span></a>`; }).join('')}</div></div></section>`;
+  const body = `<div class="bdhub signage bdvg-page bdvp-page">
+${hero}
+${switches}
+${included}
+${work}
+${table}
+${steps}
+${more}
+<!--bdvg-faq-->
+<section class="bdhub-band"><div class="wrap"><div><h2>Ready to order?</h2><p>Send the make and model of your van, your logo and the details you want on it. We'll send a proof and confirm the price, usually the same working day.</p></div>
+<div class="bdhub-cta"><a class="bdhub-btn bdhub-btn--solid" href="#enquiry" data-enquire="${esc(enquire)}">Enquire now</a><a class="bdhub-btn bdhub-btn--ghost" href="tel:${tel}">Call ${esc(menu.phone)}</a></div></div></section>
+</div>
+`;
+  const zoom = `<script>document.addEventListener('click',function(e){var a=e.target.closest('[data-bd-zoom]');if(!a)return;e.preventDefault();var d=document.getElementById('bd-zoom');if(!d){d=document.createElement('dialog');d.id='bd-zoom';d.innerHTML='<button type="button" aria-label="Close">×</button><img alt="">';d.addEventListener('click',function(){d.close()});document.body.appendChild(d)}var im=a.querySelector('img');d.querySelector('img').src=a.href;d.querySelector('img').alt=im?im.alt:'';d.showModal()});</script>`;
+  return (h.slice(0, start) + body + h.slice(end)).replace(/<\/body>/i, zoom + '\n</body>');
 }
 // Van graphics product pages: the price reads "From £149 + VAT", in the price box and the size table; "Call for Price" → quoted per van.
 function vanProductPrices(h) {
@@ -1071,6 +1173,10 @@ const SEO_KW = JSON.parse(readFileSync(join(ROOT, 'content/seo-keywords.json'), 
 for (const [p, x] of Object.entries(SEO_SECTIONS)) if (x.primary) SEO_KW[p] = [x.primary, x.secondary || []];
 writeFileSync(join(ROOT, 'worker/seo-sections.json'), JSON.stringify({ sections: SEO_SECTIONS, videos: VIDEOS }) + '\n');
 const FINISHED = finishSeo(built, { trail, sizes: IMG_SIZES, faqs: JSON.parse(readFileSync(join(ROOT, 'content/faqs.json'), 'utf8')), keywords: SEO_KW, sections: SEO_SECTIONS, videos: VIDEOS });
+for (const [p, h] of FINISHED) if (h.includes('<!--bdvg-faq-->')) {
+  const faq = (h.match(/<section class="bdhub-faq bdshop-faq">[\s\S]*?<\/section>\s*/) || [''])[0];
+  FINISHED.set(p, faq ? h.replace(faq, '').replace('<!--bdvg-faq-->', faq.trim()) : h.replace('<!--bdvg-faq-->', ''));
+}
 for (const [p, h] of FINISHED) write(p === '/' ? 'index.html' : `${p.slice(1)}/index.html`, h);
 // photo pools for the worker's CRM pages (keyword cards)
 writeFileSync(join(ROOT, 'worker/seo-sections.json'), JSON.stringify({ sections: SEO_SECTIONS, videos: VIDEOS, pools: Object.fromEntries([...(FINISHED.pools || new Map())].map(([k, list]) => [k, list.map((t) => ({ src: (t.match(/\ssrc="([^"]+)"/) || [])[1], alt: decode((t.match(/\salt="([^"]*)"/) || [])[1] || '') })).filter((x) => x.src)])) }) + '\n');
