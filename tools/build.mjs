@@ -179,6 +179,7 @@ function transform(html, path) {
   if (path === '/shop') h = shopPage(h);
   if (/^\/category\/signage\/vehicle-graphics(\/|$)/.test(path)) h = vanShopPage(h, path);
   if (VAN_PRODUCTS.has(path)) h = vanProductPage(h, path);
+  if (LIQUID_PRODUCTS.has(path)) h = liquidProductPage(h, path);
   // Liquid wrapping: no prices shown for now (none are published; the £150 on the pages is the optional glossifier)
   if (/^\/(product\/[a-z]+-liquid-wrapping|category\/liquid-wrapping)/.test(path)) h = h.replace(/Call for Price/gi, 'Quoted per vehicle')
     .replace(/\s*[-–,]?\s*just £\s?[\d.,]+/gi, '').replace(/ at a small additional cost of £\s?150(\.00)?/gi, ' at a small additional cost');
@@ -955,6 +956,107 @@ ${more}
   const zoom = `<script>document.addEventListener('click',function(e){var a=e.target.closest('[data-bd-zoom]');if(!a)return;e.preventDefault();var d=document.getElementById('bd-zoom');if(!d){d=document.createElement('dialog');d.id='bd-zoom';d.innerHTML='<button type="button" aria-label="Close">×</button><img alt="">';d.addEventListener('click',function(){d.close()});document.body.appendChild(d)}var im=a.querySelector('img');d.querySelector('img').src=a.href;d.querySelector('img').alt=im?im.alt:'';d.showModal()});</script>`;
   return (h.slice(0, start) + body + h.slice(end)).replace(/<\/body>/i, zoom + '\n</body>');
 }
+// ---------- Liquid wrapping product pages (/product/budget-liquid-wrapping-medium/ …) ----------
+// Same look as the van graphics product pages, in the liquid wrapping yellow: hero ("Quoted per vehicle", no prices
+// for now), vehicle size and package switches, what's included, a comparison of the four packages, how it works,
+// the other packages for the same size, FAQs and the closing band.
+const LIQUID_SIZE_NAMES = { small: 'Small vehicles', medium: 'Medium vehicles', large: 'Large vehicles', 'ex-large': 'Extra large vehicles' };
+const liquidSizeOf = (path) => (/ex-large/.test(path) ? 'ex-large' : /-large/.test(path) ? 'large' : /-medium/.test(path) ? 'medium' : 'small');
+const LIQUID_PRODUCTS = new Map(wp.products.filter((p) => /^\/product\/(budget|standard|premium|ultra)-liquid-wrapping-/.test(p.path)).map((p) => {
+  const tier = p.path.match(/^\/product\/([a-z]+)-/)[1];
+  return [p.path, { path: p.path, title: p.title, tier, size: liquidSizeOf(p.path), img: OPT[p.image?.src] || p.image?.src || '' }];
+}));
+const LIQUID_COMPARE = [
+  ['Vehicle prepared', ['✓', '✓', '✓', '✓']],
+  ['Parts and trims removed', ['—', '✓', '✓', '✓']],
+  ['Finish', ['Matt, optional glossifier', 'Matt, optional glossifier', 'OEM gloss, factory fresh', 'Better than OEM: flatted and mopped']],
+  ['Fuel and chemical resistant', ['—', '—', '✓', '✓']],
+  ['Scratch-resistant gloss', ['—', '—', '✓', '✓']],
+];
+function liquidProductPage(h, path) {
+  const me = LIQUID_PRODUCTS.get(path);
+  const start = h.search(/<div[^>]*class="category page-product/);
+  const end = h.indexOf('<footer', start);
+  if (!me || start < 0 || end < 0) return h;
+  const src = h.slice(start, end);
+  const tel = menu.phone.replace(/\s/g, '');
+  const all = [...LIQUID_PRODUCTS.values()];
+  const find = (tier, size) => all.find((p) => p.tier === tier && p.size === size);
+  const tier = LIQUID_TIERS.find(([k]) => k === me.tier);
+  const tierName = tier[1];
+  const text = (x) => decode(String(x).replace(/<br\s*\/?>/g, ' ').replace(/<[^>]+>/g, '')).replace(/\s+/g, ' ').replace(/Visually than OEM/g, 'Visually better than OEM').trim();
+  const crumbs = (src.match(/<nav class="bdc"[\s\S]*?<\/nav>/) || [''])[0];
+  const h1 = text((src.match(/<h1 class="banner-title">([\s\S]*?)<\/h1>/) || [])[1] || '') || me.title + '.';
+  const heroSrc = (src.match(/<section class="category-banner[\s\S]*?<img[^>]*\ssrc="([^"]+)"/) || [])[1] || me.img;
+  const descBlock = (src.match(/<section class="container section-padding row no-gutters">([\s\S]*?)<\/section>/) || [])[1] || '';
+  const paras = [...descBlock.matchAll(/<p>([\s\S]*?)<\/p>/g)].map((m) => text(m[1])).filter((t) => t && !/^Give us a call/i.test(t) && !/^You are viewing/i.test(t));
+  const about = ((src.match(/<div id="about-content"[^>]*>([\s\S]*?)<\/div>/) || [])[1] || '').split(/\n|<br\s*\/?>/).map(text).filter(Boolean);
+  const vi = about.findIndex((l) => /^Vehicle size types/i.test(l));
+  const like = vi >= 0 ? about.slice(vi + 1).join(', ').replace(/^:\s*/, '') || (about[vi].split(':')[1] || '').trim() : '';
+  const includes = about.slice(1, vi < 0 ? undefined : vi).map((l) => l.replace(/\.$/, '').replace(/ at a small additional cost.*$/i, ' at a small additional cost'));
+  const faqs = [...src.matchAll(/<div class="question">\s*<p>\s*(?:<span>[^<]*<\/span>)?([\s\S]*?)<\/p>\s*<\/div>\s*<div class="answer">\s*<p>([\s\S]*?)<\/p>/g)].map((m) => [text(m[1]), text(m[2])]);
+  const lasts = (faqs.find(([q]) => /how long/i.test(q)) || [])[1] || '';
+  const sents = (paras[0] || tier[2]).match(/[^.!?]+[.!?]+/g) || [paras[0] || tier[2]];
+  let lead = ''; for (const x of sents) { if (lead && (lead + x).length > 220) break; lead += x; }
+  lead = lead.trim();
+  const restParas = [(paras[0] || '').slice(lead.length).trim(), ...paras.slice(1)].filter(Boolean);
+  const enquire = `${me.title} – liquid wrapping (quoted per vehicle)`;
+  const hsz = IMG_SIZES_EARLY[heroSrc] || [1200, 900];
+  const chip = (p, label, on) => (p ? `<a href="${p.path}/"${on ? ' aria-current="page"' : ''}>${esc(label)}</a>` : `<span class="bdvg-off">${esc(label)}</span>`);
+  const switches = `<nav class="bdvg-filter" aria-label="Choose vehicle size and package"><div class="wrap">
+<div class="bdvg-chips"><span>Vehicle size</span>${LIQUID_SIZES.map(([k, l]) => chip(find(me.tier, k), l, k === me.size)).join('')}</div>
+<div class="bdvg-chips"><span>Package</span>${LIQUID_TIERS.map(([k, n]) => chip(find(k, me.size), n, k === me.tier)).join('')}</div>
+</div></nav>`;
+  const hero = `<section class="bdhub-hero bdvp-hero"><div class="wrap"><div class="bdhub-hero-text">${crumbs}
+<span class="bdhub-eyebrow">${esc(tierName)} package · ${esc(LIQUID_SIZE_NAMES[me.size])}</span>
+<h1>${esc(h1)}</h1>
+<p class="bdhub-lead">${esc(lead)}</p>
+<div class="bdvp-buy"><div class="bdvp-price"><span>Applied at our Norwich workshop</span><b>Quoted per vehicle</b><small>Send the make, model and colour you want for a price</small></div></div>
+<div class="bdhub-cta"><a class="bdhub-btn bdhub-btn--solid" href="#enquiry" data-enquire="${esc(enquire)}">Ask for a quote</a><a class="bdhub-btn bdhub-btn--ghost" href="tel:${tel}">Call ${esc(menu.phone)}</a></div></div>
+${heroSrc ? `<figure class="bdhub-hero-img"><img src="${esc(heroSrc)}" alt="${esc(h1.replace(/\.$/, ''))} by Broadland Digital" width="${hsz[0]}" height="${hsz[1]}" fetchpriority="high"></figure>` : ''}
+</div></section>`;
+  const finish = { budget: 'Matt as standard; add a glossifier for a satin finish', standard: 'Matt as standard; add a glossifier for a satin finish', premium: 'OEM gloss that looks factory fresh', ultra: 'Better than OEM: fully flatted and mopped for a show shine' }[me.tier];
+  const facts = [
+    ['Suits', like ? `${LIQUID_SIZE_NAMES[me.size]} like the ${like}` : LIQUID_SIZE_NAMES[me.size]],
+    ['Finish', finish],
+    ['Lasts', lasts ? lasts.replace(/\s+-\s+/g, '–') : 'Several years when looked after'],
+    ['Your paintwork', 'Liquid wrap peels off and leaves the original paintwork as it was'],
+  ];
+  const included = `<section class="bdhub-intro"><div class="wrap bdvp-inc"><h2>What's included.</h2><div class="bdhub-text">
+${restParas.map((t) => `<p>${esc(t)}</p>`).join('') || `<p>${esc(tier[2])}</p>`}
+${includes.length ? `<ul class="bdvp-ticks">${includes.map((l) => `<li>${esc(l)}</li>`).join('')}</ul>` : ''}
+<dl class="bdvp-facts">${facts.map(([a, b]) => `<div><dt>${esc(a)}</dt><dd>${esc(b)}</dd></div>`).join('')}</dl>
+</div></div></section>`;
+  const tiers = LIQUID_TIERS.map(([k, n]) => ({ k, n, p: find(k, me.size) }));
+  const compare = `<section class="bdvp-table-sec"><div class="wrap"><div class="bdhub-head"><h2>Compare the packages.</h2><a class="bdhub-textlink" href="/category/liquid-wrapping/">All liquid wrapping →</a></div>
+<div class="bdvp-scroll"><table class="bdvp-table bdlw-compare"><thead><tr><th scope="col">${esc(LIQUID_SIZE_NAMES[me.size])}</th>${tiers.map((t) => `<th scope="col"${t.k === me.tier ? ' class="on"' : ''}>${t.p ? `<a href="${t.p.path}/">${esc(t.n)}</a>` : esc(t.n)}</th>`).join('')}</tr></thead>
+<tbody>${LIQUID_COMPARE.map(([label, vals]) => `<tr><th scope="row">${esc(label)}</th>${vals.map((v, i) => `<td${tiers[i].k === me.tier ? ' class="on"' : ''}>${v === '✓' ? '<span class="bdlw-yes" aria-label="Yes">✓</span>' : v === '—' ? '<span class="bdlw-no" aria-label="No">—</span>' : esc(v)}</td>`).join('')}</tr>`).join('')}
+<tr><th scope="row">Price</th>${tiers.map((t) => `<td${t.k === me.tier ? ' class="on"' : ''}>${t.p ? `<a class="bdlw-view" href="${t.p.path}/"${t.k === me.tier ? ' aria-current="page"' : ''}>Quoted per vehicle</a>` : '—'}</td>`).join('')}</tr></tbody></table></div>
+<p class="bdv-note">Every package is sprayed in the colour of your choice at our Norwich workshop. Send us the make and model and we'll recommend a package and confirm the price for your vehicle.</p></div></section>`;
+  const steps = [
+    ['Tell us about the vehicle', 'Send the make, model and year, a few photos and the colour and finish you have in mind.'],
+    ['Choose the package', 'We recommend the right package for your vehicle and budget and confirm the price before anything starts.'],
+    ['Prepare and spray', 'The vehicle is prepared at our Norwich workshop, with parts and trims removed where your package includes it, then sprayed.'],
+    ['Collect', 'Collect your vehicle with its new colour. The liquid wrap can be peeled off later, leaving the original paintwork as it was.'],
+  ];
+  const how = `<section class="bdhub-steps"><div class="wrap"><div class="bdhub-head"><h2>How it works.</h2><a class="bdhub-textlink" href="/liquid-wrapping-home/">About liquid wrapping →</a></div><ol>${steps.map(([a, b]) => `<li><h3>${esc(a)}</h3><p>${esc(b)}</p></li>`).join('')}</ol></div></section>`;
+  const others = tiers.filter((t) => t.k !== me.tier && t.p);
+  const more = `<section class="bdvp-more"><div class="wrap"><div class="bdhub-head"><h2>Other packages for ${esc(LIQUID_SIZE_NAMES[me.size].toLowerCase())}.</h2></div>
+<div class="bdvp-others bdlw-others">${others.map(({ n, p }) => { const s2 = IMG_SIZES_EARLY[p.img] || [1080, 1080]; return `<a class="bdvp-other" href="${p.path}/"><span class="bdvg-img">${p.img ? `<img src="${esc(p.img)}" alt="${esc(p.title)}" width="${s2[0]}" height="${s2[1]}" loading="lazy" decoding="async">` : ''}</span><span class="bdvp-other-in"><span class="bdvg-tier">${esc(n)}</span><span class="bdvp-other-t">${esc(p.title)}</span><span class="bdvp-other-p">Quoted per vehicle</span></span></a>`; }).join('')}</div></div></section>`;
+  const body = `<div class="bdhub liquid-wrapping bdvg-page bdvp-page bdlw-page">
+${hero}
+${switches}
+${included}
+${compare}
+${how}
+${more}
+<!--bdvg-faq-->
+<section class="bdhub-band"><div class="wrap"><div><h2>Ready for a new colour?</h2><p>Send the make and model of your vehicle and the colour you want, and we'll confirm the package and price, usually the same working day.</p></div>
+<div class="bdhub-cta"><a class="bdhub-btn bdhub-btn--solid" href="#enquiry" data-enquire="${esc(enquire)}">Ask for a quote</a><a class="bdhub-btn bdhub-btn--ghost" href="tel:${tel}">Call ${esc(menu.phone)}</a></div></div></section>
+</div>
+`;
+  return h.slice(0, start) + body + h.slice(end);
+}
 // Van graphics product pages: the price reads "From £149 + VAT", in the price box and the size table; "Call for Price" → quoted per van.
 function vanProductPrices(h) {
   return h.replace(/(<div class="price[^"]*">)\s*£<b>([\d.,]+)<\/b>\s*/g, '$1<small class="bdvg-from">From</small> £<b>$2</b> <small class="bdvg-from">+ VAT</small>')
@@ -1265,7 +1367,10 @@ writeFileSync(join(ROOT, 'worker/seo-sections.json'), JSON.stringify({ sections:
 const FINISHED = finishSeo(built, { trail, sizes: IMG_SIZES, faqs: JSON.parse(readFileSync(join(ROOT, 'content/faqs.json'), 'utf8')), keywords: SEO_KW, sections: SEO_SECTIONS, videos: VIDEOS });
 for (const [p, h] of FINISHED) if (h.includes('<!--bdvg-faq-->')) {
   const faq = (h.match(/<section class="bdhub-faq bdshop-faq">[\s\S]*?<\/section>\s*/) || [''])[0];
-  FINISHED.set(p, faq ? h.replace(faq, '').replace('<!--bdvg-faq-->', faq.trim()) : h.replace('<!--bdvg-faq-->', ''));
+  // just before the closing band (after the keyword section), inside the page's container
+  let out = h.replace('<!--bdvg-faq-->', '');
+  if (faq) { out = out.replace(faq, ''); const at = out.indexOf('<section class="bdhub-band">'); out = at > 0 ? out.slice(0, at) + faq.trim() + '\n' + out.slice(at) : out; }
+  FINISHED.set(p, out);
 }
 for (const [p, h] of FINISHED) write(p === '/' ? 'index.html' : `${p.slice(1)}/index.html`, h);
 // photo pools for the worker's CRM pages (keyword cards)

@@ -2631,6 +2631,27 @@ h1.bd-was4,h1.bd-was5,h1.bd-was6{font-weight:700}
 @media(max-width:1000px){.bdsh-cats{grid-template-columns:1fr 1fr}}
 @media(max-width:700px){.bdsh-cats{grid-template-columns:1fr}}
 
+/* ---------- Liquid wrapping product pages (tools/build.mjs liquidProductPage): the section's yellow, dark text ---------- */
+.bdlw-page{--ac:#8a6400}
+.bdlw-page .bdvg-tier,.bdlw-page .bdvp-facts dt,.bdlw-page .bdvp-other-p{color:var(--ac)}
+.bdlw-page .bdvp-price{background:rgba(255,255,255,.45);border-color:rgba(42,45,50,.15)}
+.bdlw-page .bdvg-chips a[aria-current]{background:#F9C846;border-color:#F9C846;color:#2a2d32!important}
+.bdlw-page .bdvg-chips a:hover{border-color:#c99a10}
+.bdlw-page .bdvp-ticks li::before{background:#F9C846;color:#2a2d32}
+.bdlw-page .bdvp-table thead th.on,.bdlw-page .bdvp-table thead th.on a{color:var(--ac)}
+.bdlw-compare thead th a{color:var(--ink)!important;text-decoration:none!important}
+.bdlw-compare td{font-size:15px;color:#4a4d53}
+.bdlw-compare td.on,.bdlw-compare thead th.on{background:color-mix(in srgb,#F9C846 16%,#fff)}
+.bdlw-yes{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:#F9C846;color:#2a2d32;font-weight:800;font-size:14px}
+.bdlw-no{color:#a3a5ab}
+.bdlw-view{display:inline-block!important;margin:0!important;padding:6px 12px!important;border:1px solid #e6e3ee;font-size:14px;font-weight:600}
+.bdlw-view[aria-current]{background:#F9C846!important;border-color:#F9C846;color:#2a2d32!important}
+.bdlw-page .bdvg-img{background:#F9C846}
+.bdlw-others{grid-template-columns:repeat(3,minmax(0,1fr))}
+.bdlw-page .bdvp-inc .bdhub-text>p:first-child{font-size:20px!important}
+@media(max-width:1100px){.bdlw-others{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:700px){.bdlw-others{grid-template-columns:1fr}}
+
 /* /_static/bd-footer.css */
 /* Broadland Digital footer and enquiry form (built from content/menu.json; replaces the theme's footer).
    Background follows the page's section colour, as the theme's did. */
