@@ -959,6 +959,72 @@ function vanProductPrices(h) {
     .replace(/Call for Price/gi, 'Quoted per van');
 }
 
+// Shop page sections (/shop): one card per van graphics package (lowest fitted and supply-only "From" prices, a
+// link per van size), one card per liquid wrapping package (no published prices: quoted per vehicle), and the Full
+// Dip spray wrap range as compact colour cards grouped into colours, primers and glossifier.
+function shopVanSection() {
+  const prods = [...VAN_PRODUCTS.values()];
+  const fitWord = { fitted: 'Fitted', 'supply-only': 'Supply only' };
+  const cards = VAN_TIERS.map((t) => {
+    const mine = prods.filter((p) => p.tier === t.key);
+    const low = (f) => mine.filter((p) => p.fit === f && p.price).sort((a, b) => a.price - b.price)[0];
+    const show = (mine.find((p) => p.size === 'small' && p.fit === 'fitted') || mine[0]);
+    const wrap = /wrap/.test(t.key);
+    const sz = IMG_SIZES_EARLY[show.img] || [1080, 1080];
+    const prices = ['fitted', 'supply-only'].map((f) => { const p = low(f); return p ? `<li><a href="${p.path}/"><span>${fitWord[f]}</span><b>From £${esc(p.price)}</b><small>+ VAT</small></a></li>` : ''; }).join('')
+      || `<li class="bdvg-quote"><a href="${show.path}/"><span>Fitted</span><b>Quoted per van</b><small>Send photos for a price</small></a></li>`;
+    const sizes = VAN_SIZES.map((z) => { const p = mine.find((x) => x.size === z.key && x.fit === 'fitted') || mine.find((x) => x.size === z.key); return p ? `<a href="${p.path}/">${esc(z.name.replace(' vans', ''))}</a>` : ''; }).join('');
+    return `<article class="bdvg-card${wrap ? ' bdvg-card--wrap' : ''}${t.key === 'standard' ? ' bdvg-card--pick' : ''}">
+<a class="bdvg-img" href="${show.path}/" tabindex="-1" aria-hidden="true">${show.img ? `<img src="${esc(show.img)}" alt="${esc(t.name)} van graphics package" width="${sz[0]}" height="${sz[1]}" loading="lazy" decoding="async">` : ''}</a>
+<div class="bdvg-body">${t.key === 'standard' ? '<span class="bdvg-badge">Most popular</span>' : ''}<span class="bdvg-tier">${esc(t.name)}</span>
+<h3><a href="${show.path}/">${esc(t.name)} van graphics</a></h3>
+<p>${esc(t.text)}</p>
+<div class="bdsh-sizes"><span>Van size</span>${sizes}</div>
+<ul class="bdvg-prices">${prices}</ul>
+</div></article>`;
+  }).join('');
+  return `<section class="bdvg-size bdsh-sec" id="van-graphics"><div class="wrap"><div class="bdhub-head"><div><span class="bdvg-kicker">Van graphics</span><h2>Van graphics packages.</h2><p class="bdvg-like">Fitted at our Norwich workshop or supplied for you to fit. Prices are "from" for the smallest van, plus VAT.</p></div><a class="bdhub-textlink" href="${VAN_BASE}/">Compare every size and price →</a></div>
+<div class="bdvg-grid">${cards}</div></div></section>`;
+}
+const LIQUID_TIERS = [
+  ['budget', 'Budget', 'A fully prepared vehicle sprayed in the colour of your choice, without removing any parts. Matt as standard, with a glossifier for a satin finish for £150.'],
+  ['standard', 'Standard', 'Mirrors, handles, lights and trims removed where required, for a better finish and a longer-lasting wrap. Matt as standard, with a glossifier for £150.'],
+  ['premium', 'Premium', 'An OEM finish that looks factory fresh: parts and trims removed, fuel and chemical resistant, with a scratch-resistant gloss.'],
+  ['ultra', 'Ultra', 'Our best finish, better than OEM: parts and trims removed, then fully flatted and mopped for a show shine. Fuel and chemical resistant.'],
+];
+const LIQUID_SIZES = [['small', 'Small'], ['medium', 'Medium'], ['large', 'Large'], ['ex-large', 'Extra large']];
+function shopLiquidSection() {
+  const lw = wp.products.filter((p) => /liquid-wrapping/.test(p.path) && p.categories.includes('Liquid Wrapping'));
+  const cards = LIQUID_TIERS.map(([key, name, text]) => {
+    const mine = lw.filter((p) => p.path.startsWith(`/product/${key}-liquid-wrapping-`));
+    const sizeOf = (p) => (/ex-large/.test(p.path) ? 'ex-large' : /-large/.test(p.path) ? 'large' : /-medium/.test(p.path) ? 'medium' : 'small');
+    const show = mine.find((p) => sizeOf(p) === 'medium') || mine[0];
+    if (!show) return '';
+    const img = OPT[show.image?.src] || show.image?.src || '';
+    const sz = IMG_SIZES_EARLY[img] || [1080, 1080];
+    const sizes = LIQUID_SIZES.map(([k, l]) => { const p = mine.find((x) => sizeOf(x) === k); return p ? `<a href="${p.path}/">${esc(l)}</a>` : ''; }).join('');
+    return `<article class="bdvg-card">
+<a class="bdvg-img bdsh-img--lw" href="${show.path}/" tabindex="-1" aria-hidden="true">${img ? `<img src="${esc(img)}" alt="${esc(name)} liquid wrapping package" width="${sz[0]}" height="${sz[1]}" loading="lazy" decoding="async">` : ''}</a>
+<div class="bdvg-body"><span class="bdvg-tier">${esc(name)}</span>
+<h3><a href="${show.path}/">${esc(name)} liquid wrapping</a></h3>
+<p>${esc(text)}</p>
+<div class="bdsh-sizes"><span>Vehicle size</span>${sizes}</div>
+<ul class="bdvg-prices"><li class="bdvg-quote"><a href="${show.path}/"><span>Applied at our workshop</span><b>Quoted per vehicle</b><small>Send the make and model for a price</small></a></li></ul>
+</div></article>`;
+  }).join('');
+  return `<section class="bdvg-size bdsh-sec" id="liquid-wrapping"><div class="wrap"><div class="bdhub-head"><div><span class="bdvg-kicker">Liquid wrapping</span><h2>Liquid wrapping packages.</h2><p class="bdvg-like">Colour changes sprayed at our Norwich workshop, from a budget matt finish to better than OEM.</p></div><a class="bdhub-textlink" href="/liquid-wrapping-home/">About liquid wrapping →</a></div>
+<div class="bdvg-grid bdvg-grid--4">${cards}</div></div></section>`;
+}
+function shopSpraySection() {
+  const fd = wp.products.filter((p) => p.path.startsWith('/product/full-dip-'));
+  const groups = [['Full Dip Solid Colours', 'Colours'], ['Full Dip Primers', 'Primers'], ['Full Dip Glossifier', 'Glossifier']];
+  const card = (p) => { const img = OPT[p.image?.src] || p.image?.src || ''; const sz = IMG_SIZES_EARLY[img] || [300, 300];
+    return `<a class="bdsh-dip" href="${p.path}/"><span class="bdsh-dip-img">${img ? `<img src="${esc(img)}" alt="${esc(p.title)}" width="${sz[0]}" height="${sz[1]}" loading="lazy" decoding="async">` : ''}</span><span class="bdsh-dip-t">${esc(p.title.replace(/^Full Dip\s+/, '').replace(/\s+Spray Wrap$/, ''))}</span><span class="bdsh-dip-go">View →</span></a>`; };
+  const rows = groups.map(([cat, label]) => { const list = fd.filter((p) => p.categories.includes(cat)); return list.length ? `<div class="bdsh-dips-group"><h3>${esc(label)}</h3><div class="bdsh-dips">${list.map(card).join('')}</div></div>` : ''; }).join('');
+  return `<section class="bdvg-size bdsh-sec" id="spray-wrap"><div class="wrap"><div class="bdhub-head"><div><span class="bdvg-kicker">Full Dip spray wrap</span><h2>Spray wrap for your own projects.</h2><p class="bdvg-like">Full Dip colours, primers and glossifier, ready to order for wheels, trims and DIY colour changes.</p></div><a class="bdhub-textlink" href="/category/liquid-wrapping/shop/">All spray wrap →</a></div>
+${rows}</div></section>`;
+}
+
 // The online shop: the old WordPress homepage copy replaced with a shop page (hero, categories, product grids).
 // The product grids are filled in with the shop category grids (<!--bdshop-grid:…-->).
 function shopPage(h) {
@@ -985,10 +1051,10 @@ function shopPage(h) {
 <section class="bdhub-intro"><div class="wrap"><h2>How the shop works.</h2><div class="bdhub-text"><p>Each package has a fixed starting price for a typical vehicle of that size. Choose the package, add your details and we will confirm the layout, artwork and price for your vehicle before anything is made.</p><p>Fitted packages are applied at our Norwich workshop. Supply-only kits are for fitting yourself, and Full Dip spray wrap is for your own projects.</p></div></div></section>
 <section class="bdhub-services"><div class="wrap"><div class="bdhub-head"><h2>Shop by category.</h2><a class="bdhub-textlink" href="/get-a-quote/">Need something made to measure? Ask us →</a></div>
 <div class="bdhub-tiles n3">${tiles.map(([href, t, d, src]) => `<a class="bdhub-tile" href="${href}"><img src="${esc(src)}" alt="${esc(t)}" loading="lazy" width="800" height="600"><span class="bdhub-tile-in"><span class="bdhub-tile-title">${esc(t)}</span><span class="bdhub-tile-desc">${esc(d)}</span><span class="bdhub-tile-go">Shop now <i aria-hidden="true">${BIG_ARROW}</i></span></span></a>`).join('')}</div></div></section>
-${section('van-graphics', 'Fitted van graphics.', 'Designed by us and fitted at our Norwich workshop.', 'vehicle graphics+fitted', ['/category/signage/vehicle-graphics/', 'All van graphics'])}
-${section('van-kits', 'Supply-only van graphics kits.', 'The same packages, supplied for you to fit yourself.', 'vehicle graphics+supply only')}
-${section('liquid-wrapping', 'Liquid wrapping packages.', 'Colour changes applied at our workshop, priced by vehicle size.', 'liquid wrapping+!shop', ['/liquid-wrapping-home/', 'About liquid wrapping'])}
-${section('spray-wrap', 'Full Dip spray wrap.', 'Colours, primers and glossifier for your own projects.', 'shop', ['/category/liquid-wrapping/shop/', 'All spray wrap'])}
+${shopVanSection()}
+${shopLiquidSection()}
+${shopSpraySection()}
+<!--bdvg-faq-->
 <section class="bdhub-band"><div class="wrap"><div><h2>Can't see what you need?</h2><p>Most of our work is made to order. Send sizes, photos and a deadline and we'll price it.</p></div>
 <div class="bdhub-cta"><a class="bdhub-btn bdhub-btn--solid" href="/get-a-quote/">Get a free quote</a><a class="bdhub-btn bdhub-btn--ghost" href="tel:${tel}">Call ${esc(menu.phone)}</a></div></div></section>
 </div>

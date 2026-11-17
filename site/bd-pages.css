@@ -744,3 +744,24 @@ h1.bd-was4,h1.bd-was5,h1.bd-was6{font-weight:700}
 .bdvp-other-p small{font-family:azo-sans-web,Arial,sans-serif;font-size:13px;font-weight:400;color:#5d6066}
 @media(max-width:1100px){.bdvp-others{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:700px){.bdvp-others,.bdvp-facts{grid-template-columns:1fr}.bdvp-price b{font-size:32px}}
+
+/* ---------- Shop page (/shop, tools/build.mjs shopVanSection / shopLiquidSection / shopSpraySection) ---------- */
+.bdsh-sizes{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.bdsh-sizes span{font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#5d6066;margin-right:4px}
+.bdsh-sizes a{display:inline-block;padding:5px 12px;border-radius:20px;border:1px solid #ddd8ea;color:var(--ink)!important;text-decoration:none!important;font-size:14px;font-weight:600}
+.bdsh-sizes a:hover{border-color:var(--c);background:var(--c);color:#fff!important}
+.bdvg-grid--4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.bdvg-grid--4 .bdvg-card{grid-column:span 1}
+.bdsh-img--lw{background:#F9C846}
+.bdsh-dips-group+.bdsh-dips-group{margin-top:34px}
+.bdsh-dips-group h3{font-family:"Adelle",adelle,Georgia,serif;font-size:22px;margin:0 0 14px;color:var(--ink)}
+.bdsh-dips{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px}
+.bdsh-dip{display:flex;flex-direction:column;background:#fff;border:1px solid #e6e3ee;border-radius:16px;overflow:hidden;color:var(--ink)!important;text-decoration:none!important;transition:transform .2s,box-shadow .2s}
+.bdsh-dip:hover{transform:translateY(-3px);box-shadow:0 12px 28px rgba(42,45,50,.10)}
+.bdsh-dip-img{display:block;aspect-ratio:1;background:#f4f3f7}
+.bdsh-dip-img img{display:block;width:100%;height:100%;object-fit:cover}
+.bdsh-dip-t{padding:12px 14px 2px;font-weight:700;font-size:15px;line-height:1.3}
+.bdsh-dip-go{padding:0 14px 12px;font-size:13px;font-weight:700;color:var(--c)}
+.bdsh-dip:focus-visible,.bdsh-sizes a:focus-visible{outline:3px solid var(--c);outline-offset:3px}
+@media(max-width:1100px){.bdvg-grid--4{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:700px){.bdvg-grid--4{grid-template-columns:1fr}.bdsh-dips{grid-template-columns:repeat(2,minmax(0,1fr))}}
