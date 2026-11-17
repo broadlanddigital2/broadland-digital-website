@@ -2495,6 +2495,57 @@ h1.bd-was4,h1.bd-was5,h1.bd-was6{font-weight:700}
 .bdshop-page .bdhub-tiles.n3{grid-template-columns:repeat(3,minmax(0,1fr))}
 @media(max-width:900px){.bdshop-page .bdhub-tiles.n3{grid-template-columns:1fr}}
 
+/* ---------- Van graphics shop (/category/signage/vehicle-graphics/…, tools/build.mjs vanShopPage) ---------- */
+.bdvg-hero-img{background:#fff}
+.bdvg-hero-img img{object-fit:contain;padding:22px}
+.bdvg-hero-img--fill{background:var(--c)}.bdvg-hero-img--fill img{object-fit:cover;padding:0}
+.bdvg-grid--n2 .bdvg-card{grid-column:span 3}
+.bdhub .bdvg-filter{background:#fff;border-bottom:1px solid #e6e3ee;padding:22px 0}
+.bdvg-filter .wrap{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px 40px}
+.bdvg-chips{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.bdvg-chips span{font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#5d6066;margin-right:6px}
+.bdvg-chips a{display:inline-block;padding:9px 18px;border-radius:30px;background:#fff;border:1px solid #ddd8ea;color:var(--ink)!important;text-decoration:none!important;font-size:15px;font-weight:600;transition:background .15s,border-color .15s,color .15s}
+.bdvg-chips a:hover{border-color:var(--c)}
+.bdvg-chips a[aria-current]{background:var(--c);border-color:var(--c);color:#fff!important}
+.bdvg-filter-note{margin:0;font-size:15px!important;color:#5d6066}
+.bdhub section.bdvg-size{padding:80px 0}
+.bdvg-size:nth-of-type(odd){background:#f4f3f7}
+.bdvg-kicker{display:block;font-size:13px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--c);margin-bottom:10px}
+.bdvg-like{margin:12px 0 0;font-size:17px!important;color:#5d6066}
+.bdvg-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:22px}
+.bdvg-card{grid-column:span 2;position:relative;display:flex;flex-direction:column;background:#fff;border:1px solid #e6e3ee;border-radius:20px;overflow:hidden;transition:transform .2s,box-shadow .2s}
+.bdvg-card:hover{transform:translateY(-3px);box-shadow:0 18px 40px rgba(42,45,50,.10)}
+.bdvg-card--pick{border:2px solid var(--c);box-shadow:0 18px 40px rgba(113,63,255,.12)}
+.bdvg-card--wrap{grid-column:span 3;flex-direction:row}
+.bdvg-img{display:block;aspect-ratio:4/3;background:var(--c);overflow:hidden}
+.bdvg-card--wrap .bdvg-img{aspect-ratio:auto;flex:0 0 42%}
+.bdvg-img img{display:block;width:100%;height:100%;object-fit:cover;transition:transform .4s}
+.bdvg-card:hover .bdvg-img img{transform:scale(1.04)}
+.bdvg-body{display:flex;flex-direction:column;gap:10px;padding:24px 26px 28px;flex:1}
+.bdvg-badge{position:absolute;top:16px;right:16px;padding:6px 12px;border-radius:20px;background:var(--c);color:#fff;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+.bdvg-tier{font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--c)}
+.bdvg-body h3{font-family:"Adelle",adelle,Georgia,serif;font-size:23px;line-height:1.2;margin:0}
+.bdvg-body h3 a{color:var(--ink)!important;text-decoration:none!important}
+.bdvg-body h3 a:hover{color:var(--c)!important}
+.bdvg-body>p{font-size:16px!important;line-height:1.55!important;color:#4a4d53;margin:0;flex:1}
+.bdvg-prices{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin:6px 0 0;padding:0;list-style:none}
+.bdvg-prices a{display:flex;flex-direction:column;gap:2px;height:100%;padding:12px 14px;border:1px solid #e6e3ee;border-radius:14px;background:#faf9fc;color:var(--ink)!important;text-decoration:none!important;transition:border-color .15s,background .15s}
+.bdvg-prices a:hover{border-color:var(--c);background:#fff}
+.bdvg-prices span{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#5d6066}
+.bdvg-prices b{font-family:"Adelle",adelle,Georgia,serif;font-size:24px;font-weight:800;line-height:1.15;color:var(--c)}
+.bdvg-prices small{font-size:13px;color:#5d6066}
+.bdvg-quote b{font-size:20px}
+.bdvg-btn{align-self:flex-start;margin-top:8px;background:var(--c);color:#fff!important;border-color:var(--c)}
+.bdvg-btn:hover{background:transparent;color:var(--c)!important}
+.bdvg-btn:focus-visible,.bdvg-prices a:focus-visible,.bdvg-chips a:focus-visible{outline:3px solid var(--c);outline-offset:3px}
+.bdvg-fits{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:26px 0}
+.bdvg-fits>div{padding:24px 26px;border-radius:18px;background:#f4f3f7}
+.bdvg-fits h3{font-family:"Adelle",adelle,Georgia,serif;font-size:22px;margin:0 0 8px;color:var(--ink)}
+.bdvg-fits p{font-size:16px!important;line-height:1.55;color:#4a4d53;margin:0}
+.bdvg-from{font-size:.45em;font-weight:600;color:#5d6066;vertical-align:middle}
+@media(max-width:1100px){.bdvg-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.bdvg-card,.bdvg-card--wrap{grid-column:span 1}.bdvg-card--wrap{flex-direction:column}.bdvg-card--wrap .bdvg-img{aspect-ratio:4/3;flex:none}}
+@media(max-width:700px){.bdvg-grid,.bdvg-fits{grid-template-columns:1fr}.bdhub section.bdvg-size{padding:56px 0}.bdvg-filter .wrap{flex-direction:column;align-items:flex-start}}
+
 /* /_static/bd-footer.css */
 /* Broadland Digital footer and enquiry form (built from content/menu.json; replaces the theme's footer).
    Background follows the page's section colour, as the theme's did. */

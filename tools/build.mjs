@@ -27,6 +27,7 @@ const extra = JSON.parse(readFileSync(join(ROOT, 'content/site.json'), 'utf8'));
 const VEH = JSON.parse(readFileSync(join(ROOT, 'content/vehicle.json'), 'utf8'));
 const OPTS = existsSync(join(ROOT, 'content/opt-srcset.json')) ? JSON.parse(readFileSync(join(ROOT, 'content/opt-srcset.json'), 'utf8')) : {};
 const OPT = existsSync(join(ROOT, 'content/opt-images.json')) ? JSON.parse(readFileSync(join(ROOT, 'content/opt-images.json'), 'utf8')) : {};
+const IMG_SIZES_EARLY = existsSync(join(ROOT, 'content/img-sizes.json')) ? JSON.parse(readFileSync(join(ROOT, 'content/img-sizes.json'), 'utf8')) : {};
 const productTitle = new Map(wp.products.map((p) => [p.path, p.title]));
 const lastmod = new Map([...wp.pages, ...wp.products].map((p) => [p.path, p.modified]));
 
@@ -44,7 +45,9 @@ for (const f of walk(SRC).filter((f) => f.endsWith('index.html'))) {
 // A page the CRM plugin drew is a CRM page: the worker serves those live. One of them becomes the shell.
 const crmPages = [...captured].filter(([, h]) => h.includes('crmseo-main')).map(([p]) => p);
 // The blog (/blog, and the old /guides/<post> addresses) is served live from the CRM by the worker.
-const staticPaths = new Set([...captured.keys()].filter((p) => !crmPages.includes(p) && p !== '/blog' && !p.startsWith('/guides/')));
+// The van graphics shop lists every package on one page now: its old WordPress "page 2" redirects to it.
+const MERGED_PAGES = { '/category/signage/vehicle-graphics/page/2': '/category/signage/vehicle-graphics/' };
+const staticPaths = new Set([...captured.keys()].filter((p) => !crmPages.includes(p) && p !== '/blog' && !p.startsWith('/guides/') && !MERGED_PAGES[p]));
 
 // ---------- Assets ----------
 const assetVersion = new Map();
@@ -174,6 +177,8 @@ function transform(html, path) {
     .replace(/<img\b(?![^>]*\b(?:loading|fetchpriority)=)(?![^>]*custom-logo)/g, '<img loading="lazy"');
   if (path === '/contact-us') h = contactPage(h);
   if (path === '/shop') h = shopPage(h);
+  if (/^\/category\/signage\/vehicle-graphics(\/|$)/.test(path)) h = vanShopPage(h, path);
+  if (VAN_PRODUCTS.has(path)) h = vanProductPrices(h);
   if (path === '/get-a-quote') h = quotePage(h).replace(/(<ul[^>]*class="menu bdh-links"[\s\S]*?<\/ul>)/, (m) => m.replace(/\saria-current="[^"]*"/g, ''));
   // Long legal pages: slightly smaller text (site/bd-pages.css .bd-legal)
   if (['/privacy-policy', '/returns', '/refund_returns'].includes(path)) h = h.replace(/class="category page\b/, 'class="category page bd-legal');
@@ -707,11 +712,7 @@ function vehicleExtras(h, path, title) {
   const tel = menu.phone.replace(/\s/g, '');
   const included = v.included ? `<section class="bdv-inc"><div class="wrap"><div class="bdhub-head"><h2>${esc(v.includedTitle || 'What we do.')}</h2></div>
 <ul class="bdv-cards">${v.included.map(([a, b]) => `<li><span class="bdv-ico" aria-hidden="true">${incIcon(a)}</span><h3>${esc(a)}</h3><p>${esc(b)}</p></li>`).join('')}</ul></div></section>` : '';
-  const pk = [
-    ['Basic', '149', 'Single-colour cut vinyl: company name on the bonnet, both sides and the rear, with your web address and phone number on the lower side panels and rear doors.'],
-    ['Standard', '210', 'Everything in Basic plus social media details, a second vinyl colour or panel infill, and a cut or printed logo (subject to complexity and hi-res files).'],
-    ['Pro', '455', 'Everything in Basic and Standard plus design options beyond the regular layout (up to 3 ideas) and a large logo or graphic on the rear quarters and rear.'],
-  ];
+  const pk = PACKAGES.map((x) => [x.tier, x.from, x.text]);
   const prices = v.prices ? `<section class="bdv-prices"><div class="wrap"><div class="bdhub-head"><h2>Van graphics prices.</h2><a class="bdhub-textlink" href="/category/signage/vehicle-graphics/">Shop van graphics online →</a></div>
 <div class="bdv-pk">${pk.map(([n, p, t], i) => `<div class="bdv-p${i === 1 ? ' bdv-p--mid' : ''}"><h3>${n}</h3><p class="bdv-price"><small>from</small> £${p} <small>+ VAT</small></p><p>${esc(t)}</p><a class="bdhub-btn bdhub-btn--solid" href="/get-a-quote/?service=signage">Get a quote</a></div>`).join('')}</div>
 <p class="bdv-note">Supply and fit within 30 miles of our Norwich workshop. Prices are "from" for a typical van; your quote confirms the price for your vehicle and design. Supply-only graphics for self-fitting are in the <a href="/category/signage/vehicle-graphics/">online shop</a>.</p></div></section>` : '';
@@ -739,6 +740,123 @@ function vehicleExtras(h, path, title) {
 // left out on this page (the page has it).
 const NAP = { name: 'Broadland Digital', street: 'Vulcan House, Vulcan Road North', town: 'Norwich', county: 'Norfolk', postcode: 'NR6 6AQ',
   hours: 'Monday–Friday, 8:30am–5pm' };
+// ---------- Van graphics shop (/category/signage/vehicle-graphics/ and its size / fitted / supply-only pages) ----------
+// The WooCommerce category pages had a card per product, so every package appeared twice (fitted and supply only)
+// with bare prices and "Call for Price". Now they look like the rest of the site (the hubs' hero, cards, steps and
+// closing band): one card per package for each van size, with its fitted and supply-only "From £… + VAT" prices
+// side by side, each linking to its product page. Wraps are fitted only and quoted per van.
+const PACKAGES = [
+  { tier: 'Basic', from: '149', text: 'Single-colour cut vinyl: company name on the bonnet, both sides and the rear, with your web address and phone number on the lower side panels and rear doors.' },
+  { tier: 'Standard', from: '210', text: 'Everything in Basic plus social media details, a second vinyl colour or panel infill, and a cut or printed logo (subject to complexity and hi-res files).' },
+  { tier: 'Pro', from: '455', text: 'Everything in Basic and Standard plus design options beyond the regular layout (up to 3 ideas) and a large logo or graphic on the rear quarters and rear.' },
+];
+const VAN_TIERS = [
+  ...PACKAGES.map((p) => ({ key: p.tier.toLowerCase(), name: p.tier, text: p.text })),
+  { key: 'half-wrap', name: 'Half wrap', text: 'Printed graphics that really jump out, without the budget of a full wrap. Designed around your van and brand, and quoted for your vehicle.' },
+  { key: 'full-wrap', name: 'Full wrap', text: 'The whole van wrapped in printed film, for businesses that really want to stand out. Designed around your van and brand, and quoted for your vehicle.' },
+];
+const VAN_SIZES = [
+  { key: 'small', name: 'Small vans', like: 'Citroën Berlingo and Renault Kangoo' },
+  { key: 'medium', name: 'Medium vans', like: 'Vauxhall Vivaro and Mercedes Vito' },
+  { key: 'large', name: 'Large vans', like: 'Mercedes Sprinter and Renault Trafic' },
+];
+const VAN_BASE = '/category/signage/vehicle-graphics';
+const vanCatPath = (size, fit) => !size ? VAN_BASE : !fit ? `${VAN_BASE}/${size}-vans` : `${VAN_BASE}/${size}-vans/${fit}-${size}-vans`;
+const VAN_PRODUCTS = new Map(wp.products.filter((p) => p.categories.includes('Vehicle Graphics')).map((p) => {
+  const tier = VAN_TIERS.find((t) => p.title.toLowerCase().startsWith(t.name.toLowerCase()));
+  const size = VAN_SIZES.find((z) => p.categories.some((c) => c.toLowerCase() === z.name.toLowerCase()));
+  return [p.path, { path: p.path, title: p.title, tier: tier?.key, size: size?.key, fit: p.categories.includes('Supply Only') ? 'supply-only' : 'fitted', price: p.price > 0 ? String(p.price).replace(/\.0+$/, '') : '', img: OPT[p.image?.src] || p.image?.src || '' }];
+}));
+const money = (n) => `<b>From £${esc(n)}</b><small>+ VAT</small>`;
+function vanShopPage(h, path) {
+  const start = h.search(/<div[^>]*class="category page page-category/);
+  const end = h.indexOf('<footer', start);
+  if (start < 0 || end < 0) return h;
+  const segs = path.slice(VAN_BASE.length).split('/').filter(Boolean);
+  const size = (segs[0] || '').replace(/-vans$/, '') || '';
+  const fit = segs[1] ? (segs[1].startsWith('supply-only') ? 'supply-only' : 'fitted') : '';
+  const sizes = VAN_SIZES.filter((z) => !size || z.key === size);
+  const tel = menu.phone.replace(/\s/g, '');
+  const crumbs = (h.match(/<nav class="bdc"[\s\S]*?<\/nav>/) || [''])[0];
+  const h1 = decode(((h.match(/<h1 class="banner-title">([\s\S]*?)<\/h1>/) || [])[1] || '').replace(/<[^>]+>/g, '')).replace(/\s+/g, ' ').trim() || 'Van Graphics Packages.';
+  const prods = [...VAN_PRODUCTS.values()];
+  const find = (sz, tier, f) => prods.find((p) => p.size === sz && p.tier === tier && p.fit === f);
+  const fitWord = { fitted: 'Fitted', 'supply-only': 'Supply only' };
+  const lowest = (f, sz) => { const l = prods.filter((p) => p.price && (!f || p.fit === f) && (!sz || p.size === sz)).map((p) => +p.price); return l.length ? Math.min(...l) : 0; };
+  const sizeObj = VAN_SIZES.find((z) => z.key === size);
+  const lead = !size ? `Basic, Standard and Pro van graphics packages for small, medium and large vans, fitted at our Norwich workshop or supplied for you to fit, from £${lowest()} + VAT. Half and full wraps are quoted for your van.`
+    : !fit ? `Van graphics packages for ${sizeObj.name.toLowerCase()} like the ${sizeObj.like}: fitted from £${lowest('fitted', size)} + VAT or supply only from £${lowest('supply-only', size)} + VAT.`
+    : fit === 'fitted' ? `Van graphics for ${sizeObj.name.toLowerCase()} like the ${sizeObj.like}, designed and fitted by our Norwich team, from £${lowest('fitted', size)} + VAT.`
+    : `Van graphics kits for ${sizeObj.name.toLowerCase()} like the ${sizeObj.like}, printed and cut ready for you to fit, from £${lowest('supply-only', size)} + VAT.`;
+  const heroP = (size ? find(size, 'pro', 'fitted') : null) || find('small', 'full-wrap', 'fitted');
+  const heroSrc = (h.match(/<div class="banner-image[^"]*">\s*<img[^>]*\ssrc="([^"]+)"/) || [])[1] || heroP?.img || '';
+  const heroSz = IMG_SIZES_EARLY[heroSrc] || [1200, 900];
+  const chip = (href, label, on) => `<a href="${href}/"${on ? ' aria-current="page"' : ''}>${esc(label)}</a>`;
+  const filter = `<nav class="bdvg-filter" aria-label="Choose van size and fitting"><div class="wrap">
+<div class="bdvg-chips"><span>Van size</span>${chip(vanCatPath('', ''), 'All sizes', !size)}${VAN_SIZES.map((z) => chip(vanCatPath(z.key, fit), z.name, size === z.key)).join('')}</div>
+${size ? `<div class="bdvg-chips"><span>Fitting</span>${chip(vanCatPath(size, ''), 'Both', !fit)}${chip(vanCatPath(size, 'fitted'), 'Fitted', fit === 'fitted')}${chip(vanCatPath(size, 'supply-only'), 'Supply only', fit === 'supply-only')}</div>` : '<p class="bdvg-filter-note">Prices are "from" prices for a typical van of each size, plus VAT.</p>'}
+</div></nav>`;
+  const card = (z, t) => {
+    const rows = ['fitted', 'supply-only'].filter((f) => !fit || f === fit).map((f) => ({ f, p: find(z.key, t.key, f) })).filter((r) => r.p);
+    if (!rows.length) return '';
+    const main = rows[0].p;
+    const sz = IMG_SIZES_EARLY[main.img] || [800, 600];
+    const wrap = /wrap/.test(t.key);
+    const title = `${t.name} ${z.name.toLowerCase().replace(/s$/, '')} graphics`;
+    const price = rows.map(({ f, p }) => p.price
+      ? `<li><a href="${p.path}/"><span>${fitWord[f]}</span>${money(p.price)}</a></li>`
+      : `<li class="bdvg-quote"><a href="${p.path}/"><span>${fitWord[f]}</span><b>Quoted per van</b><small>Send photos for a price</small></a></li>`).join('');
+    return `<article class="bdvg-card${wrap ? ' bdvg-card--wrap' : ''}${t.key === 'standard' ? ' bdvg-card--pick' : ''}">
+<a class="bdvg-img" href="${main.path}/" tabindex="-1" aria-hidden="true">${main.img ? `<img src="${esc(main.img)}" alt="${esc(title)} package" width="${sz[0]}" height="${sz[1]}" loading="lazy" decoding="async">` : ''}</a>
+<div class="bdvg-body">${t.key === 'standard' ? '<span class="bdvg-badge">Most popular</span>' : ''}<span class="bdvg-tier">${esc(t.name)}</span>
+<h3><a href="${main.path}/">${esc(title.charAt(0).toUpperCase() + title.slice(1))}</a></h3>
+<p>${esc(t.text)}</p>
+<ul class="bdvg-prices">${price}</ul>
+${wrap ? `<a class="bdhub-btn bdvg-btn" href="/get-a-quote/?service=signage">Get a wrap quote</a>` : `<a class="bdhub-btn bdvg-btn" href="${main.path}/">Choose ${esc(t.name)}</a>`}
+</div></article>`;
+  };
+  const groups = sizes.map((z) => {
+    const list = VAN_TIERS.map((t) => card(z, t)).filter(Boolean);
+    const cards = list.join('');
+    if (!cards) return '';
+    const other = fit === 'fitted' ? ['supply-only', `Fitting it yourself? Supply-only kits from £${lowest('supply-only', z.key)} + VAT →`] : fit === 'supply-only' ? ['fitted', `Rather we fit it? Fitted packages from £${lowest('fitted', z.key)} + VAT →`] : null;
+    return `<section class="bdvg-size" id="${z.key}-vans"><div class="wrap"><div class="bdhub-head"><div><span class="bdvg-kicker">${esc(z.name)}</span><h2>${esc(fit ? `${fitWord[fit]} ${z.name.toLowerCase()}.` : `${z.name}.`)}</h2><p class="bdvg-like">For vans like the ${esc(z.like)}.</p></div>
+${!size ? `<a class="bdhub-textlink" href="${vanCatPath(z.key, '')}/">All ${esc(z.name.toLowerCase())} packages →</a>` : other ? `<a class="bdhub-textlink" href="${vanCatPath(z.key, other[0])}/">${esc(other[1])}</a>` : ''}</div>
+<div class="bdvg-grid bdvg-grid--n${list.length}">${cards}</div></div></section>`;
+  }).join('');
+  const intro = `<section class="bdhub-intro"><div class="wrap bdvg-intro"><h2>${fit === 'supply-only' ? 'Fit it yourself.' : fit === 'fitted' ? 'Fitted by our team.' : 'How the packages work.'}</h2><div class="bdhub-text">
+<p>Each package has a starting price for a typical van of that size. Choose a package and send us your logo, details and a few photos of the van; we confirm the layout, artwork and final price for your vehicle before anything is made.</p>
+<div class="bdvg-fits"><div><h3>Fitted</h3><p>Designed by us and fitted at our Norwich workshop, or at your premises within 30 miles. Courtesy vehicles are available while a van is off the road.</p></div><div><h3>Supply only</h3><p>Basic and Standard graphics, printed and cut in-house and supplied ready for you or your own fitter to apply.</p></div></div>
+<p>We use 3M and Metamark materials. Looked after correctly, van graphics will last up to 7 years.</p></div></div></section>`;
+  const steps = `<section class="bdhub-steps"><div class="wrap"><div class="bdhub-head"><h2>How it works.</h2><a class="bdhub-textlink" href="/vehicle-graphics/">About our vehicle graphics →</a></div><ol>${VEH.steps.map(([a, b]) => `<li><h3>${esc(a)}</h3><p>${esc(b)}</p></li>`).join('')}</ol></div></section>`;
+  const body = `<div class="bdhub signage bdvg-page">
+<section class="bdhub-hero"><div class="wrap"><div class="bdhub-hero-text">${crumbs}
+<span class="bdhub-eyebrow">Van graphics shop</span>
+<h1>${esc(h1)}</h1>
+<p class="bdhub-lead">${esc(lead)}</p>
+<div class="bdhub-cta"><a class="bdhub-btn bdhub-btn--solid" href="#${(sizes[0] || VAN_SIZES[0]).key}-vans">See the packages</a><a class="bdhub-btn bdhub-btn--ghost" href="tel:${tel}">Call ${esc(menu.phone)}</a></div></div>
+${heroSrc ? `<figure class="bdhub-hero-img bdvg-hero-img${heroSrc === heroP?.img ? ' bdvg-hero-img--fill' : ''}"><img src="${esc(OPT[heroSrc] || heroSrc)}" alt="${esc(h1.replace(/\.$/, ''))} from Broadland Digital" width="${heroSz[0]}" height="${heroSz[1]}" fetchpriority="high"></figure>` : ''}
+</div></section>
+${filter}
+${groups}
+${intro}
+${steps}
+<section class="bdhub-band"><div class="wrap"><div><h2>Not sure which package?</h2><p>Send the make and model of your van and a rough idea of what you want on it, and we'll recommend a package and confirm the price.</p></div>
+<div class="bdhub-cta"><a class="bdhub-btn bdhub-btn--solid" href="/get-a-quote/?service=signage">Get a free quote</a><a class="bdhub-btn bdhub-btn--ghost" href="tel:${tel}">Call ${esc(menu.phone)}</a></div></div></section>
+</div>
+`;
+  // ItemList of the packages on the page (search engines read the "from" prices from each product page's own Product schema)
+  const listed = sizes.flatMap((z) => VAN_TIERS.flatMap((t) => ['fitted', 'supply-only'].filter((f) => !fit || f === fit).map((f) => find(z.key, t.key, f)).filter(Boolean)));
+  const ld = { '@context': 'https://schema.org', '@type': 'ItemList', name: h1.replace(/\.$/, ''), itemListElement: listed.map((p, i) => ({ '@type': 'ListItem', position: i + 1, url: `${ORIGIN}${p.path}/`, name: `${p.title} (${fitWord[p.fit].toLowerCase()})` })) };
+  return (h.slice(0, start) + body + h.slice(end)).replace(/<\/head>/i, `<script type="application/ld+json">${JSON.stringify(ld).replace(/</g, '\\u003c')}</script>\n</head>`);
+}
+// Van graphics product pages: the price reads "From £149 + VAT", in the price box and the size table; "Call for Price" → quoted per van.
+function vanProductPrices(h) {
+  return h.replace(/(<div class="price[^"]*">)\s*£<b>([\d.,]+)<\/b>\s*/g, '$1<small class="bdvg-from">From</small> £<b>$2</b> <small class="bdvg-from">+ VAT</small>')
+    .replace(/<b>£([\d.,]+)<\/b>/g, '<b>From £$1</b>')
+    .replace(/Call for Price/gi, 'Quoted per van');
+}
+
 // The online shop: the old WordPress homepage copy replaced with a shop page (hero, categories, product grids).
 // The product grids are filled in with the shop category grids (<!--bdshop-grid:…-->).
 function shopPage(h) {
@@ -923,7 +1041,7 @@ const IMG_SIZES = existsSync(join(ROOT, 'content/img-sizes.json')) ? JSON.parse(
     return list.length ? grid(list) : '';
   }));
   for (const [path, h0] of built) {
-    if (!path.startsWith('/category/') || /\/page\/\d+$/.test(path)) continue;
+    if (!path.startsWith('/category/') || /\/page\/\d+$/.test(path) || /^\/category\/signage\/vehicle-graphics(\/|$)/.test(path)) continue;
     const segs = path.split('/').slice(2);
     const names = segs.map((seg, i) => (seg === 'shop' ? 'shop' : low(pageName('/category/' + segs.slice(0, i + 1).join('/'))))).filter(Boolean);
     const mine = prods.filter((p) => names.every((n) => p.cats.includes(n)));
@@ -977,7 +1095,7 @@ write('sitemap.xml', `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="htt
 write('robots.txt', `User-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /_crm-page/\n\nSitemap: ${ORIGIN}/sitemap.xml\n`);
 
 // Redirects: content/site.json, plus old links to "/x" where the page is "/x-2" (or moved under a parent).
-const redirects = { ...extra.redirects };
+const redirects = { ...extra.redirects, ...MERGED_PAGES };
 for (const p of brokenLinks) {
   if (redirects[p]) continue;
   const last = p.split('/').pop();
