@@ -179,6 +179,9 @@ function transform(html, path) {
   if (path === '/shop') h = shopPage(h);
   if (/^\/category\/signage\/vehicle-graphics(\/|$)/.test(path)) h = vanShopPage(h, path);
   if (VAN_PRODUCTS.has(path)) h = vanProductPage(h, path);
+  // Liquid wrapping: no prices shown for now (none are published; the £150 on the pages is the optional glossifier)
+  if (/^\/(product\/[a-z]+-liquid-wrapping|category\/liquid-wrapping)/.test(path)) h = h.replace(/Call for Price/gi, 'Quoted per vehicle')
+    .replace(/\s*[-–,]?\s*just £\s?[\d.,]+/gi, '').replace(/ at a small additional cost of £\s?150(\.00)?/gi, ' at a small additional cost');
   if (path === '/get-a-quote') h = quotePage(h).replace(/(<ul[^>]*class="menu bdh-links"[\s\S]*?<\/ul>)/, (m) => m.replace(/\saria-current="[^"]*"/g, ''));
   // Long legal pages: slightly smaller text (site/bd-pages.css .bd-legal)
   if (['/privacy-policy', '/returns', '/refund_returns'].includes(path)) h = h.replace(/class="category page\b/, 'class="category page bd-legal');
@@ -987,8 +990,8 @@ function shopVanSection() {
 <div class="bdvg-grid">${cards}</div></div></section>`;
 }
 const LIQUID_TIERS = [
-  ['budget', 'Budget', 'A fully prepared vehicle sprayed in the colour of your choice, without removing any parts. Matt as standard, with a glossifier for a satin finish for £150.'],
-  ['standard', 'Standard', 'Mirrors, handles, lights and trims removed where required, for a better finish and a longer-lasting wrap. Matt as standard, with a glossifier for £150.'],
+  ['budget', 'Budget', 'A fully prepared vehicle sprayed in the colour of your choice, without removing any parts. Matt as standard, with an optional glossifier for a satin finish.'],
+  ['standard', 'Standard', 'Mirrors, handles, lights and trims removed where required, for a better finish and a longer-lasting wrap. Matt as standard, with an optional glossifier.'],
   ['premium', 'Premium', 'An OEM finish that looks factory fresh: parts and trims removed, fuel and chemical resistant, with a scratch-resistant gloss.'],
   ['ultra', 'Ultra', 'Our best finish, better than OEM: parts and trims removed, then fully flatted and mopped for a show shine. Fuel and chemical resistant.'],
 ];
@@ -1200,7 +1203,7 @@ const IMG_SIZES = existsSync(join(ROOT, 'content/img-sizes.json')) ? JSON.parse(
   });
   const card = (p) => {
     const sz = IMG_SIZES[p.img] || [800, 600];
-    return `<a class="bdp-card" href="${p.path}/">${p.img ? `<span class="bdp-img"><img src="${esc(p.img)}" alt="${esc(p.title)}" width="${sz[0]}" height="${sz[1]}" loading="lazy" decoding="async"></span>` : ''}<span class="bdp-body"><span class="bdp-title">${esc(p.title)}</span>${p.summary ? `<span class="bdp-sum">${esc(p.summary)}</span>` : ''}<span class="bdp-price">${p.price ? `From £${String(p.price).replace(/\.0+$/, '')}` : 'See options and prices'}</span></span></a>`;
+    return `<a class="bdp-card" href="${p.path}/">${p.img ? `<span class="bdp-img"><img src="${esc(p.img)}" alt="${esc(p.title)}" width="${sz[0]}" height="${sz[1]}" loading="lazy" decoding="async"></span>` : ''}<span class="bdp-body"><span class="bdp-title">${esc(p.title)}</span>${p.summary ? `<span class="bdp-sum">${esc(p.summary)}</span>` : ''}<span class="bdp-price">${p.price ? `From £${String(p.price).replace(/\.0+$/, '')}` : 'See options'}</span></span></a>`;
   };
   const grid = (list) => `<div class="bdp-grid">${list.map(card).join('')}</div>`;
   if (built.has('/shop')) built.set('/shop', built.get('/shop').replace(/<!--bdshop-grid:([^>]*?)-->/g, (m, spec) => {

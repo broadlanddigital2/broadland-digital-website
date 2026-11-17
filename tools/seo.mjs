@@ -233,7 +233,8 @@ export function fixLd(h, path) {
     const offers = [].concat(x.n.offers || []);
     for (const o of offers) {
       if (o.price != null && !(Number(o.price) > 0)) {
-        if (pagePrices.length) { o.price = Math.min(...pagePrices).toFixed(2); if (o.priceSpecification) o.priceSpecification.price = o.price; }
+        // liquid wrapping packages have no published price (the £ on their pages is the optional glossifier): no Product price
+        if (pagePrices.length && !/liquid-wrapping/.test(path)) { o.price = Math.min(...pagePrices).toFixed(2); if (o.priceSpecification) o.priceSpecification.price = o.price; }
         else remove.add(x.n);
       }
     }
