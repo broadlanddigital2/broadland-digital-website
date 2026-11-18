@@ -1487,6 +1487,11 @@ const FINISHED = finishSeo(built, { trail, sizes: IMG_SIZES, faqs: JSON.parse(re
 for (const [p, h] of FINISHED) {
   let out = h;
   if (!/property="og:description"/.test(out)) { const d = (out.match(/<meta name="description" content="([^"]*)"/) || [])[1]; if (d) out = out.replace(/(<meta property="og:title"[^>]*>)/, `$1\n<meta property="og:description" content="${d}">`); }
+  // wide tables (3+ columns): a "Swipe" hint above them on phones, and the edge fade drops once scrolled to the end
+  if (out.includes('class="bdvp-scroll"')) {
+    out = out.replace(/<div class="bdvp-scroll">(<table[\s\S]*?<\/thead>)/g, (m, t) => ((t.match(/<th\b/g) || []).length >= 3 ? `<p class="bdvp-swipe" aria-hidden="true">Swipe to see all ${/bdvp-table bdlw/.test(t) ? 'packages' : 'sizes'} →</p>` : '') + m);
+    out = out.replace(/<\/body>/i, `<script>document.querySelectorAll('.bdvp-scroll').forEach(function(s){function f(){s.classList.toggle('is-end',s.scrollLeft+s.clientWidth>=s.scrollWidth-4)}s.addEventListener('scroll',f,{passive:true});f()});</script>\n</body>`);
+  }
   if (p === '/shop') out = out.replace(/(<script[^>]*application\/ld\+json[^>]*class="rank-math-schema-pro"[^>]*>)([\s\S]*?)(<\/script>)/, (m, a, js, c) => {
     let j; try { j = JSON.parse(js); } catch { return m; }
     const url = `${ORIGIN}/shop/`;
