@@ -34,7 +34,12 @@ export function blockHtml(s, video, pics = []) {
     const t = pics.length >= items.length ? pics[i] : '';
     if (!t) return '';
     const img = t.replace(/\ssizes="[^"]*"/, '').replace(/\sclass="[^"]*"/, '').replace(/\sloading="[^"]*"/, '').replace(/<img\b/, '<img loading="lazy" sizes="(max-width: 700px) 100vw, 400px"');
-    return `<span class="bdkw-img">${img}</span>`;
+    // a picture without alt text gets its card's heading (search engines and screen readers read it)
+    const alt = esc(String(items[i]?.h || '').replace(/<[^>]+>/g, '').trim());
+    // …and so does one whose alt is only a word or two ("vehicle graphics"), which says nothing about this card
+    const cur = (img.match(/\salt="([^"]*)"/) || [])[1] || '';
+    const tag = cur.trim().length >= 20 ? img : img.replace(/\salt="[^"]*"/, '').replace(/<img\b/, `<img alt="${alt}"`);
+    return `<span class="bdkw-img">${tag}</span>`;
   };
   return `<section class="bdkw${items.length && pics.length >= items.length ? ' bdkw--pics' : ''}"><div class="bdkw-wrap">${s?.heading ? `<h2>${safe(s.heading)}</h2>` : ''}${videoHtml(video)}`
     + (items.length ? `<div class="bdkw-grid">${items.map((i, n) => { const x = pullLinks(i.p); return `<div class="bdkw-card">${pic(n)}<div class="bdkw-txt"><h3>${safe(i.h)}</h3><p>${safe(x.text)}</p>${x.links.map((l) => `<a class="bdkw-cardlink" href="${esc(l.href)}">${esc(l.label)}<span aria-hidden="true">${ARROW}</span></a>`).join('')}</div></div>`; }).join('')}</div>` : '')

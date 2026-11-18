@@ -923,9 +923,12 @@ ${includes.length ? `<ul class="bdvp-ticks">${includes.map((l) => `<li>${esc(l)}
 </div></div></section>`;
   const big = (tag) => { const ss = (tag.match(/srcset="([^"]*)"/) || [])[1] || ''; const c = ss.split(',').map((x) => x.trim().split(/\s+/)).filter((x) => x[1]).sort((a, b) => parseInt(b[1]) - parseInt(a[1])); const fit = c.find((x) => parseInt(x[1]) <= 1600); return (fit || c[c.length - 1] || [(tag.match(/src="([^"]+)"/) || [])[1]])[0]; };
   const work = gallery.length ? `<section class="bdsub-gallery-sec"><div class="wrap"><div class="bdhub-head"><h2>Vans we've done.</h2><a class="bdhub-textlink" href="/vehicle-graphics/">More vehicle graphics →</a></div>
-<div class="bdsub-gallery${gallery.length < 3 ? ` bdsub-gallery--n${gallery.length}` : ''}">${gallery.map((tag) => {
-    const alt = decode((tag.match(/alt="([^"]*)"/) || [])[1] || '').replace(/^.*?–\s*/, '');
-    const t = tag.replace(/\ssizes="[^"]*"/, ' sizes="(max-width: 600px) 50vw, (max-width: 1000px) 33vw, 380px"').replace(/\sstyle="[^"]*"/, '').replace(/\sclass="[^"]*"/, '').replace(/\sdecoding="[^"]*"/, '').replace(/\sloading="[^"]*"/, '').replace(/\salt="[^"]*"/, ` alt="${esc(alt ? `${alt} – van graphics by Broadland Digital` : `${me.title} example`)}"`).replace(/<img\b/, '<img loading="lazy" decoding="async"');
+<div class="bdsub-gallery${gallery.length < 3 ? ` bdsub-gallery--n${gallery.length}` : ''}">${gallery.map((tag, gi) => {
+    const base = decode((tag.match(/alt="([^"]*)"/) || [])[1] || '').replace(/^.*?–\s*/, '');
+    // two photos of the same van keep different alt text ("…, photo 2")
+    const seenBefore = gallery.slice(0, gi).filter((t) => decode((t.match(/alt="([^"]*)"/) || [])[1] || '').replace(/^.*?–\s*/, '') === base).length;
+    const alt = base && seenBefore ? `${base}, photo ${seenBefore + 1}` : base;
+    const t = tag.replace(/\ssizes="[^"]*"/, ' sizes="(max-width: 600px) 50vw, (max-width: 1000px) 33vw, 380px"').replace(/\sstyle="[^"]*"/, '').replace(/\sclass="[^"]*"/, '').replace(/\sdecoding="[^"]*"/, '').replace(/\sloading="[^"]*"/, '').replace(/\salt="[^"]*"/, ` alt="${esc(alt ? `${alt} – van graphics by Broadland Digital` : `${me.title} example ${gi + 1}`)}"`).replace(/<img\b/, '<img loading="lazy" decoding="async"');
     return `<a class="bdsub-ph" href="${big(tag)}" data-bd-zoom aria-label="${esc(alt || me.title)} — enlarge photo">${t}</a>`;
   }).join('')}</div></div></section>` : '';
   // one price table: every package and van size, fitted and supply only
@@ -1472,6 +1475,32 @@ const SEO_KW = JSON.parse(readFileSync(join(ROOT, 'content/seo-keywords.json'), 
 for (const [p, x] of Object.entries(SEO_SECTIONS)) if (x.primary) SEO_KW[p] = [x.primary, x.secondary || []];
 writeFileSync(join(ROOT, 'worker/seo-sections.json'), JSON.stringify({ sections: SEO_SECTIONS, videos: VIDEOS }) + '\n');
 const FINISHED = finishSeo(built, { trail, sizes: IMG_SIZES, faqs: JSON.parse(readFileSync(join(ROOT, 'content/faqs.json'), 'utf8')), keywords: SEO_KW, sections: SEO_SECTIONS, videos: VIDEOS });
+// Internal links straight to their page: a link to an old address that redirects (menus, breadcrumbs, cards)
+// points at where it redirects to, so no click or crawl goes through a 301. Canonical and alternate links are untouched.
+{
+  const to = (href) => { const m = href.match(/^(\/[^?#]*?)\/?([?#].*)?$/); if (!m) return href; const k = m[1] || '/'; const t = ({ ...extra.redirects, ...MERGED_PAGES })[k]; if (!t || /^https?:/.test(t)) return href; return (t === '/' ? '/' : t.replace(/\/?$/, '/')) + (m[2] || ''); };
+  for (const [p, h] of FINISHED) FINISHED.set(p, h.replace(/(<a\b[^>]*?\shref=")(\/[^"]*)"/g, (m, a, href) => a + to(href) + '"')
+    .replace(/("item":\s*"https:\/\/broadlanddigital\.co\.uk)(\/[^"]*)"/g, (m, a, href) => a + to(href) + '"'));
+}
+// Last SEO touches: every page has og:description (from its meta description); the shop page's structured data
+// describes the shop (a CollectionPage listing the packages and ranges), not the old homepage's "Article" by "fusionteam".
+for (const [p, h] of FINISHED) {
+  let out = h;
+  if (!/property="og:description"/.test(out)) { const d = (out.match(/<meta name="description" content="([^"]*)"/) || [])[1]; if (d) out = out.replace(/(<meta property="og:title"[^>]*>)/, `$1\n<meta property="og:description" content="${d}">`); }
+  if (p === '/shop') out = out.replace(/(<script[^>]*application\/ld\+json[^>]*class="rank-math-schema-pro"[^>]*>)([\s\S]*?)(<\/script>)/, (m, a, js, c) => {
+    let j; try { j = JSON.parse(js); } catch { return m; }
+    const url = `${ORIGIN}/shop/`;
+    const title = decode((out.match(/<title>([\s\S]*?)<\/title>/) || [])[1] || 'Shop');
+    const desc = decode((out.match(/<meta name="description" content="([^"]*)"/) || [])[1] || '');
+    const items = [...out.matchAll(/<h3><a href="(\/product\/[^"]+)">([^<]+)<\/a><\/h3>/g)].map((x, i) => ({ '@type': 'ListItem', position: i + 1, url: ORIGIN + x[1], name: decode(x[2]) }));
+    const keep = (j['@graph'] || []).filter((n) => !['Person', 'Article', 'WebPage'].some((t) => [].concat(n['@type']).includes(t)));
+    const bc = keep.find((n) => n['@type'] === 'BreadcrumbList');
+    if (bc) bc['@id'] = `${url}#breadcrumb`;
+    keep.push({ '@type': 'CollectionPage', '@id': `${url}#webpage`, url, name: title, description: desc, inLanguage: 'en-GB', isPartOf: { '@id': `${ORIGIN}/#website` }, about: { '@id': `${ORIGIN}/#organization` }, ...(bc ? { breadcrumb: { '@id': `${url}#breadcrumb` } } : {}), mainEntity: { '@type': 'ItemList', itemListElement: items } });
+    return a + JSON.stringify({ ...j, '@graph': keep }).replace(/</g, '\\u003c') + c;
+  });
+  FINISHED.set(p, out);
+}
 for (const [p, h] of FINISHED) if (h.includes('<!--bdvg-faq-->')) {
   const faq = (h.match(/<section class="bdhub-faq bdshop-faq">[\s\S]*?<\/section>\s*/) || [''])[0];
   // just before the closing band (after the keyword section), inside the page's container

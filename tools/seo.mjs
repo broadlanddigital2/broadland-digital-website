@@ -1,5 +1,6 @@
 import { leadHtml, blockHtml, ARROW } from '../worker/seo-blocks.js';
-import { readFileSync as _rf } from 'node:fs';
+import { readFileSync as _rf, existsSync as _ex } from 'node:fs';
+const IMG_DIMS = (() => { const f = new URL('../content/img-sizes.json', import.meta.url); try { return _ex(f) ? JSON.parse(_rf(f, 'utf8')) : {}; } catch { return {}; } })();
 const REDIRECTS = JSON.parse(_rf(new URL('../worker/redirects.json', import.meta.url), 'utf8'));
 // SEO finishing pass over every built page (tools/build.mjs calls finishSeo once all pages are built), for the points
 // the CRM's SEO optimiser scores: titles 30–65 characters, unique and ending "| Broadland Digital"; meta descriptions
@@ -150,8 +151,11 @@ export function addBlocks(body, sec, video, pool = []) {
   const used = new Set([...body.slice(0, Math.max(0, body.indexOf('bdkw-leadband') + 1) || body.indexOf('</h1>') + 2000).matchAll(/<img\b[^>]*\ssrc="([^"]+)"/g)].map((m) => m[1]));
   for (const m of (body.match(/<figure class="bdsub-intro-img">[\s\S]*?<\/figure>/) || [''])[0].matchAll(/\ssrc="([^"]+)"/g)) used.add(m[1]);
   const gallery = [...body.matchAll(/<a class="bdsub-ph[^"]*"[^>]*>\s*<img\b[^>]*>/g)].map((m) => m[0].match(/<img\b[^>]*>/)[0]);
-  let pics = gallery.filter((t) => !used.has((t.match(/\ssrc="([^"]+)"/) || [])[1])).slice(2);
+  // (the shop's product pages show every gallery photo already, so their keyword cards use other photos)
+  let pics = body.includes('bdvp-page') ? [] : gallery.filter((t) => !used.has((t.match(/\ssrc="([^"]+)"/) || [])[1])).slice(2);
   if (pics.length < 3) pics = pool.filter((t) => !body.includes((t.match(/\ssrc="([^"]+)"/) || [])[1])).slice(0, 3);
+  // the borrowed pictures get their real size (no layout shift while they load)
+  pics = pics.map((t) => { if (/\swidth=/.test(t) && /\sheight=/.test(t)) return t; const src = (t.match(/\ssrc="([^"]+)"/) || [])[1]; const z = IMG_DIMS[src]; return z ? t.replace(/\s(width|height)="[^"]*"/g, '').replace(/<img\b/, `<img width="${z[0]}" height="${z[1]}"`) : t; });
   const block = blockHtml(sec, video, pics);
   if (block) {
     // high enough that it is read as main copy (crawlers and the CRM audit only read the first ~1,300 words):
