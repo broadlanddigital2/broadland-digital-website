@@ -41,13 +41,21 @@ const FAQ = {
     ['How long do van graphics last?', 'We use 3M and Metamark materials. Looked after correctly, van graphics will last up to 7 years.'],
     ['Do you need my van details?', 'Yes: the make, model and year (or registration) and photos of each side, so the graphics fit your exact vehicle.'],
   ],
+  dip: [
+    ['Does Full Dip damage my existing paintwork?', 'No. It peels off and leaves the original paintwork in its original condition, provided that paint is sound to begin with.'],
+    ['How long does it last?', 'Generally 3 to 5 years if it is maintained correctly.'],
+    ['Do I need a primer?', 'We recommend a grey primer under every Full Dip colour except black and grey.'],
+    ['How do I get a satin or gloss finish?', 'Full Dip colours dry matt. Add Full Dip glossifier on top: one coat gives a satin finish, two additional coats give a gloss finish.'],
+    ['Aerosol or 4 litre tin?', 'Aerosols suit wheels, badges and trims. For a full colour change, a small vehicle usually takes 2 tins, a medium vehicle 3 and a large vehicle 4 to 5.'],
+    ['Can you spray it for me?', 'Yes. Our liquid wrapping packages cover preparation, spraying and finishing at our Norwich workshop.'],
+  ],
   shop: [
     ['Can I order online?', 'Yes. Choose the product and options in our shop and check out, or ask us for a quote if you need something made to measure.'],
     ['Do prices include VAT?', 'Shop prices are shown as listed on each product. Contact us if you need a VAT invoice or a business account.'],
     ['Can I collect my order?', 'Yes, from our Norwich workshop at Vulcan House, Vulcan Road North, NR6 6AQ, Monday to Friday, 8:30am to 5pm.'],
   ],
 };
-const faqSet = (path) => (/liquid|full-dip|dip-/.test(path) ? FAQ.liquid : /van-graphics|vehicle-graphics|vans/.test(path) ? FAQ.van : FAQ.shop);
+const faqSet = (path) => (/\/product\/full-dip-/.test(path) ? FAQ.dip : /liquid|full-dip|dip-/.test(path) ? FAQ.liquid : /van-graphics|vehicle-graphics|vans/.test(path) ? FAQ.van : FAQ.shop);
 
 function describe(path, name, trailNames) {
   const n = name.replace(/\.\s*$/, '');
@@ -250,6 +258,11 @@ export function fixLd(h, path) {
         if (!x.n.image) x.n.image = abs;
       } else if (['Article', 'BlogPosting', 'Service', 'LocalBusiness'].some((t) => isType(x.n, t)) && !x.n.image) x.n.image = abs;
     }
+  }
+  for (const x of all) if (isType(x.n, 'LocalBusiness') && !(Object.keys(x.n).length <= 2 && x.n['@id'])) {
+    x.n.address ||= { '@type': 'PostalAddress', streetAddress: 'Vulcan House, Vulcan Road North', addressLocality: 'Norwich', addressRegion: 'Norfolk', postalCode: 'NR6 6AQ', addressCountry: 'GB' };
+    x.n.telephone ||= '+44 1603 407786';
+    x.n.name ||= 'Broadland Digital';
   }
   for (const x of all) if (isType(x.n, 'Organization') && !x.n.url && !(Object.keys(x.n).length <= 2 && x.n['@id'])) x.n.url = 'https://broadlanddigital.co.uk/';
   // drop removed nodes (from @graph arrays or as values)

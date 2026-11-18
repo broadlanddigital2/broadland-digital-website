@@ -180,6 +180,7 @@ function transform(html, path) {
   if (/^\/category\/signage\/vehicle-graphics(\/|$)/.test(path)) h = vanShopPage(h, path);
   if (VAN_PRODUCTS.has(path)) h = vanProductPage(h, path);
   if (LIQUID_PRODUCTS.has(path)) h = liquidProductPage(h, path);
+  if (DIP_PRODUCTS.has(path)) h = dipProductPage(h, path);
   // Liquid wrapping: no prices shown for now (none are published; the £150 on the pages is the optional glossifier)
   if (/^\/(product\/[a-z]+-liquid-wrapping|category\/liquid-wrapping)/.test(path)) h = h.replace(/Call for Price/gi, 'Quoted per vehicle')
     .replace(/\s*[-–,]?\s*just £\s?[\d.,]+/gi, '').replace(/ at a small additional cost of £\s?150(\.00)?/gi, ' at a small additional cost');
@@ -1053,6 +1054,112 @@ ${more}
 <!--bdvg-faq-->
 <section class="bdhub-band"><div class="wrap"><div><h2>Ready for a new colour?</h2><p>Send the make and model of your vehicle and the colour you want, and we'll confirm the package and price, usually the same working day.</p></div>
 <div class="bdhub-cta"><a class="bdhub-btn bdhub-btn--solid" href="#enquiry" data-enquire="${esc(enquire)}">Ask for a quote</a><a class="bdhub-btn bdhub-btn--ghost" href="tel:${tel}">Call ${esc(menu.phone)}</a></div></div></section>
+</div>
+`;
+  return h.slice(0, start) + body + h.slice(end);
+}
+
+// Full Dip spray wrap product pages (colours, primers, glossifier) in the shop design: hero with "Priced on request",
+// type and colour switches, what it is, how much you need, what goes with it, how to apply, the other colours, FAQs.
+const DIP_PRODUCTS = new Map(wp.products.filter((p) => p.path.startsWith('/product/full-dip-')).map((p) => {
+  const kind = p.categories.includes('Full Dip Primers') ? 'primer' : p.categories.includes('Full Dip Glossifier') ? 'gloss' : 'colour';
+  const title = decode(p.title).replace(/\s+/g, ' ').trim();
+  const name = title.replace(/^Full Dip\s+/i, '').replace(/\s+(Spray Wrap|Primer)$/i, '').trim();
+  return [p.path, { path: p.path, title, name, kind, img: OPT[p.image?.src] || p.image?.src || '' }];
+}));
+const DIP_KIND = { colour: 'Solid colour', primer: 'Primer', gloss: 'Glossifier' };
+const DIP_NEED = [
+  ['Small vehicles', 'Citroen Berlingo, Renault Kangoo', '2 tins'],
+  ['Medium vehicles', 'Vauxhall Corsa, Ford Fiesta', '3 tins'],
+  ['Large vehicles', 'VW Caddy van, BMW 3 Series', '4–5 tins'],
+  ['Extra large vehicles', 'Land Rover, Tesla', 'Ask us'],
+];
+function dipProductPage(h, path) {
+  const me = DIP_PRODUCTS.get(path);
+  const start = h.search(/<div[^>]*class="category page-product/);
+  const end = h.indexOf('<footer', start);
+  if (!me || start < 0 || end < 0) return h;
+  const src = h.slice(start, end);
+  const tel = menu.phone.replace(/\s/g, '');
+  const all = [...DIP_PRODUCTS.values()];
+  const colours = all.filter((p) => p.kind === 'colour').sort((a, b) => a.name.localeCompare(b.name));
+  const primers = all.filter((p) => p.kind === 'primer');
+  const gloss = all.find((p) => p.kind === 'gloss');
+  const text = (x) => decode(String(x).replace(/<br\s*\/?>/g, ' ').replace(/<[^>]+>/g, '')).replace(/\s+/g, ' ').trim();
+  const crumbs = (src.match(/<nav class="bdc"[\s\S]*?<\/nav>/) || [''])[0];
+  const faqs = [...src.matchAll(/<div class="question">\s*<p>\s*(?:<span>[^<]*<\/span>)?([\s\S]*?)<\/p>\s*<\/div>\s*<div class="answer">\s*<p>([\s\S]*?)<\/p>/g)].map((m) => [text(m[1]), text(m[2]).replace(/orginal/g, 'original')]);
+  const lasts = ((faqs.find(([q]) => /how long/i.test(q)) || [])[1] || 'Generally 3–5 years if maintained correctly').replace(/\s+-\s+/g, '–');
+  const lc = me.name.toLowerCase();
+  const lead = {
+    colour: `${me.name} Full Dip is a peelable spray wrap that dries to a tough, flexible matt film. Use it on wheels, trims or a full colour change, and peel it off when you want the original back.`,
+    primer: `Full Dip ${lc} primer goes on first, under your Full Dip colour, for an even finish and a cleaner peel later on.`,
+    gloss: 'Full Dip glossifier is a clear top coat for Full Dip colours: one coat gives a satin finish, two more give a gloss finish.',
+  }[me.kind];
+  const enquire = `${me.title} – price and stock`;
+  const hsz = IMG_SIZES_EARLY[me.img] || [1080, 1080];
+  const chip = (p, label, on) => (p ? `<a href="${p.path}/"${on ? ' aria-current="page"' : ''}>${esc(label)}</a>` : `<span class="bdvg-off">${esc(label)}</span>`);
+  const typeRow = `<div class="bdvg-chips"><span>Type</span>${chip(me.kind === 'colour' ? me : colours[0], 'Colours', me.kind === 'colour')}${chip(me.kind === 'primer' ? me : primers[0], 'Primers', me.kind === 'primer')}${chip(gloss, 'Glossifier', me.kind === 'gloss')}</div>`;
+  const listRow = me.kind === 'primer' ? `<div class="bdvg-chips"><span>Primer</span>${primers.map((p) => chip(p, p.name, p.path === me.path)).join('')}</div>`
+    : `<div class="bdvg-chips bdfd-colours"><span>Colour</span>${colours.map((p) => chip(p, p.name, p.path === me.path)).join('')}</div>`;
+  const switches = `<nav class="bdvg-filter bdfd-filter" aria-label="Choose type and colour"><div class="wrap">${typeRow}${listRow}</div></nav>`;
+  const hero = `<section class="bdhub-hero bdvp-hero"><div class="wrap"><div class="bdhub-hero-text">${crumbs}
+<span class="bdhub-eyebrow">Full Dip spray wrap · ${esc(DIP_KIND[me.kind])}</span>
+<h1>${esc(me.title)}.</h1>
+<p class="bdhub-lead">${esc(lead)}</p>
+<div class="bdvp-buy"><div class="bdvp-price"><span>Aerosol or 4 litre premixed tin</span><b>Priced on request</b><small>Ask for today's price and stock</small></div></div>
+<div class="bdhub-cta"><a class="bdhub-btn bdhub-btn--solid" href="#enquiry" data-enquire="${esc(enquire)}">Ask for a price</a><a class="bdhub-btn bdhub-btn--ghost" href="tel:${tel}">Call ${esc(menu.phone)}</a></div></div>
+${me.img ? `<figure class="bdhub-hero-img bdfd-hero-img"><img src="${esc(me.img)}" alt="${esc(me.title)}" width="${hsz[0]}" height="${hsz[1]}" fetchpriority="high"></figure>` : ''}
+</div></section>`;
+  const intro = {
+    colour: [`Full Dip is a liquid vinyl: sprayed on like paint, it dries to an elastic, durable film that protects the surface underneath. ${me.name} comes with a matt finish as standard; add Full Dip glossifier on top for satin or gloss.`, 'It cleans with most car soaps and copes with water, mud and pressure washing. When you want a change, it peels off and leaves the original surface as it was.'],
+    primer: ['A primer gives the colour coats an even base to sit on. We recommend a grey primer under every Full Dip colour except black and grey.', 'Like the colour coats, the primer is part of the peelable film, so the whole lot comes off together when you remove the wrap.'],
+    gloss: ['Full Dip colours dry matt. The glossifier is sprayed over the colour once it has dried: one coat for a satin look, two additional coats for a glossy finish.', 'It becomes part of the same peelable film, so it comes off with the colour when you remove the wrap.'],
+  }[me.kind];
+  const ticks = ['Dries to a tough, elastic and durable film', 'Peels off when you want a change', 'Cleans with most soaps; resists water, mud and pressure washing', "Won't crack or peel off by itself with time"];
+  const facts = [
+    ['Finish', me.kind === 'gloss' ? 'Satin with one coat, gloss with two more' : me.kind === 'primer' ? 'Base coat under the colour' : 'Matt; satin or gloss with glossifier'],
+    ['Comes as', 'Ready-to-use aerosol or 4 litre premixed tin'],
+    ['Primer', me.kind === 'colour' && /black|grey/i.test(me.name) ? 'Not needed under black or grey' : 'Grey primer under every colour except black and grey'],
+    ['Lasts', lasts],
+  ];
+  const included = `<section class="bdhub-intro"><div class="wrap bdvp-inc"><h2>${me.kind === 'colour' ? 'About this colour.' : me.kind === 'primer' ? 'About this primer.' : 'About the glossifier.'}</h2><div class="bdhub-text">
+${intro.map((t) => `<p>${esc(t)}</p>`).join('')}
+<ul class="bdvp-ticks">${ticks.map((l) => `<li>${esc(l)}</li>`).join('')}</ul>
+<dl class="bdvp-facts">${facts.map(([a, b]) => `<div><dt>${esc(a)}</dt><dd>${esc(b)}</dd></div>`).join('')}</dl>
+</div></div></section>`;
+  const need = `<section class="bdvp-table-sec"><div class="wrap"><div class="bdhub-head"><h2>How much you need.</h2><a class="bdhub-textlink" href="/category/liquid-wrapping/shop/">All spray wrap →</a></div>
+<div class="bdvp-scroll"><table class="bdvp-table bdfd-need"><thead><tr><th scope="col">Vehicle size</th><th scope="col">For example</th><th scope="col">4 litre tins for a full vehicle</th></tr></thead>
+<tbody>${DIP_NEED.map(([a, b, c]) => `<tr><th scope="row">${esc(a)}</th><td>${esc(b)}</td><td class="bdfd-tins">${esc(c)}</td></tr>`).join('')}</tbody></table></div>
+<p class="bdv-note">A guide for a full colour change. For wheels, badges and trims an aerosol is usually the easier choice. Tell us the job and we'll confirm what you need.</p></div></section>`;
+  const card = (p, kicker, note) => { const s2 = IMG_SIZES_EARLY[p.img] || [1080, 1080]; return `<a class="bdvp-other" href="${p.path}/"><span class="bdvg-img">${p.img ? `<img src="${esc(p.img)}" alt="${esc(p.title)}" width="${s2[0]}" height="${s2[1]}" loading="lazy" decoding="async">` : ''}</span><span class="bdvp-other-in"><span class="bdvg-tier">${esc(kicker)}</span><span class="bdvp-other-t">${esc(p.title)}</span><span class="bdvp-other-p">${esc(note)}</span></span></a>`; };
+  const goes = me.kind === 'colour'
+    ? [...(/black|grey/i.test(me.name) ? [] : primers.filter((p) => /grey/i.test(p.name)).map((p) => card(p, 'Primer', 'Goes on first'))), gloss && card(gloss, 'Top coat', 'For satin or gloss')]
+    : me.kind === 'primer' ? [gloss && card(gloss, 'Top coat', 'For satin or gloss'), ...primers.filter((p) => p.path !== me.path).map((p) => card(p, 'Primer', 'Another shade'))]
+    : primers.map((p) => card(p, 'Primer', 'Goes on first'));
+  const goesWith = `<section class="bdvp-more bdfd-goes"><div class="wrap"><div class="bdhub-head"><h2>${me.kind === 'gloss' ? 'Start with a primer.' : 'Goes well with.'}</h2></div><div class="bdvp-others bdlw-others">${goes.filter(Boolean).join('')}</div></div></section>`;
+  const steps = [
+    ['Prepare', 'Clean the surface and make sure it is dry and free of grease and wax. Mask off anything you don\'t want sprayed.'],
+    ['Prime', 'Spray a grey primer first for every colour except black and grey, so the colour comes out even.'],
+    ['Spray the colour', 'Build the colour up in light, even coats, letting each one dry before the next.'],
+    ['Finish and enjoy', 'Leave it matt, or add Full Dip glossifier: one coat for satin, two more for gloss. Peel it off whenever you want a change.'],
+  ];
+  const how = `<section class="bdhub-steps"><div class="wrap"><div class="bdhub-head"><h2>How to apply it.</h2><a class="bdhub-textlink" href="/liquid-wrapping-home/">About liquid wrapping →</a></div><ol>${steps.map(([a, b]) => `<li><h3>${esc(a)}</h3><p>${esc(b)}</p></li>`).join('')}</ol></div></section>`;
+  const others = (me.kind === 'colour' ? colours.filter((p) => p.path !== me.path) : colours);
+  const more = `<section class="bdvp-more bdfd-more"><div class="wrap"><div class="bdhub-head"><h2>${me.kind === 'colour' ? 'Other colours.' : 'Full Dip colours.'}</h2><a class="bdhub-textlink" href="/category/liquid-wrapping/shop/full-dip-liquid-wrap/full-dip-solid-colours/">All colours →</a></div>
+<div class="bdfd-swatches">${others.map((p) => { const s2 = IMG_SIZES_EARLY[p.img] || [1080, 1080]; return `<a class="bdfd-swatch" href="${p.path}/"><span class="bdfd-sw-img">${p.img ? `<img src="${esc(p.img)}" alt="${esc(p.title)}" width="${s2[0]}" height="${s2[1]}" loading="lazy" decoding="async">` : ''}</span><span class="bdfd-sw-t">${esc(p.name)}</span></a>`; }).join('')}</div></div></section>`;
+  const doIt = `<section class="bdfd-doit"><div class="wrap"><div class="bdfd-doit-in"><div><span class="bdvg-tier">Rather we did it?</span><h2>Have it sprayed at our workshop.</h2><p>Our liquid wrapping packages cover preparation, spraying and finishing for small to extra large vehicles.</p></div><a class="bdhub-btn bdhub-btn--solid" href="/category/liquid-wrapping/">See liquid wrapping packages</a></div></div></section>`;
+  const body = `<div class="bdhub liquid-wrapping bdvg-page bdvp-page bdlw-page bdfd-page">
+${hero}
+${switches}
+${included}
+${need}
+${goesWith}
+${how}
+${more}
+${doIt}
+<!--bdvg-faq-->
+<section class="bdhub-band"><div class="wrap"><div><h2>Need a price or some advice?</h2><p>Tell us the colour, the job and roughly how much you need, and we'll come back with a price and stock, usually the same working day.</p></div>
+<div class="bdhub-cta"><a class="bdhub-btn bdhub-btn--solid" href="#enquiry" data-enquire="${esc(enquire)}">Ask for a price</a><a class="bdhub-btn bdhub-btn--ghost" href="tel:${tel}">Call ${esc(menu.phone)}</a></div></div></section>
 </div>
 `;
   return h.slice(0, start) + body + h.slice(end);

@@ -805,3 +805,23 @@ h1.bd-was4,h1.bd-was5,h1.bd-was6{font-weight:700}
 .bdlw-page .bdvp-inc .bdhub-text>p:first-child{font-size:20px!important}
 @media(max-width:1100px){.bdlw-others{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:700px){.bdlw-others{grid-template-columns:1fr}}
+
+/* Full Dip spray wrap product pages */
+.bdfd-hero-img img{object-fit:cover;background:#ddd}
+.bdfd-filter .wrap{flex-wrap:wrap;row-gap:12px}
+.bdfd-colours{flex-wrap:wrap;row-gap:8px}
+.bdfd-need td,.bdfd-need th{text-align:left}
+.bdfd-tins{font-weight:700;color:#2a2d32;white-space:nowrap}
+.bdfd-swatches{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:16px}
+.bdfd-swatch{display:flex;flex-direction:column;background:#fff;border:1px solid #ebe8f2;border-radius:16px;overflow:hidden;text-decoration:none;color:#2a2d32;transition:transform .2s,box-shadow .2s}
+.bdfd-swatch:hover{transform:translateY(-3px);box-shadow:0 14px 30px rgba(42,45,50,.1)}
+.bdfd-sw-img{display:block;aspect-ratio:1/1;background:#eee;overflow:hidden}
+.bdfd-sw-img img{width:100%;height:100%;object-fit:cover;display:block}
+.bdfd-sw-t{padding:12px 14px;font-weight:700;font-size:15px}
+.bdfd-doit{padding:20px 0 70px}
+.bdfd-doit-in{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:24px;padding:40px 44px;border-radius:24px;background:#2a2d32;color:#fff}
+.bdfd-doit-in h2{font-family:"Adelle",adelle,Georgia,serif;font-size:clamp(26px,2.8vw,36px);margin:6px 0 8px;color:#fff}
+.bdfd-doit-in p{margin:0;color:rgba(255,255,255,.8);max-width:560px}
+.bdfd-doit-in .bdvg-tier{color:#f8c646}
+@media(max-width:700px){.bdfd-doit-in{padding:30px 24px}.bdfd-swatches{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.bdfd-doit .bdhub-btn{background:#f8c646!important;color:#2a2d32!important;border-color:#f8c646!important}
