@@ -149,7 +149,7 @@ function transform(html, path) {
   h = h.replace(/href="\/cart\/?\?add-to-cart=\d+[^"]*"/g, `href="${path}/"`).replace(/href="\/cart\/?"/g, 'href="/shop/"').replace(/href="\/(checkout|my-account)\/?"/g, 'href="/contact-us/"');
   h = h.replace(/<div[^>]*class="klarna-container"[^>]*>[\s\S]*?<\/div>/g, '');
   // Cookie consent first in <head>; "Cookie settings" in the footer's bottom line
-  h = h.replace(/<head>/i, `<head>\n<script src="/_static/bd-consent.js?v=${CONSENT_V}"></script>`);
+  h = h.replace(/<head>/i, `<head>\n<script src="/_static/bd-consent.js?v=${CONSENT_V}"></script>\n${INSIGHTS}`);
   // Browser-tab icon: the logo on the header's charcoal (site/public/favicon.*)
   h = h.replace(/<link[^>]+rel=["'](?:shortcut )?icon["'][^>]*>\s*|<link[^>]+apple-touch-icon[^>]*>\s*/gi, '')
     .replace(/<\/head>/i, '<link rel="icon" href="/favicon.ico" sizes="48x48">\n<link rel="icon" href="/favicon.svg" type="image/svg+xml">\n<link rel="apple-touch-icon" href="/apple-touch-icon.png">\n</head>');
@@ -1389,6 +1389,9 @@ ${cols}
 </div></div>` };
 }
 const CONSENT_V = hash(consentJs);
+// Insights (insights.racecargraphics.uk): visitor recordings and reports. It records nothing until the visitor accepts
+// "Analytics & marketing" — bd-consent.js then calls Insights.consent(true) through the window.insightsQ queue.
+const INSIGHTS = '<script src="https://gbxjvsrgqcomkjxakbso.supabase.co/functions/v1/web-recorder?asset=t.js" data-site="c5d8eaf2-48a8-47df-ad01-45b54e39d77e" defer></script>';
 
 // ---------- Shell for CRM pages and the blog ----------
 function shell() {

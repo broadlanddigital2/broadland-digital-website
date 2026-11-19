@@ -30,12 +30,15 @@
     document.cookie = NAME + '=' + encodeURIComponent(JSON.stringify(choice)) + '; Max-Age=' + DAYS * 86400 + '; Path=/; SameSite=Lax' + secure;
   }
 
+  function insights(yes) { if (window.Insights && window.Insights.consent) window.Insights.consent(yes); else (window.insightsQ = window.insightsQ || []).push(['consent', yes]); }
   var enabled = {};
   function enable(cat) {
     if (enabled[cat]) return;
     enabled[cat] = true;
     if (cat === 'analytics') gtag('consent', 'update', { ad_storage: 'granted', ad_user_data: 'granted', ad_personalization: 'granted', analytics_storage: 'granted' });
     // CRM site search (crm.racecargraphics.uk/embed/site-search.js): keeps its visitor ID between visits only with analytics consent
+    // Insights recordings: Insights.consent(true) (queued until the tracker has loaded)
+    if (cat === 'analytics') insights(true);
     if (cat === 'analytics') { window.__crmBotTracking = true; try { window.dispatchEvent(new CustomEvent('rcg-enquiry-bot-consent', { detail: { tracking: true } })); } catch (e) { /* old browser */ } }
     var list = document.querySelectorAll('script[type="text/plain"][data-bd-consent="' + cat + '"]');
     for (var i = 0; i < list.length; i++) {
@@ -62,6 +65,7 @@
   function close() { if (box) { box.remove(); box = null; } }
   function save(choice) {
     write(choice); apply(choice); close();
+    if (!choice.analytics) insights(false);
     if (!choice.analytics) { window.__crmBotTracking = false; try { window.dispatchEvent(new CustomEvent('rcg-enquiry-bot-consent', { detail: { tracking: false } })); } catch (e) { /* old browser */ } }
   }
   function show(settings) {
