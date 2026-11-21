@@ -16,14 +16,28 @@ const FEED = 'https://dipjypzrfigkzuarlsov.supabase.co/functions/v1/seo-feed';
 const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
 let memo = { at: 0, feed: null };
+const FEED_TTL = 600; // seconds
 
-/** The live feed, cached at the edge for five minutes (and in memory for one). */
+/**
+ * The live feed: in memory for a minute, then in this site's own Cloudflare cache for ten minutes.
+ * (fetch's cf.cacheTtl does nothing for supabase.co — another Cloudflare zone — so before 21 Nov 2026 every
+ * page view re-downloaded all 209 pages (~3 MB) from Supabase: ~10,000 times a day, ~30 GB/day of egress.)
+ */
 export async function getFeed(feedKey) {
   if (memo.feed && Date.now() - memo.at < 60_000) return memo.feed;
+  const cache = typeof caches !== 'undefined' ? caches.default : null;
+  const key = new Request('https://broadlanddigital.co.uk/__crm-feed-cache/v1');
   try {
-    const r = await fetch(`${FEED}?key=${encodeURIComponent(feedKey)}`, { cf: { cacheTtl: 300, cacheEverything: true } });
-    if (!r.ok) return memo.feed;
-    const j = await r.json();
+    let j = null;
+    const hit = cache && (await cache.match(key));
+    if (hit) j = await hit.json().catch(() => null);
+    if (!j) {
+      const r = await fetch(`${FEED}?key=${encodeURIComponent(feedKey)}`);
+      if (!r.ok) return memo.feed;
+      const text = await r.text();
+      j = JSON.parse(text);
+      if (cache) await cache.put(key, new Response(text, { headers: { 'content-type': 'application/json', 'cache-control': `public, max-age=${FEED_TTL}` } }));
+    }
     const pages = new Map((j.pages || []).map((p) => [String(p.path).replace(/\/+$/, '') || '/', p]));
     memo = { at: Date.now(), feed: { ...j, pages } };
   } catch {

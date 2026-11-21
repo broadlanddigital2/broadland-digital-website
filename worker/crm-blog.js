@@ -20,9 +20,19 @@ const date = (v) => (v ? new Date(v).toLocaleDateString('en-GB', { day: 'numeric
 export async function fetchPosts(opts, slug = '') {
   const url = `${opts.feedUrl}?key=${encodeURIComponent(opts.feedKey)}${opts.kind ? '&kind=' + encodeURIComponent(opts.kind) : ''}${slug ? '&slug=' + encodeURIComponent(slug) : ''}`;
   try {
-    const r = await fetch(url, { cf: { cacheTtl: 120, cacheEverything: true } });
-    if (!r.ok) return null;
-    const j = await r.json();
+    // This site's own Cloudflare cache (fetch's cf.cacheTtl doesn't cache supabase.co, another zone).
+    const cache = typeof caches !== 'undefined' ? caches.default : null;
+    const key = new Request('https://broadlanddigital.co.uk/__crm-blog-cache/v1?' + encodeURIComponent(url.split('?')[1] || ''));
+    let j = null;
+    const hit = cache && (await cache.match(key));
+    if (hit) j = await hit.json().catch(() => null);
+    if (!j) {
+      const r = await fetch(url);
+      if (!r.ok) return null;
+      const text = await r.text();
+      j = JSON.parse(text);
+      if (cache) await cache.put(key, new Response(text, { headers: { 'content-type': 'application/json', 'cache-control': 'public, max-age=300' } }));
+    }
     const posts = Array.isArray(j.posts) ? j.posts : [];
     posts.business = j.business || null; // name, address, phone, hours and map for the "Find us" block and schema
     return posts;
