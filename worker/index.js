@@ -7,7 +7,7 @@
 //   redirects             old WordPress addresses (worker/redirects.json, written by tools/build.mjs)
 //   /wp-content/uploads   files not copied into the repo yet are fetched from the old WordPress site (OLD_SITE_ORIGIN)
 import { handleForms } from './forms.js';
-import { crmPageResponse, addCrmPagesToSitemap, llmsTxt } from './crm-pages.js';
+import { crmPageResponse, addCrmPagesToSitemap, llmsTxt, setCrmAssets } from './crm-pages.js';
 import { blogResponse, addPostsToSitemap } from './crm-blog.js';
 import { trackAi } from './ai-visibility.js';
 import { withHubResources } from './hub-resources.js';
@@ -157,6 +157,10 @@ export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     if (url.host === 'www.broadlanddigital.co.uk') return Response.redirect(ORIGIN + url.pathname + url.search, 301);
+    // CRM pages and posts are built into the site hourly (dist/_crm, tools/fetch-crm.mjs); the worker reads them, the public can't.
+    setCrmAssets(env.ASSETS);
+    BLOG.assets = env.ASSETS;
+    if (url.pathname.startsWith('/_crm/')) return new Response('Not found', { status: 404 });
     const response = await cachedPage(request, env, ctx, url);
     // Preview hosts (*.workers.dev) are kept out of search engines; AI-visibility stats only count the live site.
     if (url.host.endsWith('.workers.dev')) {

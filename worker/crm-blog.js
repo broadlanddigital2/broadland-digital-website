@@ -18,6 +18,18 @@ const date = (v) => (v ? new Date(v).toLocaleDateString('en-GB', { day: 'numeric
 
 /** Published posts from the CRM (cached at the edge for two minutes). */
 export async function fetchPosts(opts, slug = '') {
+  // Built copy (dist/_crm/blog.json, written hourly by tools/fetch-crm.mjs) first; the live feed is the fallback.
+  if (opts.assets) {
+    try {
+      const r = await opts.assets.fetch(new Request('https://broadlanddigital.co.uk/_crm/blog.json'));
+      if (r.ok) {
+        const b = await r.json();
+        const posts = (Array.isArray(b.posts) ? b.posts : []).filter((p) => !slug || p.slug === slug);
+        posts.business = b.business || null;
+        return posts;
+      }
+    } catch { /* fall back to the live feed */ }
+  }
   const url = `${opts.feedUrl}?key=${encodeURIComponent(opts.feedKey)}${opts.kind ? '&kind=' + encodeURIComponent(opts.kind) : ''}${slug ? '&slug=' + encodeURIComponent(slug) : ''}`;
   try {
     // This site's own Cloudflare cache (fetch's cf.cacheTtl doesn't cache supabase.co, another zone).

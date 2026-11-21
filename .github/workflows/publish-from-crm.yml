@@ -1,0 +1,35 @@
+# Copies the CRM's published SEO pages and blog posts into the site (crm-data/ and dist/_crm/) and commits any
+# change — Cloudflare then deploys it. Same approach as the Race Car Graphics site: visitors never reach the CRM.
+# Runs hourly, on demand (Actions → Publish from CRM → Run workflow) and when the CRM sends "crm-publish".
+name: Publish from CRM
+on:
+  schedule:
+    - cron: "23 * * * *"
+  workflow_dispatch:
+  repository_dispatch:
+    types: [crm-publish]
+permissions:
+  contents: write
+concurrency:
+  group: publish-from-crm
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Fetch CRM pages and posts
+        run: node tools/fetch-crm.mjs
+      - name: Commit if anything changed
+        run: |
+          git config user.name "bd-crm-publisher"
+          git config user.email "publisher@broadlanddigital.co.uk"
+          git add -A crm-data dist/_crm
+          if git diff --cached --quiet; then echo "No changes"; exit 0; fi
+          git commit -m "Publish from CRM ($(date -u +%Y-%m-%dT%H:%MZ))"
+          git pull --rebase -q origin main
+          git push

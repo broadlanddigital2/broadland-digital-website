@@ -13,7 +13,7 @@
 // Pages the CRM manages (Marketing → SEO pages) and the blog are not built here: the worker serves them live inside
 // dist/_crm-page, a copy of a WordPress page with its content taken out (see worker/crm-pages.js).
 import { finishSeo, pruneAssets, NOINDEX as SEO_NOINDEX } from './seo.mjs';
-import { readFileSync, writeFileSync, mkdirSync, rmSync, existsSync, readdirSync, statSync, copyFileSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, rmSync, existsSync, readdirSync, statSync, copyFileSync, cpSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { dirname, join, relative } from 'node:path';
 
@@ -1537,7 +1537,9 @@ if (existsSync(join(ROOT, 'site/public'))) for (const f of walk(join(ROOT, 'site
 // Sitemap (the worker adds the CRM's pages and blog posts), robots.txt
 const indexable = [...staticPaths].filter((p) => !/thank-you|quote-requested|\/page\/\d+$/.test(p) && !SEO_NOINDEX.test(p) && !/<meta name="robots" content="[^"]*noindex/.test(captured.get(p))).sort();
 write('sitemap.xml', `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${indexable.map((p) => `<url><loc>${ORIGIN}${p === '/' ? '/' : p + '/'}</loc>${lastmod.get(p) ? `<lastmod>${lastmod.get(p).slice(0, 10)}</lastmod>` : ''}</url>`).join('\n')}\n</urlset>\n`);
-write('robots.txt', `User-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /_crm-page/\n\nSitemap: ${ORIGIN}/sitemap.xml\n`);
+// CRM pages and blog posts (crm-data/, refreshed hourly by tools/fetch-crm.mjs): read by the worker, not public.
+if (existsSync(join(ROOT, 'crm-data'))) cpSync(join(ROOT, 'crm-data'), join(OUT, '_crm'), { recursive: true });
+write('robots.txt', `User-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /_crm-page/\nDisallow: /_crm/\n\nSitemap: ${ORIGIN}/sitemap.xml\n`);
 
 // Redirects: content/site.json, plus old links to "/x" where the page is "/x-2" (or moved under a parent).
 const redirects = { ...extra.redirects, ...MERGED_PAGES };

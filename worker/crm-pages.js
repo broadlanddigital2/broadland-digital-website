@@ -16,6 +16,18 @@ const FEED = 'https://dipjypzrfigkzuarlsov.supabase.co/functions/v1/seo-feed';
 const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
 let memo = { at: 0, feed: null };
+// Built copies of the CRM pages (dist/_crm, written hourly by tools/fetch-crm.mjs) — read first, so visitors never
+// reach the CRM. The live feed below is only a fallback if a built file is missing.
+let ASSETS = null;
+export function setCrmAssets(assets) { ASSETS = assets || null; }
+const pageKey = (path) => (String(path).replace(/\/+$/, '') || '/').replace(/^\//, '').replace(/\//g, '~') || 'home';
+export async function crmAsset(file) {
+  if (!ASSETS) return null;
+  try {
+    const r = await ASSETS.fetch(new Request('https://broadlanddigital.co.uk/_crm/' + file));
+    return r.ok ? await r.json() : null;
+  } catch { return null; }
+}
 const FEED_TTL = 1800; // seconds: the page list (no page HTML)
 const PAGE_TTL = 600; // seconds: one page's HTML
 
@@ -26,6 +38,11 @@ const PAGE_TTL = 600; // seconds: one page's HTML
  */
 export async function getFeed(feedKey) {
   if (memo.feed && Date.now() - memo.at < 60_000) return memo.feed;
+  const built = await crmAsset('index.json');
+  if (built?.pages) {
+    memo = { at: Date.now(), feed: { ...built, pages: new Map(built.pages.map((p) => [String(p.path).replace(/\/+$/, '') || '/', p])) } };
+    return memo.feed;
+  }
   const cache = typeof caches !== 'undefined' ? caches.default : null;
   const key = new Request('https://broadlanddigital.co.uk/__crm-feed-cache/v2');
   try {
@@ -50,6 +67,8 @@ export async function getFeed(feedKey) {
 
 /** One page in full (HTML and schema), cached in this site's Cloudflare cache for ten minutes. */
 async function getPage(feedKey, path) {
+  const built = await crmAsset('pages/' + pageKey(path) + '.json');
+  if (built?.page) return built.page;
   const cache = typeof caches !== 'undefined' ? caches.default : null;
   const key = new Request('https://broadlanddigital.co.uk/__crm-page-cache/v1' + path);
   try {
