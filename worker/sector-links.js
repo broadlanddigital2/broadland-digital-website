@@ -33,7 +33,9 @@ const LINKED = new Set(['location', 'guide', 'comparison', 'hub', 'sector']); //
 /** Sectors (top-level, A–Z) whose pages link to this signage address or, if none do, to its parent category. */
 function sectorsFor(feed, key) {
   const pages = [...(feed?.pages?.values() || [])].filter((p) => p.pageType === 'sector');
-  const linksTo = (p, target) => new RegExp(`href="${target.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/?["#?]`).test(String(p.html || ''));
+  // The page list has no page HTML: sector pages carry their links (feed index mode, `links`).
+  const linksTo = (p, target) => (p.links || []).some((h) => (String(h).replace(/\/+$/, '') || '/') === target)
+    || new RegExp(`href="${target.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/?["#?]`).test(String(p.html || ''));
   const parent = key.split('/').slice(0, 3).join('/');
   let hits = pages.filter((p) => linksTo(p, key));
   if (!hits.length && parent !== key) hits = pages.filter((p) => linksTo(p, parent));

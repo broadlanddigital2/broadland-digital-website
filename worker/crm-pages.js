@@ -16,7 +16,8 @@ const FEED = 'https://dipjypzrfigkzuarlsov.supabase.co/functions/v1/seo-feed';
 const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
 let memo = { at: 0, feed: null };
-const FEED_TTL = 600; // seconds
+const FEED_TTL = 1800; // seconds: the page list (no page HTML)
+const PAGE_TTL = 600; // seconds: one page's HTML
 
 /**
  * The live feed: in memory for a minute, then in this site's own Cloudflare cache for ten minutes.
@@ -26,13 +27,14 @@ const FEED_TTL = 600; // seconds
 export async function getFeed(feedKey) {
   if (memo.feed && Date.now() - memo.at < 60_000) return memo.feed;
   const cache = typeof caches !== 'undefined' ? caches.default : null;
-  const key = new Request('https://broadlanddigital.co.uk/__crm-feed-cache/v1');
+  const key = new Request('https://broadlanddigital.co.uk/__crm-feed-cache/v2');
   try {
     let j = null;
     const hit = cache && (await cache.match(key));
     if (hit) j = await hit.json().catch(() => null);
     if (!j) {
-      const r = await fetch(`${FEED}?key=${encodeURIComponent(feedKey)}`);
+      // The list only (paths, headings, summaries, pictures): page HTML is fetched per page by getPage().
+      const r = await fetch(`${FEED}?key=${encodeURIComponent(feedKey)}&index=1`);
       if (!r.ok) return memo.feed;
       const text = await r.text();
       j = JSON.parse(text);
@@ -44,6 +46,23 @@ export async function getFeed(feedKey) {
     /* keep the last good copy */
   }
   return memo.feed;
+}
+
+/** One page in full (HTML and schema), cached in this site's Cloudflare cache for ten minutes. */
+async function getPage(feedKey, path) {
+  const cache = typeof caches !== 'undefined' ? caches.default : null;
+  const key = new Request('https://broadlanddigital.co.uk/__crm-page-cache/v1' + path);
+  try {
+    const hit = cache && (await cache.match(key));
+    if (hit) return (await hit.json().catch(() => null))?.page || null;
+    const r = await fetch(`${FEED}?key=${encodeURIComponent(feedKey)}&path=${encodeURIComponent(path)}`);
+    if (!r.ok) return null;
+    const text = await r.text();
+    if (cache) await cache.put(key, new Response(text, { headers: { 'content-type': 'application/json', 'cache-control': `public, max-age=${PAGE_TTL}` } }));
+    return JSON.parse(text).page || null;
+  } catch {
+    return null;
+  }
 }
 
 async function getPreview(feedKey, id) {
@@ -196,7 +215,8 @@ export async function crmPageResponse(request, env, opts) {
     preview = j.preview || {};
   } else {
     const feed = await getFeed(opts.feedKey);
-    page = feed?.pages.get(path);
+    if (!feed?.pages.get(path)) return null;
+    page = await getPage(opts.feedKey, path);
     if (!page) return null;
     // Same address style as the rest of the site: "/signage-home/signage-norwich/".
     if (opts.trailingSlash && path !== '/' && !url.pathname.endsWith('/')) return Response.redirect(`${url.origin}${path}/${url.search}`, 301);
