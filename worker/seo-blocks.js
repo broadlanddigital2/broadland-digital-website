@@ -130,10 +130,13 @@ export function decorateCrmHtml(html, sec, video, pool = []) {
   return h;
 }
 
-// CRM photos are stored full size; ask Supabase Storage for a resized, compressed copy (image transformations)
-const SB_IMG = /(https:\/\/[a-z0-9]+\.supabase\.co\/storage\/v1\/)object(\/public\/[^"'\s?)]+\.(?:jpe?g|png|webp))(?=["'\s)]|$)/gi;
-export function resizeStorageImages(html, width = 1400) {
-  return String(html).replace(SB_IMG, (m, base, rest) => `${base}render/image${rest}?width=${width}&quality=72&resize=contain`);
+// CRM photos (Supabase Storage, public buckets) are served from this site at /crm-media/<bucket>/<path>: the worker
+// fetches the original once and keeps it in this site's Cloudflare cache (index.js crmMedia). Until 22 Nov 2026 they
+// went through Supabase's image resizing (/render/image/…?width=), which is billed per image after the first 100 a
+// month; the CRM's pictures are already compressed (average ~240 KB), so resizing saved little. (width is ignored.)
+const SB_IMG = /https:\/\/dipjypzrfigkzuarlsov\.supabase\.co\/storage\/v1\/(?:object|render\/image)\/public\/([^"'\s?)]+\.(?:jpe?g|png|webp|gif|avif))(?:\?[^"'\s)]*)?(?=["'\s)]|$)/gi;
+export function resizeStorageImages(html, width = 1400) { // eslint-disable-line no-unused-vars
+  return String(html).replace(SB_IMG, (m, rest) => `/crm-media/${rest}`);
 }
 
 
