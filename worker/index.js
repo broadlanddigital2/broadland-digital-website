@@ -84,6 +84,7 @@ async function route(request, env) {
   if (WP_PASSTHROUGH.test(path) && /(^|\.)broadlanddigital\.co\.uk$/.test(url.host)) return fetch(request);
 
   if (path === '/api/forms') return handleForms(request, env);
+  if (url.pathname.startsWith('/crm-media/')) return crmMedia(request, url);
   if (path.startsWith('/_static/')) return env.ASSETS.fetch(request);
 
   // Uploads: from dist/ when copied in, otherwise from the old WordPress site while it is still running elsewhere.
@@ -208,6 +209,23 @@ async function cachedPage(request, env, ctx, url) {
   const out = new Response(res.body, res);
   if ((res.headers.get('Content-Type') || '').includes('text/html')) out.headers.set('Cache-Control', 'public, max-age=0, must-revalidate');
   return out;
+}
+
+// CRM pictures (seo-blocks.js resizeStorageImages): the original from the CRM's public storage, kept in this site's
+// Cloudflare cache for 30 days and by browsers for 30 days. Pictures only; anything else is refused.
+const CRM_STORAGE = 'https://dipjypzrfigkzuarlsov.supabase.co/storage/v1/object/public/';
+async function crmMedia(request, url) {
+  const rest = url.pathname.slice('/crm-media/'.length);
+  if (!/^[a-z0-9_-]+\/[^?#]+\.(?:jpe?g|png|webp|gif|avif)$/i.test(rest) || rest.includes('..')) return new Response('Not found', { status: 404 });
+  const cache = typeof caches !== 'undefined' ? caches.default : null;
+  const key = new Request('https://broadlanddigital.co.uk/__crm-media/v1/' + rest);
+  const hit = cache && (await cache.match(key));
+  if (hit) return hit;
+  const up = await fetch(CRM_STORAGE + rest).catch(() => null);
+  if (!up || !up.ok || !/^image\//.test(up.headers.get('content-type') || '')) return new Response('Not found', { status: up && up.status === 404 ? 404 : 502 });
+  const res = new Response(up.body, { headers: { 'Content-Type': up.headers.get('content-type'), 'Cache-Control': 'public, max-age=2592000', 'Access-Control-Allow-Origin': '*' } });
+  if (cache) await cache.put(key, res.clone());
+  return res;
 }
 
 function longCache(res) {
