@@ -13,6 +13,7 @@
 // Pages the CRM manages (Marketing → SEO pages) and the blog are not built here: the worker serves them live inside
 // dist/_crm-page, a copy of a WordPress page with its content taken out (see worker/crm-pages.js).
 import { finishSeo, pruneAssets, NOINDEX as SEO_NOINDEX } from './seo.mjs';
+import { buildBusinessSigns } from './business-signs.mjs';
 import { readFileSync, writeFileSync, mkdirSync, rmSync, existsSync, readdirSync, statSync, copyFileSync, cpSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { dirname, join, relative } from 'node:path';
@@ -1520,6 +1521,9 @@ for (const [p, h] of FINISHED) write(p === '/' ? 'index.html' : `${p.slice(1)}/i
 // photo pools for the worker's CRM pages (keyword cards)
 writeFileSync(join(ROOT, 'worker/seo-sections.json'), JSON.stringify({ sections: SEO_SECTIONS, videos: VIDEOS, pools: Object.fromEntries([...(FINISHED.pools || new Map())].map(([k, list]) => [k, list.map((t) => ({ src: (t.match(/\ssrc="([^"]+)"/) || [])[1], alt: decode((t.match(/\salt="([^"]*)"/) || [])[1] || '') })).filter((x) => x.src)])) }) + '\n');
 const sh = shell();
+// Business signs section (content/business-signs.json → dist/business-signs/; test site only while "staging")
+const BS = buildBusinessSigns({ root: ROOT, shell: sh, write, esc, origin: ORIGIN });
+writeFileSync(join(ROOT, 'worker/business-signs.json'), JSON.stringify({ live: BS.live }) + '\n');
 write('_crm-page/index.html', pruneAssets(sh));
 write('404.html', page404(sh));
 write('_static/bd-forms.js', formsJs);
@@ -1536,6 +1540,7 @@ if (existsSync(join(ROOT, 'site/public'))) for (const f of walk(join(ROOT, 'site
 
 // Sitemap (the worker adds the CRM's pages and blog posts), robots.txt
 const indexable = [...staticPaths].filter((p) => !/thank-you|quote-requested|\/page\/\d+$/.test(p) && !SEO_NOINDEX.test(p) && !/<meta name="robots" content="[^"]*noindex/.test(captured.get(p))).sort();
+if (BS.live) indexable.push(...BS.paths);
 write('sitemap.xml', `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${indexable.map((p) => `<url><loc>${ORIGIN}${p === '/' ? '/' : p + '/'}</loc>${lastmod.get(p) ? `<lastmod>${lastmod.get(p).slice(0, 10)}</lastmod>` : ''}</url>`).join('\n')}\n</urlset>\n`);
 // CRM pages and blog posts (crm-data/, refreshed hourly by tools/fetch-crm.mjs): read by the worker, not public.
 if (existsSync(join(ROOT, 'crm-data'))) cpSync(join(ROOT, 'crm-data'), join(OUT, '_crm'), { recursive: true });
@@ -1665,5 +1670,6 @@ writeFileSync(join(ROOT, 'worker/static-paths.json'), JSON.stringify([...staticP
 }
 
 const stillBroken = [...brokenLinks].filter((p) => !redirects[p]).sort();
+console.log(`Business signs: ${BS.count?.categories || 0} categories, ${BS.count?.products || 0} products (${BS.live ? 'LIVE' : 'staging: preview address only'}).`);
 console.log(`Built ${staticPaths.size} pages from the WordPress capture (CRM pages left to the worker: ${crmPages.join(', ') || 'none'}), ${assetsCopied} theme/plugin files, ${publicCopied} uploads, ${Object.keys(redirects).length} redirects.`);
 if (stillBroken.length) console.log(`Links to addresses the site doesn't have: ${stillBroken.join(', ')}`);

@@ -15,6 +15,7 @@ import { withSectorLinks } from './sector-links.js';
 import redirects from './redirects.json' with { type: 'json' };
 import staticPaths from './static-paths.json' with { type: 'json' };
 import BUILD from './build-id.json' with { type: 'json' };
+import BUSINESS_SIGNS from './business-signs.json' with { type: 'json' };
 
 const FEED_KEY = 'c9a2ffbc-820c-45d0-a212-14f0f33a2f54'; // seo_sites.feed_key for Broadland Digital (public, read-only)
 const ORIGIN = 'https://broadlanddigital.co.uk';
@@ -117,6 +118,17 @@ async function route(request, env) {
   }
   if (path === '/llms.txt') {
     return new Response(await llmsTxt({ feedKey: FEED_KEY, origin: ORIGIN }, MAIN_PAGES), { headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'public, max-age=600' } });
+  }
+
+  // Business signs section (tools/business-signs.mjs): while it is staging, only the preview address (and a local
+  // test server) shows it; broadlanddigital.co.uk answers 404, as if it didn't exist.
+  if (key === '/business-signs' || key.startsWith('/business-signs/')) {
+    const preview = url.hostname.endsWith('.workers.dev') || url.hostname === 'localhost' || url.hostname === '127.0.0.1';
+    if (!BUSINESS_SIGNS.live && !preview) {
+      const nf = await env.ASSETS.fetch(new Request(url.origin + '/__not-found__/', request));
+      return new Response(nf.body, { status: 404, headers: nf.headers });
+    }
+    return env.ASSETS.fetch(request);
   }
 
   // The WordPress blog lived at /guides/<slug>; the CRM's blog is at /blog.

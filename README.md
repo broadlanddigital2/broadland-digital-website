@@ -18,6 +18,7 @@ the same header and footer.
 | `content/menu.json` | The header links, the full-screen (hamburger) menu and the footer (enquiry form wording, contact details, link columns, legal and social links). Built into every page with `site/bd-menu.*` and `site/bd-footer.css`. |
 | `content/hubs.json` | The five section hubs (Signage, Print, Design, Web Dev, Liquid Wrapping): heading, intro, how it works and FAQs. Their "Guides & resources" (the CRM's guides, comparisons, areas and matching blog posts) are added live by `worker/hub-resources.js`. |
 | `content/site.json` | Redirects for old addresses; the CRM's page addresses. |
+| `content/business-signs.json` | The business signs section (hub, categories, products): names, URLs, keywords, meta, options, image plan, copy and prices. Built by `tools/business-signs.mjs` (below). |
 | `content/wordpress.json` | The WordPress export as data (product names, dates), used for the sitemap and the CRM form notes. |
 | `tools/build.mjs` | Builds `dist/`: takes out WordPress, WooCommerce, Stripe, reCAPTCHA and WP Rocket scripts, makes links local, turns "Add to basket" into "Enquire now", points the forms at the CRM. |
 | `tools/capture/` | Captures the WordPress site: every address in its sitemaps (run by Actions → Capture WordPress site). |
@@ -39,6 +40,25 @@ the same header and footer.
   needs the secret `SENDGRID_API_KEY`. Delete `BOXLY_EMAIL` to stop.
 - **Sitemap and llms.txt** add the CRM's pages and posts to the static ones; AI crawler visits are reported to the CRM
   (Marketing → SEO tracking) from the live domain only.
+
+## Business signs section (`/business-signs/`)
+
+A shop-style section: a hub, 25 categories and 195 products, built from `content/business-signs.json` by
+`tools/business-signs.mjs` into `dist/business-signs/`, inside the site's header and footer (styles:
+`site/bd-business-signs.css`).
+
+- **Staging (now):** `"staging": true` in the JSON. The worker serves these pages **only on the preview address**
+  (`broadland-digital-website.justin-b8f.workers.dev/business-signs/`); broadlanddigital.co.uk answers 404. Pages are
+  noindex, left out of the sitemap, and each shows a yellow SEO panel (keywords, title and description lengths, image
+  plan) plus "to be written / to be set" markers.
+- **Copy:** add `"intro"` to a category or `"description"` to a product, as a list of paragraphs (`**bold**` and
+  `[text](/link/)` work).
+- **Prices:** add `"price": 45` (ex VAT) to a product: the page shows "From £45 + VAT" and gets Product/Offer
+  structured data. Without one, live pages say "Price on request".
+- **Photos:** save the planned file (each product's `images` list, e.g. `clear-acrylic-sign-front.webp`) in
+  `site/public/img/business-signs/`; it replaces the placeholder on the next build. Alt texts come from the JSON.
+- **Go live:** set `"staging": false`, run `node tools/build.mjs`, commit and push. The pages then appear on the live
+  domain, lose noindex and the SEO panel, and join the sitemap. Add menu links at the same time.
 
 ## Editing the site
 
