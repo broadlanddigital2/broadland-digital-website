@@ -65,7 +65,8 @@ export async function handleForms(request, env = {}) {
     d.timescale ? `Timescale: ${d.timescale}` : '', d.budget ? `Budget: ${d.budget}` : '',
     d.kind === 'guide' ? `Keep me up to date on news and offers: ${d.marketing ? 'Yes' : 'No'}` : '',
     d.message ? `\nMessage:\n${d.message}` : '',
-    `\nSent from: ${d.pageTitle || 'website'}${d.pageUrl ? ' (' + d.pageUrl + ')' : ''}`,
+    // the page address on its own line: in brackets, email programs took the closing ")" as part of the link (404)
+    `\nSent from: ${d.pageTitle || 'website'}`, d.pageUrl ? `Page: ${d.pageUrl}` : '',
   ].filter(Boolean).join('\n');
 
   // CRM monitor (Monitoring → form checks): the same checks as a real enquiry, then the CRM confirms the form key with

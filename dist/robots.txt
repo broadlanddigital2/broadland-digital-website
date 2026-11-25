@@ -2,5 +2,6 @@ User-agent: *
 Allow: /
 Disallow: /api/
 Disallow: /_crm-page/
+Disallow: /_crm/
 
 Sitemap: https://broadlanddigital.co.uk/sitemap.xml

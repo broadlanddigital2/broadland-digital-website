@@ -158,6 +158,11 @@ export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     if (url.host === 'www.broadlanddigital.co.uk') return Response.redirect(ORIGIN + url.pathname + url.search, 301);
+    // Links copied out of emails and messages often pick up a closing bracket or full stop: …/page/) or …/page/.
+    if (/(?:\)|%29|\.|,|%2C|>|%3E)+$/i.test(url.pathname) && url.pathname.length > 1) {
+      const fixed = url.pathname.replace(/(?:\)|%29|\.|,|%2C|>|%3E)+$/i, '') || '/';
+      if (fixed !== url.pathname && !/\.[a-z0-9]{2,5}$/i.test(fixed)) return Response.redirect(ORIGIN + fixed + url.search, 301);
+    }
     // CRM pages and posts are built into the site hourly (dist/_crm, tools/fetch-crm.mjs); the worker reads them, the public can't.
     setCrmAssets(env.ASSETS);
     BLOG.assets = env.ASSETS;
