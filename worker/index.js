@@ -128,7 +128,9 @@ async function route(request, env) {
       const nf = await env.ASSETS.fetch(new Request(url.origin + '/__not-found__/', request));
       return new Response(nf.body, { status: 404, headers: nf.headers });
     }
-    return env.ASSETS.fetch(request);
+    // The CRM editor's Preview button (unsaved wording, shown in the CRM's own layout) is handled below like any CRM page;
+    // published edits arrive through Publish from CRM, which rebuilds these pages.
+    if (!url.searchParams.has('crmseo_preview')) return env.ASSETS.fetch(request);
   }
 
   // The WordPress blog lived at /guides/<slug>; the CRM's blog is at /blog.

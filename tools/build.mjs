@@ -1670,6 +1670,6 @@ writeFileSync(join(ROOT, 'worker/static-paths.json'), JSON.stringify([...staticP
 }
 
 const stillBroken = [...brokenLinks].filter((p) => !redirects[p]).sort();
-console.log(`Business signs: ${BS.count?.categories || 0} categories, ${BS.count?.products || 0} products (${BS.live ? 'LIVE' : 'staging: preview address only'}).`);
+console.log(`Business signs: ${BS.count?.categories || 0} categories, ${BS.count?.products || 0} products (${BS.live ? 'LIVE' : 'staging: preview address only'}; copy from ${BS.from === 'crm' ? 'the CRM' : 'content/business-signs.json'}).`);
 console.log(`Built ${staticPaths.size} pages from the WordPress capture (CRM pages left to the worker: ${crmPages.join(', ') || 'none'}), ${assetsCopied} theme/plugin files, ${publicCopied} uploads, ${Object.keys(redirects).length} redirects.`);
 if (stillBroken.length) console.log(`Links to addresses the site doesn't have: ${stillBroken.join(', ')}`);

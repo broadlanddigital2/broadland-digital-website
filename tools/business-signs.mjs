@@ -14,6 +14,7 @@
 // Options: each becomes a dropdown (or a size box for "range"); add "add": {"Choice": 5} for add-on prices (ex VAT).
 // Prices: add "price": 41 (ex VAT) to a product to show "From £41 + VAT" and add Product/Offer structured data.
 import { readFileSync, existsSync } from 'node:fs';
+import { applyCrm } from './business-signs-crm.mjs';
 import { join } from 'node:path';
 import { createHash } from 'node:crypto';
 
@@ -24,7 +25,7 @@ const PH_ICON = '<svg width="40" height="40" viewBox="0 0 24 24" aria-hidden="tr
 export function buildBusinessSigns({ root, shell, write, esc, origin }) {
   const file = join(root, 'content/business-signs.json');
   if (!existsSync(file)) return { paths: [], live: false };
-  const data = JSON.parse(readFileSync(file, 'utf8'));
+  const { data, from } = applyCrm(JSON.parse(readFileSync(file, 'utf8')), root);
   const staging = data.staging !== false;
   const css = readFileSync(join(root, 'site/bd-business-signs.css'));
   const cssV = createHash('sha1').update(css).digest('hex').slice(0, 10);
@@ -52,7 +53,7 @@ export function buildBusinessSigns({ root, shell, write, esc, origin }) {
   const crumbs = (list) => `<nav class="bds-crumbs" aria-label="Breadcrumb">${list.map(([name, url], i) => (i < list.length - 1 ? `<a href="${url}">${esc(name)}</a><span aria-hidden="true">/</span>` : `<span aria-current="page">${esc(name)}</span>`)).join('')}</nav>`;
   const crumbLd = (list) => ({ '@type': 'BreadcrumbList', itemListElement: list.map(([name, url], i) => ({ '@type': 'ListItem', position: i + 1, name, item: origin + url })) });
   const image = (img, cls = '') => {
-    const src = img && photo(img.file);
+    const src = img && (img.src || photo(img.file));
     if (src) return `<img class="${cls}" src="${src}" alt="${esc(img.alt)}" loading="lazy" decoding="async" width="1600" height="1200">`;
     return `<span class="bds-ph ${cls}" role="img" aria-label="${esc(img ? img.alt : 'Photo coming soon')}">${PH_ICON}${staging && img ? `<small>${esc(img.file)}</small>` : ''}</span>`;
   };
@@ -182,7 +183,7 @@ ${p.facts?.length ? `<ul class="bds-points">${p.facts.map((f) => `<li>${inline(f
 ${productSections(p, c)}
 ${related.length ? `<section class="bds-section"><div class="bds-wrap"><h2>More ${esc(c.name.toLowerCase())}</h2><div class="bds-grid">${related.map(card).join('')}</div><p><a class="bds-textlink" href="${c.url}">All ${esc(c.name.toLowerCase())} ${ARROW}</a></p></div></section>` : ''}
 ${panel([...seoRows(p), ['Category', `<a href="${c.url}">${esc(c.name)}</a>`], ['Folded-in variants', p.variants.length ? esc(p.variants.join(' · ')) : 'none'],
-    ['Option prices', p.options.some((o) => o.add) ? 'set' : '<span class="bds-todo">not set (add "add": {"Choice": 5} to an option)</span>'], ['Price', p.price ? money(p.price) + ' ex VAT' : '<span class="bds-todo">not set (add "price" in content/business-signs.json)</span>']],
+    ['Option prices', p.options.some((o) => o.add) ? 'set' : '<span class="bds-todo">not set (in the CRM, add " | 5" after a choice for +£5)</span>'], ['Price', p.price ? money(p.price) + ' ex VAT' : '<span class="bds-todo">not set (add "Price from" in the CRM)</span>']],
   `<table class="bds-imgplan"><thead><tr><th>#</th><th>File (site/public/img/business-signs/)</th><th>Alt text</th><th>Shot</th><th>Status</th></tr></thead><tbody>${imgs.map((i, n) => `<tr><td>${n + 1}</td><td><code>${esc(i.file)}</code></td><td>${esc(i.alt)} <span class="bds-len${i.alt.length > 125 ? ' bad' : ''}">${i.alt.length}</span></td><td>${esc(i.shot)}</td><td>${photo(i.file) ? 'uploaded' : '<span class="bds-todo">to shoot</span>'}</td></tr>`).join('')}</tbody></table>`)}${band}`;
     const firstPhoto = imgs.map((i) => photo(i.file)).filter(Boolean);
     const product = { '@type': 'Product', name: p.h1, description: p.metaDescription, url: origin + p.url, brand: { '@type': 'Brand', name: 'Broadland Digital' },
@@ -193,5 +194,5 @@ ${panel([...seoRows(p), ['Category', `<a href="${c.url}">${esc(c.name)}</a>`], [
     paths.push(page({ url: p.url, title: p.metaTitle, desc: p.metaDescription, body, ld: [crumbLd(trail), ...(p.price ? [product] : []), ...faqLd] }));
   }
 
-  return { paths, live: !staging, count: { categories: listed.length, products: prods.length } };
+  return { paths, live: !staging, from, count: { categories: listed.length, products: prods.length } };
 }

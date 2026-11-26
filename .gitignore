@@ -5,3 +5,6 @@ node_modules/
 
 # private rewrite workbooks (contain third-party reference text)
 *rewrite*.xlsx
+
+# set by tools/fetch-crm.mjs when the CRM changed business signs pages (the workflow then rebuilds)
+.business-signs-changed

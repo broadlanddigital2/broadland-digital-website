@@ -1,5 +1,5 @@
 # Copies the CRM's published SEO pages and blog posts into the site (crm-data/ and dist/_crm/) and commits any
-# change — Cloudflare then deploys it. Same approach as the Race Car Graphics site: visitors never reach the CRM.
+# change (business signs pages edited in the CRM also rebuild dist/business-signs/) — Cloudflare then deploys it. Same approach as the Race Car Graphics site: visitors never reach the CRM.
 # Runs hourly, on demand (Actions → Publish from CRM → Run workflow) and when the CRM sends "crm-publish".
 name: Publish from CRM
 on:
@@ -24,11 +24,15 @@ jobs:
           node-version: 22
       - name: Fetch CRM pages and posts
         run: node tools/fetch-crm.mjs
+      - name: Rebuild business signs pages if they changed in the CRM
+        run: |
+          if [ -f .business-signs-changed ]; then node tools/build.mjs; fi
       - name: Commit if anything changed
         run: |
           git config user.name "bd-crm-publisher"
           git config user.email "publisher@broadlanddigital.co.uk"
           git add -A crm-data dist/_crm
+          if [ -f .business-signs-changed ]; then git add -A dist worker; fi
           if git diff --cached --quiet; then echo "No changes"; exit 0; fi
           git commit -m "Publish from CRM ($(date -u +%Y-%m-%dT%H:%MZ))"
           git pull --rebase -q origin main

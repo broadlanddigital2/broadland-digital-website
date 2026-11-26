@@ -41,7 +41,14 @@ try {
   process.exit(0);
 }
 
+// Business signs pages (templates business_sign_*) are built by tools/business-signs.mjs from their data, not served
+// as CRM HTML, so they're kept apart: crm-data/business-signs.json, left out of the page list and the sitemap feed.
+const isSign = (p) => String(p.template || '').startsWith('business_sign');
+const signs = feed.pages.filter(isSign).map(({ html, schema, ...rest }) => rest);
+feed.pages = feed.pages.filter((p) => !isSign(p));
+
 let changed = 0;
+if (save(join(DATA, 'business-signs.json'), { pages: signs })) { changed++; console.log('Business signs changed in the CRM: rebuild needed.'); writeFileSync(join(ROOT, '.business-signs-changed'), '1'); }
 const keep = new Set();
 for (const p of feed.pages) {
   const k = pageKey(p.path);
@@ -62,4 +69,4 @@ if (existsSync(join(ROOT, 'dist'))) {
   rmSync(join(ROOT, 'dist', '_crm'), { recursive: true, force: true });
   cpSync(DATA, join(ROOT, 'dist', '_crm'), { recursive: true });
 }
-console.log(`CRM: ${feed.pages.length} pages, ${blog.posts.length} posts, ${changed} file(s) changed.`);
+console.log(`CRM: ${feed.pages.length} pages, ${signs.length} business signs pages, ${blog.posts.length} posts, ${changed} file(s) changed.`);

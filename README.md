@@ -43,7 +43,7 @@ the same header and footer.
 
 ## Business signs section (`/business-signs/`)
 
-A shop-style section: a hub, 25 categories and 195 products, built from `content/business-signs.json` by
+A shop-style section: a hub, 25 categories and 195 products, edited in the CRM and built (with `content/business-signs.json`) by
 `tools/business-signs.mjs` into `dist/business-signs/`, inside the site's header and footer (styles:
 `site/bd-business-signs.css`).
 
@@ -51,20 +51,23 @@ A shop-style section: a hub, 25 categories and 195 products, built from `content
   (`broadland-digital-website.justin-b8f.workers.dev/business-signs/`); broadlanddigital.co.uk answers 404. Pages are
   noindex, left out of the sitemap, and each shows a yellow SEO panel (keywords, title and description lengths, image
   plan) plus "to be written / to be set" markers.
-- **Copy:** add `"intro"` to a category or `"description"` to a product, as a list of paragraphs (`**bold**` and
-  `[text](/link/)` work).
-- **Options:** each product's `options` become dropdowns (or size boxes for a `range`) with a quantity box. "Enquire
-  with these options" sends the choices through the site's enquiry form to the CRM. Add `"add": {"Matt black": 5}` to
-  an option for add-on prices (ex VAT); with a product price set, the page shows a running total.
-- **Rewrites:** copy is written in the private rewrite workbook (`business-signs-rewrite.xlsx`, never committed; see
-  `.gitignore`). `python3 tools/business-signs-import.py business-signs-rewrite.xlsx` imports rows marked "Ready"
-  (description, key features, what's included, good to know; category intro and FAQs) into the JSON, then rebuild.
-- **Briefs:** each page's `brief` (what the copy must cover) shows in the SEO panel. The full writer and photographer
-  brief is kept outside the repo, in the SEO plan workbook.
-- **Prices:** add `"price": 45` (ex VAT) to a product: the page shows "From £45 + VAT" and gets Product/Offer
-  structured data. Without one, live pages say "Price on request".
-- **Photos:** save the planned file (each product's `images` list, e.g. `clear-acrylic-sign-front.webp`) in
-  `site/public/img/business-signs/`; it replaces the placeholder on the next build. Alt texts come from the JSON.
+- **Edit in the CRM:** every page is a CRM SEO page (Marketing → SEO pages → Broadland Digital → Pages; templates
+  "Business sign product" and "Business sign category"). Headings, meta titles and descriptions, keywords (first =
+  primary), summary, price, photos, description, key features, specs, uses, installation, included, good to know,
+  FAQs and the dropdowns are fields. **Publish** the page in the CRM: the hourly **Publish from CRM** workflow (or the
+  CRM's crm-publish dispatch) saves published pages to `crm-data/business-signs.json` and rebuilds the section
+  (`tools/business-signs-crm.mjs` applies them over the JSON). A page published under `/business-signs/<category>/`
+  that the JSON doesn't have becomes a new product; unpublishing a page removes it. The CRM's Preview button shows
+  unsaved wording in the CRM's own layout.
+- **Dropdowns:** in the CRM, one row per option: a label and its choices one per line; `Matt black | 5` adds £5 (ex
+  VAT). For a size box leave the choices empty and fill in min and max (max 0 = no limit). "Enquire with these options"
+  sends the choices through the site's enquiry form to the CRM; with a price set the page shows a running total.
+- **Prices:** "Price from" in the CRM (ex VAT): the page shows "From £45 + VAT" and gets Product/Offer structured
+  data. Without one, live pages say "Price on request".
+- **Photos:** either upload in the CRM's image picker, or save the planned file (e.g. `clear-acrylic-sign-front.webp`)
+  in `site/public/img/business-signs/` and pick `/img/business-signs/<file>` in the CRM.
+- **Stays in the JSON:** the staging switch, the how-to guides and artwork checklist, the copy briefs and photo plans
+  (shown in the SEO panel), and the fallback copy used if the CRM has nothing published.
 - **Go live:** set `"staging": false`, run `node tools/build.mjs`, commit and push. The pages then appear on the live
   domain, lose noindex and the SEO panel, and join the sitemap. Add menu links at the same time.
 
