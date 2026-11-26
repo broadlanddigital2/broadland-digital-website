@@ -10,7 +10,7 @@
 // Product photos: put the planned file (see each product's "images" list, e.g. clear-acrylic-sign-front.webp) in
 // site/public/img/business-signs/ and it replaces the placeholder on the next build.
 // Copy: categories take "intro" (paragraphs) and "faqs" ([{q, a}]); products take "description" (paragraphs), "facts",
-// "included" and "goodToKnow" (lists). **bold** and [text](/link/) work. The rewrite workbook import fills these.
+// "included", "goodToKnow", "uses" ("Title: detail"), "install" (paragraphs), "specs" ([label, value]) and "faqs" ([{q, a}]). **bold** and [text](/link/) work. The rewrite workbook import fills these.
 // Options: each becomes a dropdown (or a size box for "range"); add "add": {"Choice": 5} for add-on prices (ex VAT).
 // Prices: add "price": 41 (ex VAT) to a product to show "From £41 + VAT" and add Product/Offer structured data.
 import { readFileSync, existsSync } from 'node:fs';
@@ -116,6 +116,39 @@ ${panel([...seoRows(c), ['Products', String(list.length)], ['FAQs', c.faqs?.leng
         ...(c.faqs?.length ? [{ '@type': 'FAQPage', mainEntity: c.faqs.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })) }] : [])] }));
   }
 
+  // ----- product content sections (designed around the content) -----
+  const STEPS = [
+    ['Choose your options', 'Pick the size, material and finish above, then press "Enquire with these options". Not sure? Call us and we will recommend the right spec.'],
+    ['Send your artwork', 'Send your logo or wording. No print-ready file? Our design studio can set it up or create a design for you.'],
+    ['Approve your proof', 'We check your artwork and send a digital proof. Nothing is made until you are happy with it.'],
+    ['Production & delivery', 'We make your sign to order, then deliver it or fit it for you across Norfolk and Suffolk.'],
+  ];
+  const sectionNav = (items) => `<nav class="bds-subnav" aria-label="On this page"><div class="bds-wrap">${items.map(([id, label]) => `<a href="#${id}">${esc(label)}</a>`).join('')}</div></nav>`;
+  const productSections = (p, c) => {
+    const nav = [];
+    const out = [];
+    const has = (k) => Array.isArray(p[k]) && p[k].length;
+    if (has('description') || has('included') || has('goodToKnow')) {
+      nav.push(['overview', 'Overview']);
+      out.push(`<section class="bds-section bds-section--alt" id="overview"><div class="bds-wrap bds-about">${has('description') ? `<div class="bds-copy"><h2>About the ${esc(short(p.h1).toLowerCase())}</h2>${paras(p.description)}</div>` : ''}${has('included') || has('goodToKnow') ? `<div class="bds-side">${has('included') ? `<h3>What's included</h3><ul>${p.included.map((x) => `<li>${inline(x)}</li>`).join('')}</ul>` : ''}${has('goodToKnow') ? `<h3>Good to know</h3><ul>${p.goodToKnow.map((x) => `<li>${inline(x)}</li>`).join('')}</ul>` : ''}</div>` : ''}</div></section>`);
+    } else if (staging) out.push('<section class="bds-section bds-section--alt"><div class="bds-wrap bds-copy"><h2>About this sign</h2><p class="bds-todo">Description to be written.</p></div></section>');
+    if (has('specs')) {
+      nav.push(['specifications', 'Specifications']);
+      out.push(`<section class="bds-section" id="specifications"><div class="bds-wrap bds-two"><div><h2>Specifications</h2><p class="bds-sub">The technical details of the ${esc(short(p.h1).toLowerCase())}. Need something different? Most specifications can be changed to order.</p></div><table class="bds-spec"><tbody>${p.specs.map(([k, v]) => `<tr><th scope="row">${esc(k)}</th><td>${inline(v)}</td></tr>`).join('')}</tbody></table></div></section>`);
+    }
+    if (has('uses')) {
+      nav.push(['uses', 'Where to use it']);
+      out.push(`<section class="bds-section bds-section--alt" id="uses"><div class="bds-wrap"><h2>Where to use it</h2><ul class="bds-uses">${p.uses.map((u) => { const [t, ...d] = u.split(': '); return `<li><b>${inline(t)}</b>${d.length ? `<span>${inline(d.join(': '))}</span>` : ''}</li>`; }).join('')}</ul></div></section>`);
+    }
+    nav.push(['ordering', has('install') ? 'Installation' : 'How ordering works']);
+    out.push(`<section class="bds-section" id="ordering"><div class="bds-wrap bds-two">${has('install') ? `<div class="bds-copy"><h2>Installation & fixing</h2>${paras(p.install)}</div>` : ''}<div><h2${has('install') ? ' class="bds-h3"' : ''}>How ordering works</h2><ol class="bds-steps">${STEPS.map(([t, d]) => `<li><b>${esc(t)}</b><span>${esc(d)}</span></li>`).join('')}</ol></div></div></section>`);
+    if (has('faqs')) {
+      nav.push(['faqs', 'FAQs']);
+      out.push(`<section class="bds-section bds-section--alt" id="faqs"><div class="bds-wrap bds-copy"><h2>${esc(short(p.h1))} FAQs</h2><div class="bds-faqs">${p.faqs.map((f) => `<details><summary>${esc(f.q)}</summary><p>${inline(f.a)}</p></details>`).join('')}</div></div></section>`);
+    }
+    return (nav.length > 1 ? sectionNav(nav) : '') + out.join('\n');
+  };
+
   // ----- products -----
   for (const p of prods) {
     const c = catOf.get(p.cat);
@@ -137,7 +170,7 @@ ${p.options.length ? `<div class="bds-fields">${p.options.map(field).join('')}</
 ${config}
 ${p.facts?.length ? `<ul class="bds-points">${p.facts.map((f) => `<li>${inline(f)}</li>`).join('')}</ul>` : staging ? '<p class="bds-todo">Key features to be written</p>' : ''}</div>
 </div></div></section>
-${p.description?.length || p.included?.length || p.goodToKnow?.length ? `<section class="bds-section bds-section--alt"><div class="bds-wrap bds-about">${p.description?.length ? `<div class="bds-copy"><h2>About this sign</h2>${paras(p.description)}</div>` : ''}${p.included?.length || p.goodToKnow?.length ? `<div class="bds-side">${p.included?.length ? `<h3>What's included</h3><ul>${p.included.map((x) => `<li>${inline(x)}</li>`).join('')}</ul>` : ''}${p.goodToKnow?.length ? `<h3>Good to know</h3><ul>${p.goodToKnow.map((x) => `<li>${inline(x)}</li>`).join('')}</ul>` : ''}</div>` : ''}</div></section>` : staging ? '<section class="bds-section bds-section--alt"><div class="bds-wrap bds-copy"><h2>About this sign</h2><p class="bds-todo">Description, what\'s included and good-to-know to be written (rewrite workbook → import).</p></div></section>' : ''}
+${productSections(p, c)}
 ${related.length ? `<section class="bds-section"><div class="bds-wrap"><h2>More ${esc(c.name.toLowerCase())}</h2><div class="bds-grid">${related.map(card).join('')}</div><p><a class="bds-textlink" href="${c.url}">All ${esc(c.name.toLowerCase())} ${ARROW}</a></p></div></section>` : ''}
 ${panel([...seoRows(p), ['Category', `<a href="${c.url}">${esc(c.name)}</a>`], ['Folded-in variants', p.variants.length ? esc(p.variants.join(' · ')) : 'none'],
     ['Option prices', p.options.some((o) => o.add) ? 'set' : '<span class="bds-todo">not set (add "add": {"Choice": 5} to an option)</span>'], ['Price', p.price ? money(p.price) + ' ex VAT' : '<span class="bds-todo">not set (add "price" in content/business-signs.json)</span>']],
@@ -147,7 +180,8 @@ ${panel([...seoRows(p), ['Category', `<a href="${c.url}">${esc(c.name)}</a>`], [
       ...(firstPhoto.length ? { image: firstPhoto.map((s) => origin + s) } : {}),
       ...(p.price ? { offers: { '@type': 'Offer', priceCurrency: 'GBP', price: String(p.price), availability: 'https://schema.org/InStock', url: origin + p.url,
         priceSpecification: { '@type': 'UnitPriceSpecification', price: String(p.price), priceCurrency: 'GBP', valueAddedTaxIncluded: false } } } : {}) };
-    paths.push(page({ url: p.url, title: p.metaTitle, desc: p.metaDescription, body, ld: [crumbLd(trail), ...(p.price ? [product] : [])] }));
+    const faqLd = p.faqs?.length ? [{ '@type': 'FAQPage', mainEntity: p.faqs.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1').replace(/\*\*/g, '') } })) }] : [];
+    paths.push(page({ url: p.url, title: p.metaTitle, desc: p.metaDescription, body, ld: [crumbLd(trail), ...(p.price ? [product] : []), ...faqLd] }));
   }
 
   return { paths, live: !staging, count: { categories: listed.length, products: prods.length } };
