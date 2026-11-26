@@ -3033,3 +3033,21 @@ body.bdm-lock #masthead .main-navigation>.menu,body.bdm-lock #masthead .main-nav
 .bds-imgplan th,.bds-imgplan td{border:1px solid #eadfb0;padding:6px 8px;text-align:left;vertical-align:top}
 @media (max-width:900px){.bds-product-grid{grid-template-columns:1fr;gap:28px}.bds-wrap{padding:0 20px}.bds-section{padding:52px 0}
   .bds-opts{grid-template-columns:1fr}.bds-opts dt{border-bottom:0;padding-bottom:0}.bds-dev dl{grid-template-columns:1fr}.bds-imgplan{display:block;overflow-x:auto}}
+
+/* product gallery: clickable photos and full-size viewer */
+.bds-zoom{position:relative;display:block;border-radius:18px;overflow:hidden;cursor:zoom-in}
+.bds-zoom-hint{position:absolute;right:12px;bottom:12px;padding:6px 12px;border-radius:30px;background:rgba(20,20,30,.72);color:#fff;font-size:13px;font-weight:600;opacity:0;transition:opacity .2s}
+.bds-zoom:hover .bds-zoom-hint,.bds-zoom:focus-visible .bds-zoom-hint{opacity:1}
+.bds-thumbs .bds-thumb-btn{display:block;padding:0;border:2px solid transparent;border-radius:12px;background:none;cursor:pointer;overflow:hidden}
+.bds-thumbs .bds-thumb-btn:hover{border-color:var(--line)}
+.bds-thumbs .bds-thumb-btn.is-on{border-color:var(--c,#6c3cf0)}
+.bds-thumbs .bds-thumb-btn .bds-thumb{border-radius:9px}
+.bds-thumbs:has(.bds-thumb-btn:nth-child(5)){grid-template-columns:repeat(5,1fr)}
+.bds-lightbox{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;background:rgba(10,10,16,.92);padding:56px 64px}
+.bds-lightbox[hidden]{display:none}
+.bds-lightbox img{max-width:100%;max-height:100%;border-radius:10px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.bds-lightbox button{position:absolute;border:0;background:rgba(255,255,255,.12);color:#fff;width:48px;height:48px;border-radius:50%;font-size:26px;line-height:1;cursor:pointer}
+.bds-lightbox button:hover,.bds-lightbox button:focus-visible{background:rgba(255,255,255,.25)}
+.bds-lb-close{top:16px;right:16px}.bds-lb-prev{left:12px;top:50%;transform:translateY(-50%)}.bds-lb-next{right:12px;top:50%;transform:translateY(-50%)}
+.bds-lb-count{position:absolute;bottom:18px;left:0;right:0;text-align:center;color:#ddd;font-size:14px}
+@media (max-width:700px){.bds-lightbox{padding:56px 8px}.bds-lb-prev,.bds-lb-next{top:auto;bottom:8px;transform:none}}

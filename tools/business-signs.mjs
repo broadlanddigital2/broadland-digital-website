@@ -52,6 +52,16 @@ export function buildBusinessSigns({ root, shell, write, esc, origin }) {
   // ----- shared pieces -----
   const crumbs = (list) => `<nav class="bds-crumbs" aria-label="Breadcrumb">${list.map(([name, url], i) => (i < list.length - 1 ? `<a href="${url}">${esc(name)}</a><span aria-hidden="true">/</span>` : `<span aria-current="page">${esc(name)}</span>`)).join('')}</nav>`;
   const crumbLd = (list) => ({ '@type': 'BreadcrumbList', itemListElement: list.map(([name, url], i) => ({ '@type': 'ListItem', position: i + 1, name, item: origin + url })) });
+  // Product photos: the main photo opens a full-size viewer (bd-business-signs.js; without script it opens the
+  // photo itself), and every thumbnail shows that photo as the main one. Placeholders stay as they are.
+  const srcOf = (img) => img && (img.src || photo(img.file));
+  const gallery = (imgs) => {
+    const real = imgs.filter(srcOf);
+    if (!real.length) return `<div class="bds-gallery">${image(imgs[0], 'bds-main')}<div class="bds-thumbs">${imgs.slice(1).map((i) => image(i, 'bds-thumb')).join('')}</div></div>`;
+    const main = `<a class="bds-zoom" href="${srcOf(real[0])}" data-zoom aria-label="Enlarge photo: ${esc(real[0].alt)}">${image(real[0], 'bds-main')}<span class="bds-zoom-hint" aria-hidden="true">Click to enlarge</span></a>`;
+    const thumbs = real.length > 1 ? `<div class="bds-thumbs">${real.map((i, n) => `<button type="button" class="bds-thumb-btn${n ? '' : ' is-on'}" data-src="${srcOf(i)}" data-alt="${esc(i.alt)}" aria-label="Show photo ${n + 1}: ${esc(i.alt)}"${n ? '' : ' aria-current="true"'}>${image(i, 'bds-thumb')}</button>`).join('')}</div>` : '';
+    return `<div class="bds-gallery" data-gallery>${main}${thumbs}</div>`;
+  };
   const image = (img, cls = '') => {
     const src = img && (img.src || photo(img.file));
     if (src) return `<img class="${cls}" src="${src}" alt="${esc(img.alt)}" loading="lazy" decoding="async" width="1600" height="1200">`;
@@ -175,7 +185,7 @@ ${p.options.length ? `<div class="bds-fields">${p.options.map(field).join('')}</
 </form>`;
     const imgs = p.images;
     const body = `<section class="bds-product"><div class="bds-wrap">${crumbs(trail)}<div class="bds-product-grid">
-<div class="bds-gallery">${image(imgs[0], 'bds-main')}<div class="bds-thumbs">${imgs.slice(1).map((i) => image(i, 'bds-thumb')).join('')}</div></div>
+${gallery(imgs)}
 <div class="bds-buy"><span class="bds-eyebrow"><a href="${c.url}">${esc(c.name)}</a></span><h1>${esc(p.h1)}</h1><p class="bds-lead">${esc(p.lead)}</p><p class="bds-price">${priceText(p)}</p>
 ${config}
 ${p.facts?.length ? `<ul class="bds-points">${p.facts.map((f) => `<li>${inline(f)}</li>`).join('')}</ul>` : staging ? '<p class="bds-todo">Key features to be written</p>' : ''}</div>
