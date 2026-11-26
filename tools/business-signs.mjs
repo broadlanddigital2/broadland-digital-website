@@ -122,7 +122,7 @@ ${panel([...seoRows(c), ['Products', String(list.length)], ['FAQs', c.faqs?.leng
     const trail = [HOME, HUB, [c.name, c.url], [short(p.h1), p.url]];
     const related = (byCat.get(p.cat) || []).filter((x) => x !== p).slice(0, 4);
     const field = (o, i) => o.range
-      ? `<label class="bds-field"><span>${esc(o.label)}</span><input type="number" inputmode="numeric" name="o${i}" min="${o.range[0]}" max="${o.range[1]}" step="1" data-label="${esc(o.label.replace(/ \(mm\)$/, ''))}" placeholder="e.g. ${Math.round((o.range[0] + Math.min(o.range[1], o.range[0] * 6)) / 2 / 10) * 10}"><small class="bds-hint">${o.range[0]}mm to ${o.range[1]}mm</small></label>`
+      ? `<label class="bds-field"><span>${esc(o.label)}</span><input type="number" inputmode="numeric" name="o${i}" min="${o.range[0]}"${o.range[1] ? ` max="${o.range[1]}"` : ''} step="1" data-label="${esc(o.label.replace(/ \(mm\)$/, ''))}" placeholder="e.g. ${Math.round((o.range[0] + (o.range[1] ? Math.min(o.range[1], o.range[0] * 6) : o.range[0] * 6)) / 2 / 10) * 10}"><small class="bds-hint">${o.range[1] ? `${o.range[0]}mm to ${o.range[1]}mm` : `From ${o.range[0]}mm`}</small></label>`
       : `<label class="bds-field"><span>${esc(o.label)}</span><select name="o${i}" data-label="${esc(o.label)}"${o.add ? ` data-add="${esc(JSON.stringify(o.add))}"` : ''}>${o.choices.map((c) => `<option value="${esc(c)}">${esc(c)}${o.add && o.add[c] ? ` (+${money(o.add[c])})` : ''}</option>`).join('')}</select></label>`;
     const config = `<form class="bds-config" data-name="${esc(p.h1)}"${p.price ? ` data-price="${p.price}"` : ''} novalidate aria-label="Choose your options">
 ${p.options.length ? `<div class="bds-fields">${p.options.map(field).join('')}</div>` : ''}
