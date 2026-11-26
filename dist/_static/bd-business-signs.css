@@ -30,7 +30,7 @@
 .bds-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:26px}
 .bds-card{display:flex;flex-direction:column;border-radius:16px;overflow:hidden;background:#fff;border:1px solid var(--line);color:var(--ink)!important;text-decoration:none!important;transition:box-shadow .2s}
 .bds-card:hover{box-shadow:0 14px 34px rgba(0,0,0,.08)}
-.bds-card-img{display:flex;width:100%;aspect-ratio:4/3;object-fit:cover}
+.bds-card-img{display:block;width:100%;height:auto;aspect-ratio:4/3;object-fit:cover}
 .bds-card-body{display:flex;flex-direction:column;gap:8px;padding:18px 20px 22px;flex:1}
 .bds-card-title{font-family:"Adelle",adelle,Georgia,serif;font-weight:800;font-size:19px;line-height:1.2}
 .bds-card-sum{font-size:14px;line-height:1.5;color:var(--mute);flex:1}
@@ -41,9 +41,9 @@
 .bds-chips a{padding:8px 16px;border-radius:30px;border:1px solid var(--line);background:#fff;text-decoration:none;font-size:14px;font-weight:600}
 .bds-product{padding:40px 0 64px}
 .bds-product-grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:56px;align-items:start}
-.bds-gallery .bds-main{border-radius:18px;overflow:hidden;width:100%;aspect-ratio:4/3;object-fit:cover}
+.bds-gallery .bds-main{display:block;height:auto;border-radius:18px;overflow:hidden;width:100%;aspect-ratio:4/3;object-fit:cover}
 .bds-thumbs{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:12px}
-.bds-thumbs .bds-thumb{border-radius:10px;overflow:hidden;aspect-ratio:4/3;object-fit:cover;width:100%}
+.bds-thumbs .bds-thumb{display:block;height:auto;border-radius:10px;overflow:hidden;aspect-ratio:4/3;object-fit:cover;width:100%}
 .bds-thumbs .bds-ph svg{width:24px;height:24px}.bds-thumbs .bds-ph small{font-size:9px}
 .bds-buy h1{font-size:clamp(32px,3.6vw,48px);line-height:1.08;margin:0 0 16px;color:var(--ink)}
 .bds-buy .bds-eyebrow{color:var(--c)}
