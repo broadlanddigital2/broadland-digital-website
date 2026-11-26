@@ -9,7 +9,8 @@
 //
 // Product photos: put the planned file (see each product's "images" list, e.g. clear-acrylic-sign-front.webp) in
 // site/public/img/business-signs/ and it replaces the placeholder on the next build.
-// Copy: add "intro" to a category or "description" to a product, each a list of paragraphs (**bold** and [text](/link/) work).
+// Copy: categories take "intro" (paragraphs) and "faqs" ([{q, a}]); products take "description" (paragraphs), "facts",
+// "included" and "goodToKnow" (lists). **bold** and [text](/link/) work. The rewrite workbook import fills these.
 // Options: each becomes a dropdown (or a size box for "range"); add "add": {"Choice": 5} for add-on prices (ex VAT).
 // Prices: add "price": 41 (ex VAT) to a product to show "From £41 + VAT" and add Product/Offer structured data.
 import { readFileSync, existsSync } from 'node:fs';
@@ -106,11 +107,13 @@ ${panel([...seoRows(hub), ['Pages', `${listed.length} categories, ${prods.length
     const body = `<section class="bds-hero bds-hero--slim"><div class="bds-wrap">${crumbs(trail)}<h1>${esc(c.h1)}</h1><p class="bds-lead">${esc(c.metaDescription)}</p></div></section>
 <section class="bds-section"><div class="bds-wrap"><div class="bds-grid">${list.map(card).join('')}</div></div></section>
 ${c.intro?.length ? `<section class="bds-section bds-section--alt"><div class="bds-wrap bds-copy"><h2>About ${esc(c.name.toLowerCase())}</h2>${paras(c.intro)}</div></section>` : ''}
+${c.faqs?.length ? `<section class="bds-section"><div class="bds-wrap bds-copy"><h2>${esc(c.name)} FAQs</h2><div class="bds-faqs">${c.faqs.map((f) => `<details><summary>${esc(f.q)}</summary><p>${inline(f.a)}</p></details>`).join('')}</div></div></section>` : ''}
 <section class="bds-section bds-section--alt"><div class="bds-wrap"><h2>Other sign types</h2><p class="bds-chips">${others.map((o) => `<a href="${o.url}">${esc(o.name)}</a>`).join('')}</p></div></section>
-${panel([...seoRows(c), ['Products', String(list.length)], ['Category copy', c.intro?.length ? `${c.intro.length} paragraphs` : '<span class="bds-todo">to be written: add "intro" (a list of paragraphs) to this category</span>']])}${band}`;
+${panel([...seoRows(c), ['Products', String(list.length)], ['FAQs', c.faqs?.length ? String(c.faqs.length) : '<span class="bds-todo">none yet</span>'], ['Category copy', c.intro?.length ? `${c.intro.length} paragraphs` : '<span class="bds-todo">to be written: add "intro" (a list of paragraphs) to this category</span>']])}${band}`;
     paths.push(page({ url: c.url, title: c.metaTitle, desc: c.metaDescription, body,
       ld: [crumbLd(trail), { '@type': 'CollectionPage', name: c.h1, url: origin + c.url, description: c.metaDescription, inLanguage: 'en-GB',
-        mainEntity: { '@type': 'ItemList', itemListElement: list.map((p, i) => ({ '@type': 'ListItem', position: i + 1, url: origin + p.url, name: p.h1 })) } }] }));
+        mainEntity: { '@type': 'ItemList', itemListElement: list.map((p, i) => ({ '@type': 'ListItem', position: i + 1, url: origin + p.url, name: p.h1 })) } },
+        ...(c.faqs?.length ? [{ '@type': 'FAQPage', mainEntity: c.faqs.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })) }] : [])] }));
   }
 
   // ----- products -----
@@ -132,9 +135,9 @@ ${p.options.length ? `<div class="bds-fields">${p.options.map(field).join('')}</
 <div class="bds-gallery">${image(imgs[0], 'bds-main')}<div class="bds-thumbs">${imgs.slice(1).map((i) => image(i, 'bds-thumb')).join('')}</div></div>
 <div class="bds-buy"><span class="bds-eyebrow"><a href="${c.url}">${esc(c.name)}</a></span><h1>${esc(p.h1)}</h1><p class="bds-lead">${esc(p.lead)}</p><p class="bds-price">${priceText(p)}</p>
 ${config}
-<ul class="bds-points"><li>Made to order to your size and artwork</li><li>Artwork checked before production</li><li>Design help available from our studio</li></ul></div>
+${p.facts?.length ? `<ul class="bds-points">${p.facts.map((f) => `<li>${inline(f)}</li>`).join('')}</ul>` : staging ? '<p class="bds-todo">Key features to be written</p>' : ''}</div>
 </div></div></section>
-${p.description?.length ? `<section class="bds-section bds-section--alt"><div class="bds-wrap bds-copy"><h2>About this sign</h2>${paras(p.description)}</div></section>` : staging ? '<section class="bds-section bds-section--alt"><div class="bds-wrap bds-copy"><h2>About this sign</h2><p class="bds-todo">Product description to be written: add "description" (a list of paragraphs) to this product in content/business-signs.json. Cover what it is, where it works, materials and finish, sizes, fixings, artwork needed and lead time.</p></div></section>' : ''}
+${p.description?.length || p.included?.length || p.goodToKnow?.length ? `<section class="bds-section bds-section--alt"><div class="bds-wrap bds-about">${p.description?.length ? `<div class="bds-copy"><h2>About this sign</h2>${paras(p.description)}</div>` : ''}${p.included?.length || p.goodToKnow?.length ? `<div class="bds-side">${p.included?.length ? `<h3>What's included</h3><ul>${p.included.map((x) => `<li>${inline(x)}</li>`).join('')}</ul>` : ''}${p.goodToKnow?.length ? `<h3>Good to know</h3><ul>${p.goodToKnow.map((x) => `<li>${inline(x)}</li>`).join('')}</ul>` : ''}</div>` : ''}</div></section>` : staging ? '<section class="bds-section bds-section--alt"><div class="bds-wrap bds-copy"><h2>About this sign</h2><p class="bds-todo">Description, what\'s included and good-to-know to be written (rewrite workbook → import).</p></div></section>' : ''}
 ${related.length ? `<section class="bds-section"><div class="bds-wrap"><h2>More ${esc(c.name.toLowerCase())}</h2><div class="bds-grid">${related.map(card).join('')}</div><p><a class="bds-textlink" href="${c.url}">All ${esc(c.name.toLowerCase())} ${ARROW}</a></p></div></section>` : ''}
 ${panel([...seoRows(p), ['Category', `<a href="${c.url}">${esc(c.name)}</a>`], ['Folded-in variants', p.variants.length ? esc(p.variants.join(' · ')) : 'none'],
     ['Option prices', p.options.some((o) => o.add) ? 'set' : '<span class="bds-todo">not set (add "add": {"Choice": 5} to an option)</span>'], ['Price', p.price ? money(p.price) + ' ex VAT' : '<span class="bds-todo">not set (add "price" in content/business-signs.json)</span>']],

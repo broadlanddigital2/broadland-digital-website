@@ -2991,6 +2991,12 @@ body.bdm-lock #masthead .main-navigation>.menu,body.bdm-lock #masthead .main-nav
 .bds-field [aria-invalid="true"]{border-color:#c62828}
 .bds-hint{font-weight:400;font-size:12px;color:var(--mute)}.bds-hint.bad{color:#c62828;font-weight:700}
 .bds-total{font-size:22px;font-weight:800;margin:4px 0 14px}.bds-total small{font-weight:400;color:var(--mute);font-size:14px}
+.bds-about{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:56px;align-items:start}
+.bds-side{background:#fff;border:1px solid var(--line);border-radius:16px;padding:24px 26px}
+.bds-side h3{font-size:18px;font-weight:800;margin:0 0 10px}.bds-side h3+ul{margin:0 0 20px}.bds-side ul{padding-left:20px;margin:0}.bds-side li{margin:0 0 6px;font-size:15px;line-height:1.5}
+.bds-faqs details{border-bottom:1px solid var(--line);padding:16px 0}.bds-faqs summary{cursor:pointer;font-weight:700;font-size:17px}
+.bds-faqs p{margin:10px 0 0;font-size:16px;line-height:1.65}
+@media (max-width:900px){.bds-about{grid-template-columns:1fr;gap:28px}}
 /* test-site only */
 .bds-todo{display:inline-block;padding:2px 8px;border-radius:6px;background:#fff3c4;color:#7a5b00;font-weight:600;font-size:.85em}
 .bds-dev{background:#fffbea;border-top:3px dashed #e0b400;border-bottom:3px dashed #e0b400;padding:28px 0;font-size:14px;color:#3b3200}
