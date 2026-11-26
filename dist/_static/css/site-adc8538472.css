@@ -3043,7 +3043,7 @@ body.bdm-lock #masthead .main-navigation>.menu,body.bdm-lock #masthead .main-nav
 .bds-thumbs .bds-thumb-btn.is-on{border-color:var(--c,#6c3cf0)}
 .bds-thumbs .bds-thumb-btn .bds-thumb{border-radius:9px}
 .bds-thumbs:has(.bds-thumb-btn:nth-child(5)){grid-template-columns:repeat(5,1fr)}
-.bds-lightbox{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;background:rgba(10,10,16,.92);padding:56px 64px}
+.bds-lightbox{position:fixed;inset:0;z-index:2147483647;display:flex;align-items:center;justify-content:center;background:rgba(10,10,16,.92);padding:56px 64px}
 .bds-lightbox[hidden]{display:none}
 .bds-lightbox img{max-width:100%;max-height:100%;border-radius:10px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
 .bds-lightbox button{position:absolute;border:0;background:rgba(255,255,255,.12);color:#fff;width:48px;height:48px;border-radius:50%;font-size:26px;line-height:1;cursor:pointer}
