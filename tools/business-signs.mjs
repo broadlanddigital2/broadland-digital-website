@@ -142,6 +142,15 @@ ${panel([...seoRows(c), ['Products', String(list.length)], ['FAQs', c.faqs?.leng
     }
     nav.push(['ordering', has('install') ? 'Installation' : 'How ordering works']);
     out.push(`<section class="bds-section" id="ordering"><div class="bds-wrap bds-two">${has('install') ? `<div class="bds-copy"><h2>Installation & fixing</h2>${paras(p.install)}</div>` : ''}<div><h2${has('install') ? ' class="bds-h3"' : ''}>How ordering works</h2><ol class="bds-steps">${STEPS.map(([t, d]) => `<li><b>${esc(t)}</b><span>${esc(d)}</span></li>`).join('')}</ol></div></div></section>`);
+    const guide = data.guides?.[c.guide];
+    if (guide) {
+      nav.push(['guide', guide.title.replace(/ guide$/i, '')]);
+      out.push(`<section class="bds-section bds-section--alt" id="guide"><div class="bds-wrap"><h2>${esc(guide.title)}</h2><ol class="bds-steps bds-steps--grid">${guide.steps.map((st) => `<li><b>${esc(st.t)}</b><span>${inline(st.d)}</span></li>`).join('')}</ol></div></section>`);
+    }
+    if (data.artworkGuide) {
+      nav.push(['artwork', 'Artwork']);
+      out.push(`<section class="bds-section" id="artwork"><div class="bds-wrap bds-two"><div><h2>${esc(data.artworkGuide.title)}</h2><p class="bds-sub">Getting your artwork right first time means a sharper sign and a faster turnaround.</p></div><ul class="bds-checklist">${data.artworkGuide.items.map((x) => `<li>${inline(x)}</li>`).join('')}</ul></div></section>`);
+    }
     if (has('faqs')) {
       nav.push(['faqs', 'FAQs']);
       out.push(`<section class="bds-section bds-section--alt" id="faqs"><div class="bds-wrap bds-copy"><h2>${esc(short(p.h1))} FAQs</h2><div class="bds-faqs">${p.faqs.map((f) => `<details><summary>${esc(f.q)}</summary><p>${inline(f.a)}</p></details>`).join('')}</div></div></section>`);

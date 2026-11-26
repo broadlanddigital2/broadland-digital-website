@@ -3017,6 +3017,10 @@ body.bdm-lock #masthead .main-navigation>.menu,body.bdm-lock #masthead .main-nav
 .bds-steps span{font-size:14px;color:var(--mute);line-height:1.5}
 .bds .bds-h3{font-size:24px}
 @media (max-width:900px){.bds-two{grid-template-columns:1fr;gap:28px}}
+.bds-steps--grid{grid-template-columns:repeat(auto-fill,minmax(260px,1fr))}
+.bds-checklist{list-style:none;margin:0;padding:0;display:grid;gap:12px}
+.bds-checklist li{position:relative;padding:14px 16px 14px 46px;background:var(--soft);border-radius:12px;font-size:15px;line-height:1.55}
+.bds-checklist li:before{content:"";position:absolute;left:16px;top:18px;width:14px;height:8px;border-left:3px solid var(--c);border-bottom:3px solid var(--c);transform:rotate(-45deg)}
 /* test-site only */
 .bds-todo{display:inline-block;padding:2px 8px;border-radius:6px;background:#fff3c4;color:#7a5b00;font-weight:600;font-size:.85em}
 .bds-dev{background:#fffbea;border-top:3px dashed #e0b400;border-bottom:3px dashed #e0b400;padding:28px 0;font-size:14px;color:#3b3200}
