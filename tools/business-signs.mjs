@@ -10,6 +10,7 @@
 // Product photos: put the planned file (see each product's "images" list, e.g. clear-acrylic-sign-front.webp) in
 // site/public/img/business-signs/ and it replaces the placeholder on the next build.
 // Copy: add "intro" to a category or "description" to a product, each a list of paragraphs (**bold** and [text](/link/) work).
+// Options: each becomes a dropdown (or a size box for "range"); add "add": {"Choice": 5} for add-on prices (ex VAT).
 // Prices: add "price": 41 (ex VAT) to a product to show "From £41 + VAT" and add Product/Offer structured data.
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
@@ -27,6 +28,9 @@ export function buildBusinessSigns({ root, shell, write, esc, origin }) {
   const css = readFileSync(join(root, 'site/bd-business-signs.css'));
   const cssV = createHash('sha1').update(css).digest('hex').slice(0, 10);
   write('_static/bd-business-signs.css', css);
+  const js = readFileSync(join(root, 'site/bd-business-signs.js'));
+  const jsV = createHash('sha1').update(js).digest('hex').slice(0, 10);
+  write('_static/bd-business-signs.js', js);
 
   const cats = data.categories;
   const hub = cats.find((c) => c.key === 'hub');
@@ -58,7 +62,7 @@ export function buildBusinessSigns({ root, shell, write, esc, origin }) {
   const panel = (rows, extra = '') => (!staging ? '' : `<aside class="bds-dev" aria-label="SEO panel (test site only)"><div class="bds-wrap"><p class="bds-dev-head"><b>Test page: not live.</b> Only shown on the preview address; noindex, not in the sitemap.</p><dl>${rows.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${v}</dd>`).join('')}</dl>${extra}</div></aside>`);
   const lenFlag = (s, max) => `${esc(s)} <span class="bds-len${s.length > max ? ' bad' : ''}">${s.length}/${max}</span>`;
   const seoRows = (x) => [['Primary keyword', esc(x.primary) + vol(x.primaryVolume)], ['Secondary keywords', esc((x.secondary || []).join(', '))],
-    ['Meta title', lenFlag(x.metaTitle, 60)], ['Meta description', lenFlag(x.metaDescription, 155)], ['URL', esc(x.url)]];
+    ['Meta title', lenFlag(x.metaTitle, 60)], ['Meta description', lenFlag(x.metaDescription, 155)], ['URL', esc(x.url)], ...(x.brief ? [['Copy brief', esc(x.brief)]] : [])];
 
   const page = ({ url, title, desc, body, ld }) => {
     const graph = { '@context': 'https://schema.org', '@graph': ld };
@@ -70,6 +74,7 @@ export function buildBusinessSigns({ root, shell, write, esc, origin }) {
         staging ? '<meta name="robots" content="noindex, nofollow">' : '<meta name="robots" content="index, follow, max-image-preview:large">',
         `<meta property="og:type" content="website"><meta property="og:title" content="${esc(title)}"><meta property="og:description" content="${esc(desc)}"><meta property="og:url" content="${origin}${url}">`,
         `<link rel="stylesheet" href="/_static/bd-business-signs.css?v=${cssV}">`,
+        `<script src="/_static/bd-business-signs.js?v=${jsV}" defer></script>`,
         `<script type="application/ld+json">${JSON.stringify(graph).replace(/</g, '\\u003c')}</script>`,
       ].join('\n'))
       .replace('<div class="crm-main" data-crm-blog="slot"></div>', `<div class="bds">${body}</div>`);
@@ -113,18 +118,26 @@ ${panel([...seoRows(c), ['Products', String(list.length)], ['Category copy', c.i
     const c = catOf.get(p.cat);
     const trail = [HOME, HUB, [c.name, c.url], [short(p.h1), p.url]];
     const related = (byCat.get(p.cat) || []).filter((x) => x !== p).slice(0, 4);
-    const opts = p.options.length || p.variants.length ? `<section class="bds-section"><div class="bds-wrap"><h2>Options</h2><dl class="bds-opts">${p.options.map((o) => `<dt>${esc(o.label)}</dt><dd>${o.range ? `${o.range[0]}mm to ${o.range[1]}mm` : o.choices.map(esc).join(', ')}</dd>`).join('')}${p.variants.length ? `<dt>Also available</dt><dd><ul>${p.variants.map((v) => `<li>${esc(v)}</li>`).join('')}</ul></dd>` : ''}</dl></div></section>` : '';
+    const field = (o, i) => o.range
+      ? `<label class="bds-field"><span>${esc(o.label)}</span><input type="number" inputmode="numeric" name="o${i}" min="${o.range[0]}" max="${o.range[1]}" step="1" data-label="${esc(o.label.replace(/ \(mm\)$/, ''))}" placeholder="e.g. ${Math.round((o.range[0] + Math.min(o.range[1], o.range[0] * 6)) / 2 / 10) * 10}"><small class="bds-hint">${o.range[0]}mm to ${o.range[1]}mm</small></label>`
+      : `<label class="bds-field"><span>${esc(o.label)}</span><select name="o${i}" data-label="${esc(o.label)}"${o.add ? ` data-add="${esc(JSON.stringify(o.add))}"` : ''}>${o.choices.map((c) => `<option value="${esc(c)}">${esc(c)}${o.add && o.add[c] ? ` (+${money(o.add[c])})` : ''}</option>`).join('')}</select></label>`;
+    const config = `<form class="bds-config" data-name="${esc(p.h1)}"${p.price ? ` data-price="${p.price}"` : ''} novalidate aria-label="Choose your options">
+${p.options.length ? `<div class="bds-fields">${p.options.map(field).join('')}</div>` : ''}
+<div class="bds-fields bds-fields--qty"><label class="bds-field"><span>Quantity</span><input type="number" inputmode="numeric" name="qty" min="1" value="1" data-label="Quantity"></label></div>
+<p class="bds-total" hidden>Total: <b></b> <small>+ VAT</small></p>
+<p class="bds-actions"><a class="bds-btn" href="#enquire" data-enquire="${esc(p.h1)}">Enquire with these options</a><a class="bds-btn bds-btn--ghost" href="tel:${PHONE.replace(/\s/g, '')}">Call ${PHONE}</a></p>
+</form>`;
     const imgs = p.images;
     const body = `<section class="bds-product"><div class="bds-wrap">${crumbs(trail)}<div class="bds-product-grid">
 <div class="bds-gallery">${image(imgs[0], 'bds-main')}<div class="bds-thumbs">${imgs.slice(1).map((i) => image(i, 'bds-thumb')).join('')}</div></div>
 <div class="bds-buy"><span class="bds-eyebrow"><a href="${c.url}">${esc(c.name)}</a></span><h1>${esc(p.h1)}</h1><p class="bds-lead">${esc(p.lead)}</p><p class="bds-price">${priceText(p)}</p>
-<p class="bds-actions"><a class="bds-btn" href="/get-a-quote/">Get a quote</a><a class="bds-btn bds-btn--ghost" href="tel:${PHONE.replace(/\s/g, '')}">Call ${PHONE}</a></p>
+${config}
 <ul class="bds-points"><li>Made to order to your size and artwork</li><li>Artwork checked before production</li><li>Design help available from our studio</li></ul></div>
 </div></div></section>
-${opts}
 ${p.description?.length ? `<section class="bds-section bds-section--alt"><div class="bds-wrap bds-copy"><h2>About this sign</h2>${paras(p.description)}</div></section>` : staging ? '<section class="bds-section bds-section--alt"><div class="bds-wrap bds-copy"><h2>About this sign</h2><p class="bds-todo">Product description to be written: add "description" (a list of paragraphs) to this product in content/business-signs.json. Cover what it is, where it works, materials and finish, sizes, fixings, artwork needed and lead time.</p></div></section>' : ''}
 ${related.length ? `<section class="bds-section"><div class="bds-wrap"><h2>More ${esc(c.name.toLowerCase())}</h2><div class="bds-grid">${related.map(card).join('')}</div><p><a class="bds-textlink" href="${c.url}">All ${esc(c.name.toLowerCase())} ${ARROW}</a></p></div></section>` : ''}
-${panel([...seoRows(p), ['Category', `<a href="${c.url}">${esc(c.name)}</a>`], ['Folded-in variants', p.variants.length ? esc(p.variants.join(' · ')) : 'none'], ['Price', p.price ? money(p.price) + ' ex VAT' : '<span class="bds-todo">not set (add "price" in content/business-signs.json)</span>']],
+${panel([...seoRows(p), ['Category', `<a href="${c.url}">${esc(c.name)}</a>`], ['Folded-in variants', p.variants.length ? esc(p.variants.join(' · ')) : 'none'],
+    ['Option prices', p.options.some((o) => o.add) ? 'set' : '<span class="bds-todo">not set (add "add": {"Choice": 5} to an option)</span>'], ['Price', p.price ? money(p.price) + ' ex VAT' : '<span class="bds-todo">not set (add "price" in content/business-signs.json)</span>']],
   `<table class="bds-imgplan"><thead><tr><th>#</th><th>File (site/public/img/business-signs/)</th><th>Alt text</th><th>Shot</th><th>Status</th></tr></thead><tbody>${imgs.map((i, n) => `<tr><td>${n + 1}</td><td><code>${esc(i.file)}</code></td><td>${esc(i.alt)} <span class="bds-len${i.alt.length > 125 ? ' bad' : ''}">${i.alt.length}</span></td><td>${esc(i.shot)}</td><td>${photo(i.file) ? 'uploaded' : '<span class="bds-todo">to shoot</span>'}</td></tr>`).join('')}</tbody></table>`)}${band}`;
     const firstPhoto = imgs.map((i) => photo(i.file)).filter(Boolean);
     const product = { '@type': 'Product', name: p.h1, description: p.metaDescription, url: origin + p.url, brand: { '@type': 'Brand', name: 'Broadland Digital' },

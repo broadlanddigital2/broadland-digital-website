@@ -53,6 +53,11 @@ A shop-style section: a hub, 25 categories and 195 products, built from `content
   plan) plus "to be written / to be set" markers.
 - **Copy:** add `"intro"` to a category or `"description"` to a product, as a list of paragraphs (`**bold**` and
   `[text](/link/)` work).
+- **Options:** each product's `options` become dropdowns (or size boxes for a `range`) with a quantity box. "Enquire
+  with these options" sends the choices through the site's enquiry form to the CRM. Add `"add": {"Matt black": 5}` to
+  an option for add-on prices (ex VAT); with a product price set, the page shows a running total.
+- **Briefs:** each page's `brief` (what the copy must cover) shows in the SEO panel. The full writer and photographer
+  brief is kept outside the repo, in the SEO plan workbook.
 - **Prices:** add `"price": 45` (ex VAT) to a product: the page shows "From £45 + VAT" and gets Product/Offer
   structured data. Without one, live pages say "Price on request".
 - **Photos:** save the planned file (each product's `images` list, e.g. `clear-acrylic-sign-front.webp`) in
