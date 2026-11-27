@@ -48,7 +48,15 @@ export async function handleCheckout(request, env = {}) {
   f.set('success_url', `${self.origin}/basket/thanks/?session_id={CHECKOUT_SESSION_ID}`);
   f.set('cancel_url', `${self.origin}/basket/`);
   f.set('billing_address_collection', 'required');
-  f.set('shipping_address_collection[allowed_countries][0]', 'GB');
+  // contact and delivery details from /checkout/ (kept on the Stripe session for the CRM lead)
+  const cu = b.customer && typeof b.customer === 'object' ? b.customer : {};
+  const cl = (v, n) => String(v ?? '').replace(/[\r\n]+/g, ' ').trim().slice(0, n);
+  const deliverTo = [cu.line1, cu.line2, cu.city, cu.postcode].map((v) => cl(v, 120)).filter(Boolean).join(', ');
+  if (cu.first_name || cu.last_name) f.set('metadata[customer_name]', cl(`${cu.first_name || ''} ${cu.last_name || ''}`, 200));
+  if (cu.mobile) f.set('metadata[customer_phone]', cl(cu.mobile, 40));
+  if (deliverTo) f.set('metadata[deliver_to]', deliverTo.slice(0, 500));
+  if (cu.notes) f.set('metadata[notes]', cl(cu.notes, 500));
+  f.set('metadata[marketing]', cu.marketing ? 'yes' : 'no');
   f.set('phone_number_collection[enabled]', 'true');
   f.set('locale', 'en-GB');
   const email = String(b.email || '').trim().toLowerCase();
@@ -102,15 +110,16 @@ export async function handleStripeWebhook(request, env = {}) {
   if (s.metadata?.source !== 'business-signs-basket' || s.payment_status !== 'paid') return json({ received: true });
   const c = s.customer_details || {}, ship = s.shipping_details || s.collected_information?.shipping_details || {};
   const addr = (a) => (a ? [a.line1, a.line2, a.city, a.state, a.postal_code, a.country].filter(Boolean).join(', ') : '');
-  const items = Object.keys(s.metadata).filter((k) => k.startsWith('item_')).sort((a, b) => +a.slice(5) - +b.slice(5)).map((k) => '- ' + s.metadata[k]);
-  const name = c.name || ship.name || 'Website customer';
+  const items = Object.keys(s.metadata).filter((k) => /^item_\d+$/.test(k)).sort((a, b) => +a.slice(5) - +b.slice(5)).map((k) => '- ' + s.metadata[k]);
+  const name = s.metadata.customer_name || c.name || ship.name || 'Website customer';
   const [first, ...rest] = name.split(/\s+/);
   const details = [
-    `First name: ${first}`, rest.length ? `Last name: ${rest.join(' ')}` : '', `Email: ${c.email || ''}`, c.phone ? `Phone: ${c.phone}` : '',
+    `First name: ${first}`, rest.length ? `Last name: ${rest.join(' ')}` : '', `Email: ${c.email || ''}`, (s.metadata.customer_phone || c.phone) ? `Phone: ${s.metadata.customer_phone || c.phone}` : '',
     `Product: Business signs order (paid online)`,
     `\nMessage:\nPAID ONLINE: £${((s.amount_total || 0) / 100).toFixed(2)} inc VAT (Stripe ${s.payment_intent || s.id}).`,
     `\nItems:\n${items.join('\n')}`,
-    ship.address ? `\nDeliver to: ${ship.name || name}, ${addr(ship.address)}` : '', c.address ? `Billing address: ${addr(c.address)}` : '',
+    s.metadata.deliver_to ? `\nDeliver to: ${s.metadata.deliver_to}` : ship.address ? `\nDeliver to: ${ship.name || name}, ${addr(ship.address)}` : '',
+    s.metadata.notes ? `Notes: ${s.metadata.notes}` : '', `Marketing emails: ${s.metadata.marketing || 'no'}`, c.address ? `Billing address: ${addr(c.address)}` : '',
     '\nNext step: agree delivery or fitting, ask for artwork and send a proof before production.',
   ].filter(Boolean).join('\n');
   const ok = await sendCrmLead({ subject: `Paid order: business signs (£${((s.amount_total || 0) / 100).toFixed(2)})`, details, email: c.email || '', name, page_url: '/basket/' });

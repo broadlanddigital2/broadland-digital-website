@@ -57,39 +57,7 @@
     if (rm) { list.splice(+rm.getAttribute('data-rm'), 1); save(list); priced = null; render(); reprice(); }
   });
 
-  var go = root.querySelector('[data-checkout]'), offline = root.querySelector('[data-offline]');
-  go.addEventListener('click', function () {
-    go.disabled = true; go.textContent = 'Opening secure checkout…'; say('');
-    fetch('/api/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body()) })
-      .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
-      .then(function (x) {
-        if (x.ok && x.j.url) { location.href = x.j.url; return; }
-        go.disabled = false; go.textContent = 'Checkout securely';
-        say(esc(x.j.error || 'Sorry, checkout isn’t available just now.'), !x.j.offline);
-        if (x.j.offline) { offline.hidden = false; offline.querySelector('input').focus(); }
-      })
-      .catch(function () { go.disabled = false; go.textContent = 'Checkout securely'; say('Sorry, checkout isn’t available just now. Please try again.', true); });
-  });
-
-  // Order enquiry (when online payment is off): the basket goes to the CRM through the site's form handler.
-  offline.addEventListener('submit', function (e) {
-    e.preventDefault();
-    var f = new FormData(offline), btn = offline.querySelector('button');
-    var lines = list.map(function (i, n) { var l = priced && priced.lines[n]; return '- ' + i.qty + ' × ' + i.name + (i.desc ? ' (' + i.desc + ')' : '') + (l ? ' @ ' + gbp(Math.round(l.each * 100)) + ' + VAT' : ''); });
-    var data = { form: 'order', name: f.get('name'), email: f.get('email'), phone: f.get('phone'), product: 'Business signs basket (' + list.length + (list.length === 1 ? ' item' : ' items') + ')',
-      message: 'ORDER FROM BASKET\n' + lines.join('\n') + (priced ? '\n\nTotal: ' + gbp(priced.net) + ' + VAT' : '') + (f.get('notes') ? '\n\nNotes: ' + f.get('notes') : ''),
-      website: f.get('website'), page_url: location.href, page_title: document.title, elapsed: Date.now() - OPENED, human: HUMAN };
-    btn.disabled = true;
-    fetch('/api/forms', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
-      .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
-      .then(function (x) {
-        btn.disabled = false;
-        if (!x.ok) { say(esc(x.j.error || 'Sorry, your order could not be sent.'), true); return; }
-        save([]); list = [];
-        root.innerHTML = '<div class="bdb-done"><h2>Thank you, we’ve got your order.</h2><p>We’ll be in touch shortly to confirm the details, ask for your artwork and send a proof with a payment link.</p><a class="bdb-btn" href="/signage-home/">Back to signage</a></div>';
-      })
-      .catch(function () { btn.disabled = false; say('Sorry, your order could not be sent. Please call 01603 407786.', true); });
-  });
+  root.querySelector('[data-checkout]').addEventListener('click', function () { location.href = '/checkout/'; });
 
   render(); reprice();
 })();

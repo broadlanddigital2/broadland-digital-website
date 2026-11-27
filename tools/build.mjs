@@ -280,7 +280,7 @@ const SITE_SEARCH = '<script src="https://crm.racecargraphics.uk/embed/site-sear
 const CRM_BOT = '<script src="https://crm.racecargraphics.uk/rcg-enquiry-bot.js" data-bot-key="1fc0c248-2a70-4c51-9ed0-b43b1ba5a339" defer></script>';
 function headerActions() {
   return `<div class="bdh-actions"><a class="bdh-phone" href="tel:${menu.phone.replace(/\s/g, '')}" aria-label="Call ${esc(menu.phone)}">${PHONE_ICON}<span>${esc(menu.phone)}</span></a>`
-    + `<span class="bdh-icons"><button class="bdh-search" type="button" data-site-search hidden aria-label="Search the site or ask a question">${SEARCH_ICON}<span>Search</span></button><a class="bdh-basket" href="/basket/" aria-label="Basket"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h2.2l2.3 11.2a2 2 0 0 0 2 1.6h7.9a2 2 0 0 0 2-1.5L21 8H6.1"/><circle cx="10" cy="20.2" r="1.3"/><circle cx="17.5" cy="20.2" r="1.3"/></svg><span class="bdh-basket-n" data-basket-count hidden>0</span></a><a class="bdh-account" href="/account/" aria-label="Log in" data-account-link><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span class="bdh-account-dot" hidden></span></a></span>`
+    + `<span class="bdh-icons"><button class="bdh-search" type="button" data-site-search hidden aria-label="Search the site or ask a question">${SEARCH_ICON}<span>Search</span></button><a class="bdh-account" href="/account/" aria-label="Log in" data-account-link><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span class="bdh-account-dot" hidden></span></a><a class="bdh-basket" href="/basket/" aria-label="Basket"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h2.2l2.3 11.2a2 2 0 0 0 2 1.6h7.9a2 2 0 0 0 2-1.5L21 8H6.1"/><circle cx="10" cy="20.2" r="1.3"/><circle cx="17.5" cy="20.2" r="1.3"/></svg><span class="bdh-basket-n" data-basket-count hidden>0</span></a></span>`
     + `<a class="bdh-quote" href="/get-a-quote/"><span class="bdh-long">Get a quote</span><span class="bdh-short">Quote</span></a></div>`;
 }
 function sectionHeader(h, path) {
@@ -1551,21 +1551,47 @@ const BS = buildBusinessSigns({ root: ROOT, shell: shBS, write, esc, origin: ORI
   pg('/basket/', 'Your basket', `<section class="bdb"><div class="bds-wrap" data-basket><h1>Your basket</h1><div class="bdb-grid"><div class="bdb-items" data-items><p>Loading your basket…</p></div>
 <aside class="bdb-summary" data-summary hidden><h2>Order summary</h2><div class="bdb-msg" data-msg hidden></div>
 <dl><dt>Subtotal</dt><dd data-net>…</dd><dt>VAT (20%)</dt><dd data-vat>…</dd><dt>Delivery</dt><dd>To be agreed</dd><dt class="bdb-total">Total</dt><dd class="bdb-total" data-gross>…</dd></dl>
-<button type="button" class="bdb-btn" data-checkout>Checkout securely</button>
+<button type="button" class="bdb-btn" data-checkout>Go to checkout</button>
 <p class="bdb-small">Secure card payment. Delivery or fitting is agreed with you separately. After you order, we'll ask for your artwork and send a proof before anything is made.</p>
-<form class="bdb-offline" data-offline hidden novalidate><label>Name<input name="name" autocomplete="name" required></label><label>Email<input name="email" type="email" autocomplete="email" required></label><label>Phone<input name="phone" type="tel" autocomplete="tel" required></label><label>Notes (optional)<textarea name="notes" rows="3"></textarea></label><input class="bdb-hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true"><button type="submit" class="bdb-btn">Send my order</button></form>
 </aside></div></div></section>`);
   pg('/basket/thanks/', 'Thank you for your order', `<section class="bdb"><div class="bds-wrap" data-basket data-basket-thanks><div class="bdb-done"><h2>Thank you for your order.</h2><p>Your payment has gone through and we've emailed your receipt. We'll be in touch shortly to ask for your artwork and send a proof before anything is made.</p><a class="bdb-btn" href="/signage-home/">Back to signage</a></div></div></section>`);
   write('_static/bd-basket.js', readFileSync(join(ROOT, 'site/bd-basket.js')));
-  // Customer account (/account/): the CRM's customer account widget (sign in with an emailed code; quotes, orders,
-  // invoices, details) for the Broadland Digital business unit, through the same-site proxy /api/crm/booking.
-  write('account/index.html', shell
-    .replace('<title>Broadland Digital</title>', '<title>My account | Broadland Digital</title>')
-    .replace(/<link rel="canonical" href="[^"]*">/, `<link rel="canonical" href="${ORIGIN}/account/">`)
-    .replace('<!--crm:head-->', `<meta name="robots" content="noindex, nofollow">\n<link rel="stylesheet" href="/_static/bd-business-signs.css?v=${v('site/bd-business-signs.css')}">\n<script src="https://crm.racecargraphics.uk/embed/booking.js" defer></script>`)
-    .replace('<div class="crm-main" data-crm-blog="slot"></div>', `<section class="bdb bdacc"><div class="bds-wrap">
-<div class="bdacc-box" data-crm-booking="account" data-business="bc08f82c-908c-4ecb-8ae5-4cc5b6a4de7c" data-endpoint="/api/crm/booking" data-account-url="/account/" data-home-url="/" data-contact-url="/contact-us/" data-privacy-url="/privacy-policy/" data-booking-url="/get-a-quote/"
- style="--crm-accent:#713FFF;--crm-on-accent:#fff;--crm-accent-hover:#5f2ef0;--crm-accent-strong:#713FFF;--crm-accent-bright:#b49bff;--crm-on-bright:#1e1139;--crm-accent-line:#d9ccff;--crm-accent-wash:#f1ecff;--crm-panel:#2a2d32;--crm-panel-deep:#202226;--crm-panel-raised:#34373d"></div></div></section>`));
+  // Customer sign-in, account and checkout (styled like the Race Car Graphics site's pages): site/bd-account.js signs in
+  // with the CRM's emailed codes through /api/crm/booking; /account/ shows the CRM's customer account widget.
+  const page2 = (url, title, body, extra = '') => write(`${url.slice(1)}index.html`, shell
+    .replace('<title>Broadland Digital</title>', `<title>${title} | Broadland Digital</title>`)
+    .replace(/<link rel="canonical" href="[^"]*">/, `<link rel="canonical" href="${ORIGIN}${url}">`)
+    .replace('<!--crm:head-->', `<meta name="robots" content="noindex, nofollow">\n<link rel="stylesheet" href="/_static/bd-business-signs.css?v=${v('site/bd-business-signs.css')}">\nACC${extra}`.replace('ACC', `<script src="/_static/bd-account.js?v=${v('site/bd-account.js')}" defer></script>`))
+    .replace('<div class="crm-main" data-crm-blog="slot"></div>', body));
+  const TICK = '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.2 4.2L19 7"/></svg>';
+  page2('/login/', 'Sign in', `<section class="bdx-hero bdx-hero--split" data-bd-login><div class="bds-wrap bdx-split">
+<div class="bdx-intro"><span class="bdx-kicker">Customer account</span><h1>Sign in to Broadland Digital</h1><p class="bdx-lead">No password needed. We email you a 6-digit code each time you sign in.</p>
+<ul class="bdx-points"><li>${TICK}Orders, invoices and payments</li><li>${TICK}Quotes, proofs and project updates</li><li>${TICK}Your details saved for faster checkout</li></ul></div>
+<div class="bdx-card bdx-signin"><h2>Welcome back</h2><div class="bdx-msg" data-msg role="alert" hidden></div>
+<form data-step="email" novalidate><p>Enter your email and we'll send you a 6-digit code. New customers get an account automatically.</p><label class="bdx-field"><span>Email address</span><input type="email" name="email" autocomplete="email" required></label><button type="submit" class="bdx-btn">Email me a code</button></form>
+<form data-step="code" hidden novalidate><p>We've sent a 6-digit code to <b data-sent-to></b>. It expires in 10 minutes.</p><label class="bdx-field"><span>Sign-in code</span><input name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" required class="bdx-code"></label><button type="submit" class="bdx-btn">Sign in</button><button type="button" class="bdx-link" data-back>Use a different email</button></form>
+</div></div></section>`);
+  page2('/account/', 'My account', `<section class="bdx-hero" data-bd-account><div class="bds-wrap"><span class="bdx-kicker">Customer account</span><h1>My account</h1><p class="bdx-lead">Signed in as <b data-who></b> · <button type="button" class="bdx-link bdx-link--light" data-signout>Sign out</button></p></div></section>
+<section class="bdx-body"><div class="bds-wrap"><div class="bdx-card bdx-widget" data-crm-booking="account" data-business="bc08f82c-908c-4ecb-8ae5-4cc5b6a4de7c" data-endpoint="/api/crm/booking" data-account-url="/account/" data-home-url="/" data-contact-url="/contact-us/" data-privacy-url="/privacy-policy/" data-booking-url="/get-a-quote/"
+ style="--crm-accent:#713FFF;--crm-on-accent:#fff;--crm-accent-hover:#5f2ef0;--crm-accent-strong:#713FFF;--crm-accent-bright:#b49bff;--crm-on-bright:#1e1139;--crm-accent-line:#d9ccff;--crm-accent-wash:#f1ecff;--crm-panel:#2a2d32;--crm-panel-deep:#202226;--crm-panel-raised:#34373d"></div></div></section>`, '\n<script src="https://crm.racecargraphics.uk/embed/booking.js" defer></script>');
+  const fld = (n, label, attrs = '', wide = false) => `<label class="bdx-field${wide ? ' bdx-wide' : ''}"><span>${label}</span><input name="${n}" ${attrs}></label>`;
+  page2('/checkout/', 'Checkout', `<section class="bdx-hero"><div class="bds-wrap"><span class="bdx-kicker">Secure checkout</span><h1>Complete your order</h1><p class="bdx-lead">Check out as a guest, or sign in with an emailed code so the order is saved to your account.</p></div></section>
+<section class="bdx-body" data-bd-checkout><div class="bds-wrap bdx-co">
+<div class="bdx-main"><div class="bdx-tabs" data-tabs><span class="is-on">Guest checkout</span><button type="button" data-signin>Sign in</button></div>
+<p class="bdx-signed" data-signed-in hidden>Signed in as <b></b>. This order will be saved to your account.</p>
+<div class="bdx-msg" data-msg role="alert" hidden></div>
+<form novalidate>
+<fieldset class="bdx-card bdx-set"><legend>Contact details</legend><div class="bdx-grid">${fld('first_name', 'First name', 'autocomplete="given-name" required')}${fld('last_name', 'Last name', 'autocomplete="family-name" required')}${fld('email', 'Email address', 'type="email" autocomplete="email" required')}${fld('mobile', 'Mobile number', 'type="tel" autocomplete="tel" required')}</div></fieldset>
+<fieldset class="bdx-card bdx-set"><legend>Billing and delivery address</legend><div class="bdx-grid">${fld('postcode', 'Postcode', 'autocomplete="postal-code" required', true)}${fld('line1', 'Address line 1', 'autocomplete="address-line1" placeholder="House number or name and street" required')}${fld('line2', 'Address line 2', 'autocomplete="address-line2"')}${fld('city', 'Town or city', 'autocomplete="address-level2" required')}</div></fieldset>
+<fieldset class="bdx-card bdx-set"><legend>Delivery</legend><p class="bdx-note">Delivery or fitting is agreed with you after you order. We'll confirm the cost and date before anything is sent.</p></fieldset>
+<fieldset class="bdx-card bdx-set"><legend>Payment</legend><label class="bdx-pay"><input type="radio" name="pay" value="stripe" checked><span><b>Secure payment with Stripe</b><small>Card, Apple Pay and Google Pay. You'll enter your payment details on Stripe's secure page.</small></span><em>Stripe</em></label></fieldset>
+<fieldset class="bdx-card bdx-set"><legend>Order notes</legend><label class="bdx-field bdx-wide"><span class="bdx-sr">Order notes</span><textarea name="notes" rows="4" placeholder="Add delivery, artwork or fitting information"></textarea></label><label class="bdx-check"><input type="checkbox" name="marketing"> Email me offers and news from Broadland Digital</label></fieldset>
+<button type="submit" class="bdx-btn bdx-btn--block">Place order</button>
+<p class="bdx-small">After you order, we'll ask for your artwork and send a proof before anything is made.</p>
+</form></div>
+<aside class="bdx-card bdx-summary"><h2>Your order</h2><div data-order><p>Loading…</p></div><a class="bdx-link" href="/basket/">Edit basket</a></aside>
+</div></section>`);
+  write('_static/bd-account.js', readFileSync(join(ROOT, 'site/bd-account.js')));
 }
 writeFileSync(join(ROOT, 'worker/business-signs.json'), JSON.stringify({ live: BS.live }) + '\n');
 write('_crm-page/index.html', pruneAssets(sh));
