@@ -3510,3 +3510,10 @@ details[open] .bdp-plus:after{transform:rotate(0)}
 .bds .bds-see{--on:#fff;margin-top:34px}
 .bds .bds-see .bdr-group-head{margin-bottom:14px}
 .bds .bds-see .bdr-group-head h3{font-size:22px}
+
+/* Technical details: labels on bright purple, values on white */
+.bdp-spec th{background:#713FFF;color:#fff;border-bottom-color:rgba(255,255,255,.18)}
+.bdp-spec td{background:#fff;color:var(--ink)}
+.bdp-spec td a{color:#713FFF}
+.bdp-spec tr:hover th{background:#6331f0}
+.bdp-spec tr:hover td{background:#fff}
