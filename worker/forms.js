@@ -127,3 +127,13 @@ async function sendToBoxly(env, d) {
     return false;
   }
 }
+
+/** A lead into the CRM (same channel as the forms); used by the basket for paid orders. */
+export async function sendCrmLead({ subject, details, email, name, page_url }) {
+  const r = await fetch(CRM_FORMS_URL, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ form_key: FORM_KEY, subject, details, email, name, page_url }),
+  }).catch((e) => { console.error('CRM lead not created', String(e)); return null; });
+  if (r && !r.ok) console.error('CRM lead not created', r.status, (await r.text().catch(() => '')).slice(0, 500));
+  return !!(r && r.ok);
+}

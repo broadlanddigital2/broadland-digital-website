@@ -1,5 +1,6 @@
 // Broadland Digital website worker. Serves the static site in dist/ and adds what needs a server:
 //   /api/forms            enquiry, quote, guide and order forms → CRM leads (forms.js)
+//   /api/checkout         basket → Stripe Checkout (basket.js); /api/stripe-webhook paid orders → CRM
 //   CRM SEO pages         locations, guides, comparisons, sectors, services, published in the CRM (crm-pages.js)
 //   sector links          signage hub "Industries we work with", signage pages "Popular with" (sector-links.js)
 //   /blog, /blog/<slug>   blog posts written and approved in the CRM (crm-blog.js, shared with the other sites)
@@ -7,6 +8,7 @@
 //   redirects             old WordPress addresses (worker/redirects.json, written by tools/build.mjs)
 //   /wp-content/uploads   files not copied into the repo yet are fetched from the old WordPress site (OLD_SITE_ORIGIN)
 import { handleForms } from './forms.js';
+import { handleCheckout, handleStripeWebhook } from './basket.js';
 import { crmPageResponse, addCrmPagesToSitemap, llmsTxt, setCrmAssets } from './crm-pages.js';
 import { blogResponse, addPostsToSitemap } from './crm-blog.js';
 import { trackAi } from './ai-visibility.js';
@@ -85,6 +87,8 @@ async function route(request, env) {
   if (WP_PASSTHROUGH.test(path) && /(^|\.)broadlanddigital\.co\.uk$/.test(url.host)) return fetch(request);
 
   if (path === '/api/forms') return handleForms(request, env);
+  if (path === '/api/checkout') return handleCheckout(request, env);
+  if (path === '/api/stripe-webhook') return handleStripeWebhook(request, env);
   if (url.pathname.startsWith('/crm-media/')) return crmMedia(request, url);
   if (path.startsWith('/_static/')) return env.ASSETS.fetch(request);
 

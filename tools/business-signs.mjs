@@ -13,7 +13,7 @@
 // "included", "goodToKnow", "uses" ("Title: detail"), "install" (paragraphs), "specs" ([label, value]) and "faqs" ([{q, a}]). **bold** and [text](/link/) work. The rewrite workbook import fills these.
 // Options: each becomes a dropdown (or a size box for "range"); add "add": {"Choice": 5} for add-on prices (ex VAT).
 // Prices: add "price": 41 (ex VAT) to a product to show "From £41 + VAT" and add Product/Offer structured data.
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, existsSync, writeFileSync } from 'node:fs';
 import { applyCrm } from './business-signs-crm.mjs';
 import { join } from 'node:path';
 import { createHash } from 'node:crypto';
@@ -180,6 +180,7 @@ ${panel([...seoRows(c), ['Products', String(list.length)], ['FAQs', c.faqs?.leng
     pin: '<path d="M12 21s-7-6.3-7-11.5A7 7 0 0 1 19 9.5C19 14.7 12 21 12 21z" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="9.5" r="2.5" fill="currentColor"/>',
     ruler: '<path d="M3 16L16 3l5 5L8 21z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M7 12l2 2M10 9l2 2M13 6l2 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
     phone: '<path d="M5 3h4l2 5-2.5 1.5a11 11 0 0 0 6 6L16 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 5a2 2 0 0 1 2-2" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>',
+    box: '<path d="M3 7.5 12 3l9 4.5v9L12 21l-9-4.5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M3 7.5 12 12l9-4.5M12 12v9" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>',
     tag: '<path d="M3 12V4h8l10 10-8 8z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="7.5" cy="8.5" r="1.6" fill="currentColor"/>',
   };
   const icon = (k, cls = 'bdp-ic') => `<svg class="${cls}" viewBox="0 0 24 24" aria-hidden="true">${ICON[k]}</svg>`;
@@ -189,7 +190,8 @@ ${panel([...seoRows(c), ['Products', String(list.length)], ['FAQs', c.faqs?.leng
     ['Approve your proof', 'We check your artwork and send a digital proof. Nothing is made until you are happy with it.'],
     ['Production & delivery', 'We make your sign to order, then deliver it or fit it for you across Norfolk and Suffolk.'],
   ];
-  const TRUST = [['proof', 'Proof before production'], ['make', 'Made to order'], ['pin', 'Fitted across Norfolk & Suffolk']];
+  const TRUST = [['proof', 'Proof before production', 'Approve your design first'], ['make', 'Made to order', 'Built in our Norwich workshop'],
+    ['pin', 'Fitted across Norfolk & Suffolk', 'Our own install team'], ['box', 'Supply only options', 'Delivered ready to fit']];
   const reveal = 'bdp-reveal';
   // "Where to use it" photos: <product slug>-use-<use title slug>.webp in site/public/img/business-signs/.
   const slugify = (t) => String(t).toLowerCase().replace(/&/g, 'and').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40).replace(/-$/, '');
@@ -327,7 +329,7 @@ ${steps.map(([t, h], i) => `<fieldset class="bdp-stepbox"><legend><span class="b
     const body = `<section class="bds-product bdp-hero"><div class="bds-wrap">${crumbs(trail)}<div class="bds-product-grid">
 <div class="bdp-gallery-col">${gallery(imgs)}${previewBanner(p, c)}</div>
 <div class="bds-buy"><span class="bds-eyebrow"><a href="${c.url}">${esc(c.name)}</a></span><h1>${esc(p.h1)}</h1><p class="bds-lead">${esc(p.lead)}</p>
-<ul class="bdp-trust">${TRUST.map(([k, t]) => `<li>${icon(k)}${esc(t)}</li>`).join('')}</ul>
+<ul class="bdp-trust" aria-label="Why order from us">${TRUST.map(([k, t, d]) => `<li><span class="bdp-trust-ic">${icon(k)}</span><span><b>${esc(t)}</b><small>${esc(d)}</small></span></li>`).join('')}</ul>
 <p class="bds-price bdp-price">${priceText(p)}${p.price ? ` <span class="bdp-inc">(${money(Math.round(p.price * 120) / 100)} inc VAT)</span>` : ''}</p>
 ${config}
 ${p.facts?.length ? `<div class="bdp-features"><h2 class="bdp-h3">Key features</h2><ul>${p.facts.map((f) => `<li>${icon('check')}<span>${inline(f)}</span></li>`).join('')}</ul></div>` : staging ? '<p class="bds-todo">Key features to be written</p>' : ''}</div>
@@ -348,5 +350,13 @@ ${panel([...seoRows(p), ['Category', `<a href="${c.url}">${esc(c.name)}</a>`], [
     paths.push(page({ url: p.url, title: p.metaTitle, desc: p.metaDescription, body, ld: [crumbLd(trail), ...(p.price ? [product] : []), ...faqLd] }));
   }
 
+  // Basket catalogue for the worker (worker/sign-pricing.js): only what's needed to price an item on the server.
+  const catalog = {};
+  for (const p of prods) if (p.price || p.size) {
+    const img = p.images.map(srcOf).find(Boolean) || '';
+    catalog[p.url] = { name: p.h1, price: p.price || null, size: p.size || null, qtyBreaks: p.qtyBreaks || [], img,
+      options: p.options.map((o) => (o.range ? { label: o.label, range: o.range } : { label: o.label, choices: o.choices, ...(o.add ? { add: o.add } : {}) })) };
+  }
+  writeFileSync(join(root, 'worker/business-signs-catalog.json'), JSON.stringify(catalog) + '\n');
   return { paths, live: !staging, from, count: { categories: listed.length, products: prods.length } };
 }

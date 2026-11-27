@@ -3517,3 +3517,12 @@ details[open] .bdp-plus:after{transform:rotate(0)}
 .bdp-spec td a{color:#713FFF}
 .bdp-spec tr:hover th{background:#6331f0}
 .bdp-spec tr:hover td{background:#fff}
+
+/* Trust widget: four tiles under the product title */
+.bdp-trust{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:0 0 22px;padding:0;list-style:none}
+.bdp-trust li{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:14px;background:#fff;border:1px solid var(--line);box-shadow:0 4px 14px rgba(40,20,90,.05);font-size:inherit;font-weight:400}
+.bdp-trust-ic{flex:none;width:40px;height:40px;border-radius:11px;background:#713FFF;color:#fff;display:grid;place-items:center}
+.bdp-trust .bdp-trust-ic .bdp-ic{width:21px;height:21px;color:#fff}
+.bdp-trust b{display:block;font-size:14px;line-height:1.3;color:var(--ink)}
+.bdp-trust small{display:block;margin-top:2px;font-size:12.5px;line-height:1.35;color:var(--mute)}
+@media (max-width:420px){.bdp-trust{grid-template-columns:1fr}}
