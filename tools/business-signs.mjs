@@ -127,46 +127,59 @@ ${panel([...seoRows(c), ['Products', String(list.length)], ['FAQs', c.faqs?.leng
         ...(c.faqs?.length ? [{ '@type': 'FAQPage', mainEntity: c.faqs.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })) }] : [])] }));
   }
 
-  // ----- product content sections (designed around the content) -----
+  // ----- product pages: designed around the content -----
+  const ICON = {
+    check: '<path d="M5 12.5l4.2 4.2L19 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>',
+    proof: '<path d="M7 3h7l5 5v13H7z M14 3v5h5" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M10 14l2 2 4-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>',
+    make: '<path d="M4 20h16M6 20V9l6-5 6 5v11" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M10 20v-6h4v6" fill="none" stroke="currentColor" stroke-width="2"/>',
+    van: '<path d="M3 6h11v10H3zM14 10h4l3 3v3h-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="7" cy="17.5" r="1.8" fill="currentColor"/><circle cx="17" cy="17.5" r="1.8" fill="currentColor"/>',
+    pin: '<path d="M12 21s-7-6.3-7-11.5A7 7 0 0 1 19 9.5C19 14.7 12 21 12 21z" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="9.5" r="2.5" fill="currentColor"/>',
+    ruler: '<path d="M3 16L16 3l5 5L8 21z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M7 12l2 2M10 9l2 2M13 6l2 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
+    phone: '<path d="M5 3h4l2 5-2.5 1.5a11 11 0 0 0 6 6L16 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 5a2 2 0 0 1 2-2" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>',
+    tag: '<path d="M3 12V4h8l10 10-8 8z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="7.5" cy="8.5" r="1.6" fill="currentColor"/>',
+  };
+  const icon = (k, cls = 'bdp-ic') => `<svg class="${cls}" viewBox="0 0 24 24" aria-hidden="true">${ICON[k]}</svg>`;
   const STEPS = [
-    ['Choose your options', 'Pick the size, material and finish above, then press "Enquire with these options". Not sure? Call us and we will recommend the right spec.'],
+    ['Choose your options', 'Pick the size, material and finish, then press "Enquire with these options". Not sure? Call us and we will recommend the right spec.'],
     ['Send your artwork', 'Send your logo or wording. No print-ready file? Our design studio can set it up or create a design for you.'],
     ['Approve your proof', 'We check your artwork and send a digital proof. Nothing is made until you are happy with it.'],
     ['Production & delivery', 'We make your sign to order, then deliver it or fit it for you across Norfolk and Suffolk.'],
   ];
-  const sectionNav = (items) => `<nav class="bds-subnav" aria-label="On this page"><div class="bds-wrap">${items.map(([id, label]) => `<a href="#${id}">${esc(label)}</a>`).join('')}</div></nav>`;
+  const TRUST = [['proof', 'Proof before production'], ['make', 'Made to order'], ['pin', 'Fitted across Norfolk & Suffolk']];
+  const reveal = 'bdp-reveal';
   const productSections = (p, c) => {
-    const nav = [];
-    const out = [];
+    const nav = [], out = [];
     const has = (k) => Array.isArray(p[k]) && p[k].length;
+    const head = (kicker, title, sub) => `<div class="bdp-head ${reveal}"><span class="bdp-kicker">${esc(kicker)}</span><h2>${title}</h2>${sub ? `<p class="bds-sub">${sub}</p>` : ''}</div>`;
     if (has('description') || has('included') || has('goodToKnow')) {
       nav.push(['overview', 'Overview']);
-      out.push(`<section class="bds-section bds-section--alt" id="overview"><div class="bds-wrap bds-about">${has('description') ? `<div class="bds-copy"><h2>About the ${esc(short(p.h1).toLowerCase())}</h2>${paras(p.description)}</div>` : ''}${has('included') || has('goodToKnow') ? `<div class="bds-side">${has('included') ? `<h3>What's included</h3><ul>${p.included.map((x) => `<li>${inline(x)}</li>`).join('')}</ul>` : ''}${has('goodToKnow') ? `<h3>Good to know</h3><ul>${p.goodToKnow.map((x) => `<li>${inline(x)}</li>`).join('')}</ul>` : ''}</div>` : ''}</div></section>`);
-    } else if (staging) out.push('<section class="bds-section bds-section--alt"><div class="bds-wrap bds-copy"><h2>About this sign</h2><p class="bds-todo">Description to be written.</p></div></section>');
+      out.push(`<section class="bdp-sec" id="overview"><div class="bds-wrap bdp-overview"><div class="bds-copy ${reveal}"><span class="bdp-kicker">Overview</span><h2>About the ${esc(short(p.h1).toLowerCase())}</h2>${has('description') ? paras(p.description) : ''}</div>${has('included') || has('goodToKnow') ? `<aside class="bdp-cards">${has('included') ? `<div class="bdp-card ${reveal}"><h3>${icon('check')}What's included</h3><ul>${p.included.map((x) => `<li>${inline(x)}</li>`).join('')}</ul></div>` : ''}${has('goodToKnow') ? `<div class="bdp-card bdp-card--soft ${reveal}"><h3>${icon('tag')}Good to know</h3><ul>${p.goodToKnow.map((x) => `<li>${inline(x)}</li>`).join('')}</ul></div>` : ''}</aside>` : ''}</div></section>`);
+    } else if (staging) out.push('<section class="bdp-sec"><div class="bds-wrap bds-copy"><h2>About this sign</h2><p class="bds-todo">Description to be written.</p></div></section>');
     if (has('specs')) {
       nav.push(['specifications', 'Specifications']);
-      out.push(`<section class="bds-section" id="specifications"><div class="bds-wrap bds-two"><div><h2>Specifications</h2><p class="bds-sub">The technical details of the ${esc(short(p.h1).toLowerCase())}. Need something different? Most specifications can be changed to order.</p></div><table class="bds-spec"><tbody>${p.specs.map(([k, v]) => `<tr><th scope="row">${esc(k)}</th><td>${inline(v)}</td></tr>`).join('')}</tbody></table></div></section>`);
+      out.push(`<section class="bdp-sec bdp-sec--alt" id="specifications"><div class="bds-wrap bdp-split">${head('Specifications', 'The technical details', `Everything you need to know about the ${esc(short(p.h1).toLowerCase())}. Most specifications can be changed to order.`)}<table class="bdp-spec ${reveal}"><tbody>${p.specs.map(([k, v]) => `<tr><th scope="row">${esc(k)}</th><td>${inline(v)}</td></tr>`).join('')}</tbody></table></div></section>`);
     }
     if (has('uses')) {
       nav.push(['uses', 'Where to use it']);
-      out.push(`<section class="bds-section bds-section--alt" id="uses"><div class="bds-wrap"><h2>Where to use it</h2><ul class="bds-uses">${p.uses.map((u) => { const [t, ...d] = u.split(': '); return `<li><b>${inline(t)}</b>${d.length ? `<span>${inline(d.join(': '))}</span>` : ''}</li>`; }).join('')}</ul></div></section>`);
+      out.push(`<section class="bdp-sec" id="uses"><div class="bds-wrap">${head('Ideas', 'Where to use it')}<ul class="bdp-uses">${p.uses.map((u, i) => { const [t, ...d] = u.split(': '); return `<li class="${reveal}" style="--d:${i % 6}"><span class="bdp-num">${String(i + 1).padStart(2, '0')}</span><b>${inline(t)}</b>${d.length ? `<span>${inline(d.join(': '))}</span>` : ''}</li>`; }).join('')}</ul></div></section>`);
     }
     nav.push(['ordering', has('install') ? 'Installation' : 'How ordering works']);
-    out.push(`<section class="bds-section" id="ordering"><div class="bds-wrap bds-two">${has('install') ? `<div class="bds-copy"><h2>Installation & fixing</h2>${paras(p.install)}</div>` : ''}<div><h2${has('install') ? ' class="bds-h3"' : ''}>How ordering works</h2><ol class="bds-steps">${STEPS.map(([t, d]) => `<li><b>${esc(t)}</b><span>${esc(d)}</span></li>`).join('')}</ol></div></div></section>`);
+    out.push(`<section class="bdp-sec bdp-sec--ink" id="ordering"><div class="bds-wrap">${head('From order to installed', 'How ordering works')}<ol class="bdp-timeline">${STEPS.map(([t, d], i) => `<li class="${reveal}" style="--d:${i}"><span class="bdp-dot">${i + 1}</span><b>${esc(t)}</b><span>${esc(d)}</span></li>`).join('')}</ol>${has('install') ? `<div class="bdp-install ${reveal}"><h3>${icon('ruler')}Installation & fixing</h3>${paras(p.install)}</div>` : ''}</div></section>`);
     const guide = data.guides?.[c.guide];
     if (guide) {
       nav.push(['guide', guide.title.replace(/ guide$/i, '')]);
-      out.push(`<section class="bds-section bds-section--alt" id="guide"><div class="bds-wrap"><h2>${esc(guide.title)}</h2><ol class="bds-steps bds-steps--grid">${guide.steps.map((st) => `<li><b>${esc(st.t)}</b><span>${inline(st.d)}</span></li>`).join('')}</ol></div></section>`);
+      out.push(`<section class="bdp-sec" id="guide"><div class="bds-wrap">${head('Step by step', esc(guide.title))}<ol class="bdp-guide">${guide.steps.map((st, i) => `<li class="${reveal}" style="--d:${i % 6}"><span class="bdp-num">${String(i + 1).padStart(2, '0')}</span><b>${esc(st.t)}</b><span>${inline(st.d)}</span></li>`).join('')}</ol></div></section>`);
     }
     if (data.artworkGuide) {
       nav.push(['artwork', 'Artwork']);
-      out.push(`<section class="bds-section" id="artwork"><div class="bds-wrap bds-two"><div><h2>${esc(data.artworkGuide.title)}</h2><p class="bds-sub">Getting your artwork right first time means a sharper sign and a faster turnaround.</p></div><ul class="bds-checklist">${data.artworkGuide.items.map((x) => `<li>${inline(x)}</li>`).join('')}</ul></div></section>`);
+      out.push(`<section class="bdp-sec bdp-sec--alt" id="artwork"><div class="bds-wrap bdp-split">${head('Artwork', esc(data.artworkGuide.title), 'Getting your artwork right first time means a sharper sign and a faster turnaround. No file? Our studio can help.')}<ul class="bdp-checklist ${reveal}">${data.artworkGuide.items.map((x) => `<li>${icon('check')}<span>${inline(x)}</span></li>`).join('')}</ul></div></section>`);
     }
     if (has('faqs')) {
       nav.push(['faqs', 'FAQs']);
-      out.push(`<section class="bds-section bds-section--alt" id="faqs"><div class="bds-wrap bds-copy"><h2>${esc(short(p.h1))} FAQs</h2><div class="bds-faqs">${p.faqs.map((f) => `<details><summary>${esc(f.q)}</summary><p>${inline(f.a)}</p></details>`).join('')}</div></div></section>`);
+      out.push(`<section class="bdp-sec" id="faqs"><div class="bds-wrap bdp-split">${head('Questions', `${esc(short(p.h1))} FAQs`, `Can't see your question? Call <a href="tel:${PHONE.replace(/\s/g, '')}">${PHONE}</a> or send an enquiry.`)}<div class="bdp-faqs ${reveal}">${p.faqs.map((f) => `<details><summary>${esc(f.q)}<span class="bdp-plus" aria-hidden="true"></span></summary><div class="bdp-ans"><p>${inline(f.a)}</p></div></details>`).join('')}</div></div></section>`);
     }
-    return (nav.length > 1 ? sectionNav(nav) : '') + out.join('\n');
+    const bar = nav.length > 1 ? `<nav class="bdp-nav" aria-label="On this page" data-bdp-nav><div class="bds-wrap bdp-nav-in"><div class="bdp-nav-links">${nav.map(([id, label]) => `<a href="#${id}">${esc(label)}</a>`).join('')}</div><div class="bdp-nav-buy"><span class="bdp-nav-name">${esc(short(p.h1))}</span>${p.price ? `<span class="bdp-nav-price" data-live-price>From ${money(p.price)}</span>` : ''}<a class="bds-btn bds-btn--sm" href="#configure">Configure</a></div></div><span class="bdp-progress" aria-hidden="true"></span></nav>` : '';
+    return bar + out.join('\n');
   };
 
   // ----- products -----
@@ -174,27 +187,39 @@ ${panel([...seoRows(c), ['Products', String(list.length)], ['FAQs', c.faqs?.leng
     const c = catOf.get(p.cat);
     const trail = [HOME, HUB, [c.name, c.url], [short(p.h1), p.url]];
     const related = (byCat.get(p.cat) || []).filter((x) => x !== p).slice(0, 4);
-    const field = (o, i) => o.range
-      ? `<label class="bds-field"><span>${esc(o.label)}</span><input type="number" inputmode="numeric" name="o${i}" min="${o.range[0]}"${o.range[1] ? ` max="${o.range[1]}"` : ''} step="1" data-label="${esc(o.label.replace(/ \(mm\)$/, ''))}" placeholder="e.g. ${Math.round((o.range[0] + (o.range[1] ? Math.min(o.range[1], o.range[0] * 6) : o.range[0] * 6)) / 2 / 10) * 10}"><small class="bds-hint">${o.range[1] ? `${o.range[0]}mm to ${o.range[1]}mm` : `From ${o.range[0]}mm`}</small></label>`
-      : `<label class="bds-field"><span>${esc(o.label)}</span><select name="o${i}" data-label="${esc(o.label)}"${o.add ? ` data-add="${esc(JSON.stringify(o.add))}"` : ''}>${o.choices.map((c) => `<option value="${esc(c)}">${esc(c)}${o.add && o.add[c] ? ` (+${money(o.add[c])})` : ''}</option>`).join('')}</select></label>`;
-    const config = `<form class="bds-config" data-name="${esc(p.h1)}"${p.price ? ` data-price="${p.price}"` : ''} novalidate aria-label="Choose your options">
-${p.options.length ? `<div class="bds-fields">${p.options.map(field).join('')}</div>` : ''}
-<div class="bds-fields bds-fields--qty"><label class="bds-field"><span>Quantity</span><input type="number" inputmode="numeric" name="qty" min="1" value="1" data-label="Quantity"></label></div>
-<p class="bds-total" hidden>Total: <b></b> <small>+ VAT</small></p>
-<p class="bds-actions"><a class="bds-btn" href="#enquire" data-enquire="${esc(p.h1)}">Enquire with these options</a><a class="bds-btn bds-btn--ghost" href="tel:${PHONE.replace(/\s/g, '')}">Call ${PHONE}</a></p>
+    const sizeOpts = p.options.filter((o) => o.range), choiceOpts = p.options.filter((o) => !o.range);
+    const idx = (o) => p.options.indexOf(o);
+    const field = (o) => {
+      const i = idx(o);
+      return o.range
+        ? `<label class="bds-field"><span>${esc(o.label)}</span><input type="number" inputmode="numeric" name="o${i}" min="${o.range[0]}"${o.range[1] ? ` max="${o.range[1]}"` : ''} step="1" data-label="${esc(o.label.replace(/ \(mm\)$/, ''))}" data-dim="${/height/i.test(o.label) ? 'h' : /width/i.test(o.label) ? 'w' : ''}" placeholder="e.g. ${Math.round((o.range[0] + (o.range[1] ? Math.min(o.range[1], o.range[0] * 6) : o.range[0] * 6)) / 2 / 10) * 10}"><small class="bds-hint">${o.range[1] ? `${o.range[0]}mm to ${o.range[1]}mm` : `From ${o.range[0]}mm`}</small></label>`
+        : `<label class="bds-field"><span>${esc(o.label)}</span><select name="o${i}" data-label="${esc(o.label)}"${o.add ? ` data-add="${esc(JSON.stringify(o.add))}"` : ''}>${o.choices.map((ch) => `<option value="${esc(ch)}">${esc(ch)}${o.add && o.add[ch] ? ` (+${money(o.add[ch])})` : ''}</option>`).join('')}</select></label>`;
+    };
+    const steps = [];
+    if (sizeOpts.length) steps.push(['Size', `<div class="bds-fields">${sizeOpts.map(field).join('')}</div>`]);
+    if (choiceOpts.length) steps.push([sizeOpts.length ? 'Material & finish' : 'Options', `<div class="bds-fields">${choiceOpts.map(field).join('')}</div>`]);
+    steps.push(['Quantity', `<div class="bdp-qty"><button type="button" class="bdp-step" data-qty="-1" aria-label="One fewer">−</button><input type="number" inputmode="numeric" name="qty" min="1" value="1" data-label="Quantity" aria-label="Quantity"><button type="button" class="bdp-step" data-qty="1" aria-label="One more">+</button>${p.qtyBreaks?.length ? `<span class="bdp-save">${icon('tag')}Buy ${p.qtyBreaks[0][0]}+ and save ${Math.round(p.qtyBreaks[0][1])}%, up to ${Math.round(p.qtyBreaks[p.qtyBreaks.length - 1][1])}%</span>` : ''}</div>`]);
+    const config = `<form class="bds-config bdp-config" id="configure" data-name="${esc(p.h1)}"${p.price ? ` data-price="${p.price}"` : ''}${p.size ? ` data-size="${esc(JSON.stringify(p.size))}"` : ''}${p.qtyBreaks?.length ? ` data-qty-breaks="${esc(JSON.stringify(p.qtyBreaks))}"` : ''} novalidate aria-label="Choose your options">
+${steps.map(([t, h], i) => `<fieldset class="bdp-stepbox"><legend><span class="bdp-stepn">${i + 1}</span>${esc(t)}</legend>${h}</fieldset>`).join('')}
+<div class="bdp-summary"${p.price ? '' : ' hidden'}><div class="bdp-sum-main"><span class="bdp-sum-label">Your price</span><b class="bdp-total" data-total>${p.price ? money(p.price) : ''}</b><small>+ VAT <span data-inc></span></small></div><div class="bdp-sum-side"><span data-each></span><span class="bdp-sum-save" data-save hidden></span><span class="bdp-sum-note" data-note>${p.size ? 'Enter your size for an exact price' : ''}</span></div></div>
+<p class="bds-actions"><a class="bds-btn bds-btn--lg" href="#enquire" data-enquire="${esc(p.h1)}">Enquire with these options ${ARROW}</a><a class="bdp-call" href="tel:${PHONE.replace(/\s/g, '')}">${icon('phone')}Call ${PHONE}</a></p>
 </form>`;
     const imgs = p.images;
-    const body = `<section class="bds-product"><div class="bds-wrap">${crumbs(trail)}<div class="bds-product-grid">
-${gallery(imgs)}
-<div class="bds-buy"><span class="bds-eyebrow"><a href="${c.url}">${esc(c.name)}</a></span><h1>${esc(p.h1)}</h1><p class="bds-lead">${esc(p.lead)}</p><p class="bds-price">${priceText(p)}</p>
+    const body = `<section class="bds-product bdp-hero"><div class="bds-wrap">${crumbs(trail)}<div class="bds-product-grid">
+<div class="bdp-gallery-col">${gallery(imgs)}</div>
+<div class="bds-buy"><span class="bds-eyebrow"><a href="${c.url}">${esc(c.name)}</a></span><h1>${esc(p.h1)}</h1><p class="bds-lead">${esc(p.lead)}</p>
+<ul class="bdp-trust">${TRUST.map(([k, t]) => `<li>${icon(k)}${esc(t)}</li>`).join('')}</ul>
+<p class="bds-price bdp-price">${priceText(p)}${p.price ? ` <span class="bdp-inc">(${money(Math.round(p.price * 120) / 100)} inc VAT)</span>` : ''}</p>
 ${config}
-${p.facts?.length ? `<ul class="bds-points">${p.facts.map((f) => `<li>${inline(f)}</li>`).join('')}</ul>` : staging ? '<p class="bds-todo">Key features to be written</p>' : ''}</div>
+${p.facts?.length ? `<div class="bdp-features"><h2 class="bdp-h3">Key features</h2><ul>${p.facts.map((f) => `<li>${icon('check')}<span>${inline(f)}</span></li>`).join('')}</ul></div>` : staging ? '<p class="bds-todo">Key features to be written</p>' : ''}</div>
 </div></div></section>
 ${productSections(p, c)}
-${related.length ? `<section class="bds-section"><div class="bds-wrap"><h2>More ${esc(c.name.toLowerCase())}</h2><div class="bds-grid">${related.map(card).join('')}</div><p><a class="bds-textlink" href="${c.url}">All ${esc(c.name.toLowerCase())} ${ARROW}</a></p></div></section>` : ''}
+${related.length ? `<section class="bdp-sec bdp-sec--alt"><div class="bds-wrap"><div class="bdp-head ${reveal}"><span class="bdp-kicker">You might also like</span><h2>More ${esc(c.name.toLowerCase())}</h2></div><div class="bds-grid">${related.map(card).join('')}</div><p><a class="bds-textlink" href="${c.url}">All ${esc(c.name.toLowerCase())} ${ARROW}</a></p></div></section>` : ''}
 ${panel([...seoRows(p), ['Category', `<a href="${c.url}">${esc(c.name)}</a>`], ['Folded-in variants', p.variants.length ? esc(p.variants.join(' · ')) : 'none'],
-    ['Option prices', p.options.some((o) => o.add) ? 'set' : '<span class="bds-todo">not set (in the CRM, add " | 5" after a choice for +£5)</span>'], ['Price', p.price ? money(p.price) + ' ex VAT' : '<span class="bds-todo">not set (add "Price from" in the CRM)</span>']],
-  `<table class="bds-imgplan"><thead><tr><th>#</th><th>File (site/public/img/business-signs/)</th><th>Alt text</th><th>Shot</th><th>Status</th></tr></thead><tbody>${imgs.map((i, n) => `<tr><td>${n + 1}</td><td><code>${esc(i.file)}</code></td><td>${esc(i.alt)} <span class="bds-len${i.alt.length > 125 ? ' bad' : ''}">${i.alt.length}</span></td><td>${esc(i.shot)}</td><td>${photo(i.file) ? 'uploaded' : '<span class="bds-todo">to shoot</span>'}</td></tr>`).join('')}</tbody></table>`)}${band}`;
+    ['Option prices', p.options.some((o) => o.add) ? 'set' : '<span class="bds-todo">not set (in the CRM, add " | 5" after a choice for +£5)</span>'], ['Price', p.price ? money(p.price) + ' ex VAT' : '<span class="bds-todo">not set (add "Price from" in the CRM)</span>'],
+    ['Size pricing', p.size ? esc(Object.entries(p.size.rows).map(([k, v]) => `${k === '*' ? 'All' : k}: £${v[0]} + £${v[1]}/m² + £${v[2]}/m edge, min £${v[3]}`).join(' · ')) : 'none'],
+    ['Quantity discounts', p.qtyBreaks?.length ? esc(p.qtyBreaks.map(([n, pc]) => `${n}+: ${pc}%`).join(' · ')) : 'none']],
+  `<table class="bds-imgplan"><thead><tr><th>#</th><th>File (site/public/img/business-signs/)</th><th>Alt text</th><th>Shot</th><th>Status</th></tr></thead><tbody>${imgs.map((i, n) => `<tr><td>${n + 1}</td><td><code>${esc(i.file)}</code></td><td>${esc(i.alt)} <span class="bds-len${i.alt.length > 125 ? ' bad' : ''}">${i.alt.length}</span></td><td>${esc(i.shot)}</td><td>${(i.src || photo(i.file)) ? 'uploaded' : '<span class="bds-todo">to shoot</span>'}</td></tr>`).join('')}</tbody></table>`)}${band}`;
     const firstPhoto = imgs.map((i) => photo(i.file)).filter(Boolean);
     const product = { '@type': 'Product', name: p.h1, description: p.metaDescription, url: origin + p.url, brand: { '@type': 'Brand', name: 'Broadland Digital' },
       ...(firstPhoto.length ? { image: firstPhoto.map((s) => origin + s) } : {}),

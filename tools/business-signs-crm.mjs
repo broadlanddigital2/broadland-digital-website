@@ -79,6 +79,18 @@ export function applyCrm(data, root) {
     if (Array.isArray(d.specs)) o.specs = d.specs.filter((s) => str(s?.label)).map((s) => [str(s.label), str(s.value)]);
     if (Array.isArray(d.faqs)) o.faqs = d.faqs.filter((f) => str(f?.q) && str(f?.a)).map((f) => ({ q: str(f.q), a: str(f.a) }));
     if (Array.isArray(d.options)) o.options = options(d.options);
+    // Size pricing: one row per choice of the "priced by" dropdown (or one row for all): fixed charge + £ per m² +
+    // £ per metre of edge (perimeter), never below the minimum. Quantity discounts: % off each from that quantity.
+    const num = (v) => { const n = Number(str(v).replace(/[£,%\s]/g, '')); return Number.isFinite(n) ? n : 0; };
+    if (Array.isArray(d.sizePricing)) {
+      const rows = {};
+      for (const r of d.sizePricing) if (str(r?.fixed) || str(r?.perM2)) rows[str(r.option) || '*'] = [num(r.fixed), num(r.perM2), num(r.perMetreEdge), num(r.minimum)];
+      if (Object.keys(rows).length) o.size = { by: str(d.sizeBy) || null, rows }; else delete o.size;
+    }
+    if (Array.isArray(d.qtyDiscounts)) {
+      const q = d.qtyDiscounts.map((r) => [num(r.qty), num(r.percent)]).filter(([n, pc]) => n > 1 && pc > 0).sort((a, b) => a[0] - b[0]);
+      if (q.length) o.qtyBreaks = q; else delete o.qtyBreaks;
+    }
     return o;
   };
   const known = new Set(data.products.map((p) => p.url));
