@@ -1277,15 +1277,30 @@ function shopPage(h) {
     ['/category/liquid-wrapping/', 'Liquid wrapping packages', 'Budget, Standard, Premium and Ultra liquid wrap colour changes, priced by vehicle size.', img('/wp-content/uploads/2024/04/category-fimage-liquid-wrap.png')],
     ['/category/liquid-wrapping/shop/', 'Full Dip spray wrap', 'Spray wrap colours, primers and glossifier for your own projects.', prodImg(/full-dip-cherry-red/)],
   ];
+  const slide = (n, eyebrow, title, lead, href, btn, src, alt, first = false) => `<div class="bdsh-slide${first ? ' is-on' : ''}" role="group" aria-roledescription="slide" aria-label="${esc(eyebrow)}"><div class="bdhub-hero-text">
+<span class="bdhub-eyebrow">${esc(eyebrow)}</span>${first ? `<h1>${esc(title)}</h1>` : `<p class="bdsh-slide-h">${esc(title)}</p>`}
+<p class="bdhub-lead">${esc(lead)}</p>
+<div class="bdhub-cta"><a class="bdhub-btn bdhub-btn--solid" href="${href}">${esc(btn)}</a><a class="bdhub-btn bdhub-btn--ghost" href="tel:${tel}">Call ${esc(menu.phone)}</a></div></div>
+${src ? `<figure class="bdhub-hero-img"><img src="${esc(src)}" alt="${esc(alt)}" width="1200" height="900"${first ? ' fetchpriority="high"' : ' loading="lazy" decoding="async"'}></figure>` : ''}</div>`;
   const section = (id, title, desc, cats, more) => `<section class="bdshop-sec" id="${id}"><div class="wrap"><div class="bdhub-head"><h2>${esc(title)}</h2>${more ? `<a class="bdhub-textlink" href="${more[0]}">${esc(more[1])} →</a>` : ''}</div>${desc ? `<p class="bdshop-sec-desc">${esc(desc)}</p>` : ''}<!--bdshop-grid:${cats}--></div></section>`;
   const body = `<div class="bdhub signage bdshop-page">
-<section class="bdhub-hero"><div class="wrap"><div class="bdhub-hero-text"><nav class="bdc" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><span aria-current="page">Shop</span></li></ol></nav>
-<span class="bdhub-eyebrow">Online shop</span>
-<h1>Van graphics and spray wrap, online.</h1>
-<p class="bdhub-lead">Order van graphics packages, liquid wrapping and Full Dip spray wrap online from our Norwich workshop, or ask us for a quote on anything made to measure.</p>
-<div class="bdhub-cta"><a class="bdhub-btn bdhub-btn--solid" href="#van-graphics">Shop van graphics</a><a class="bdhub-btn bdhub-btn--ghost" href="tel:${tel}">Call ${esc(menu.phone)}</a></div></div>
-<figure class="bdhub-hero-img"><img src="${esc(prodImg(/basic-small-van-graphics$/))}" alt="Van graphics package from the Broadland Digital shop" width="1200" height="900" fetchpriority="high"></figure>
-</div></section>
+<section class="bdhub-hero bdsh-hero" data-rotator aria-roledescription="carousel" aria-label="Shop sections"><div class="wrap bdsh-hero-top"><nav class="bdc" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><span aria-current="page">Shop</span></li></ol></nav></div>
+<div class="bdsh-slides">
+${slide(0, 'Online shop', 'Van graphics and spray wrap, online.', 'Order van graphics packages, liquid wrapping and Full Dip spray wrap online from our Norwich workshop, or ask us for a quote on anything made to measure.', '#van-graphics', 'Shop van graphics', prodImg(/basic-small-van-graphics$/), 'Van graphics package from the Broadland Digital shop', true)}
+<!--bs-shop-slide-->
+${slide(2, 'Liquid wrapping', 'A new colour, sprayed in our workshop.', 'Budget, Standard, Premium and Ultra liquid wrap packages, priced by vehicle size and fully removable.', '#liquid-wrapping', 'Shop liquid wrapping', img('/wp-content/uploads/2024/04/category-fimage-liquid-wrap.png'), 'A car being liquid wrapped in our spray booth')}
+${slide(3, 'Full Dip spray wrap', 'Spray wrap for your own projects.', 'Full Dip colours, primers and glossifier for wheels, trims and full colour changes, sent to your door.', '#spray-wrap', 'Shop spray wrap', prodImg(/full-dip-cherry-red/), 'Full Dip spray wrap in cherry red')}
+</div>
+<div class="wrap bdsh-rot-ctrl"><button type="button" class="bdsh-rot-btn" data-rot="-1" aria-label="Previous banner"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12H5m6-6-6 6 6 6"/></svg></button><div class="bdsh-dots" role="tablist" aria-label="Choose a banner"></div><button type="button" class="bdsh-rot-btn" data-rot="1" aria-label="Next banner"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></button><button type="button" class="bdsh-rot-btn bdsh-rot-pause" data-rot-pause aria-label="Pause the banners"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg></button></div>
+<script>(function(){var r=document.querySelector('[data-rotator]');if(!r)return;var s=[].slice.call(r.querySelectorAll('.bdsh-slide')),d=r.querySelector('.bdsh-dots'),i=0,t=null,paused=matchMedia('(prefers-reduced-motion: reduce)').matches,pb=r.querySelector('[data-rot-pause]');if(s.length<2){r.querySelector('.bdsh-rot-ctrl').hidden=true;return}
+s.forEach(function(el,n){var b=document.createElement('button');b.type='button';b.className='bdsh-dot';b.setAttribute('role','tab');b.setAttribute('aria-label',el.getAttribute('aria-label'));b.onclick=function(){go(n);restart()};d.appendChild(b)});
+function go(n){i=(n+s.length)%s.length;s.forEach(function(el,k){var on=k===i;el.classList.toggle('is-on',on);el.setAttribute('aria-hidden',on?'false':'true');el.querySelectorAll('a').forEach(function(a){a.tabIndex=on?0:-1})});[].forEach.call(d.children,function(b,k){b.setAttribute('aria-selected',k===i?'true':'false')})}
+function restart(){clearInterval(t);if(!paused)t=setInterval(function(){go(i+1)},6000)}
+r.querySelectorAll('[data-rot]').forEach(function(b){b.onclick=function(){go(i+Number(b.getAttribute('data-rot')));restart()}});
+pb.onclick=function(){paused=!paused;pb.setAttribute('aria-label',paused?'Play the banners':'Pause the banners');pb.classList.toggle('is-paused',paused);restart()};
+r.addEventListener('mouseenter',function(){clearInterval(t)});r.addEventListener('mouseleave',restart);r.addEventListener('focusin',function(){clearInterval(t)});r.addEventListener('focusout',restart);
+go(0);restart()})();</script>
+</section>
 <section class="bdhub-intro"><div class="wrap"><h2>How the shop works.</h2><div class="bdhub-text"><p>Each package has a fixed starting price for a typical vehicle of that size. Choose the package, add your details and we will confirm the layout, artwork and price for your vehicle before anything is made.</p><p>Fitted packages are applied at our Norwich workshop. Supply-only kits are for fitting yourself, and Full Dip spray wrap is for your own projects.</p></div></div></section>
 <section class="bdsh-cats-sec"><div class="wrap"><div class="bdhub-head"><h2>Shop by category.</h2><a class="bdhub-textlink" href="/get-a-quote/">Need something made to measure? Ask us →</a></div>
 <div class="bdsh-cats">${shopCategoryCards()}<!--bs-shop-card--></div></div></section>
@@ -1604,7 +1619,7 @@ writeFileSync(join(ROOT, 'worker/business-signs.json'), JSON.stringify({ live: B
 if (BS.shop && existsSync(join(OUT, 'shop/index.html'))) {
   const wrapBs = (h) => (BS.live ? h : `<!--bs-staging-->${h}<!--/bs-staging-->`);
   const f = join(OUT, 'shop/index.html');
-  writeFileSync(f, readFileSync(f, 'utf8').replace('<!--bs-shop-card-->', wrapBs(BS.shop.card)).replace('<!--bs-shop-section-->', wrapBs(BS.shop.section)));
+  writeFileSync(f, readFileSync(f, 'utf8').replace('<!--bs-shop-card-->', wrapBs(BS.shop.card)).replace('<!--bs-shop-section-->', wrapBs(BS.shop.section)).replace('<!--bs-shop-slide-->', wrapBs(BS.shop.slide)));
 }
 write('_crm-page/index.html', pruneAssets(sh));
 write('404.html', page404(sh));

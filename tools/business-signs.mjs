@@ -361,6 +361,11 @@ ${panel([...seoRows(p), ['Category', `<a href="${c.url}">${esc(c.name)}</a>`], [
   const ARR = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15m-6-6 6 6-6 6"/></svg>';
   const shopCard = `<a class="bdsh-cat bdsh-cat--signs" href="${hub.url}"><span class="bdsh-cat-img"><img src="${esc(catImg(listed[0]))}" alt="A business sign from the Broadland Digital shop" width="1600" height="1200" loading="lazy" decoding="async"></span>
 <span class="bdsh-cat-body"><span class="bdvg-tier">Business signs</span><span class="bdsh-cat-t">Business signs</span><span class="bdsh-cat-d">Acrylic, aluminium and foamex panels, 3D letters, pavement and parking signs, made to your size and added to your basket.</span><span class="bdsh-cat-meta">${listed.length} sign types · from ${money(allFrom)} + VAT</span><span class="bdsh-cat-go">Shop business signs <i aria-hidden="true">${ARR}</i></span></span></a>`;
+  const shopSlide = `<div class="bdsh-slide" role="group" aria-roledescription="slide" aria-label="Business signs"><div class="bdhub-hero-text">
+<span class="bdhub-eyebrow">Business signs</span><p class="bdsh-slide-h">Business signs, priced as you choose.</p>
+<p class="bdhub-lead">Acrylic, aluminium and foamex panels, 3D letters, pavement and parking signs. Pick your size and options, see the price and add it to your basket.</p>
+<div class="bdhub-cta"><a class="bdhub-btn bdhub-btn--solid" href="#business-signs">Shop business signs</a><a class="bdhub-btn bdhub-btn--ghost" href="${hub.url}">All ${listed.length} sign types</a></div></div>
+<figure class="bdhub-hero-img"><img src="${esc(catImg(listed[1]) || catImg(listed[0]))}" alt="A business sign from the Broadland Digital shop" width="1600" height="1200" loading="lazy" decoding="async"></figure></div>`;
   // Same card as the shop's van graphics packages (.bdvg-card): photo, name, popular products, price boxes.
   const shopSection = `<section class="bdvg-size bdsh-sec" id="business-signs"><div class="wrap"><div class="bdhub-head"><div><span class="bdvg-kicker">Business signs</span><h2>Business signs.</h2><p class="bdvg-like">Choose your size and options, see the price and add it to your basket. Prices are "from", plus VAT. We send a proof before anything is made.</p></div><a class="bdhub-textlink" href="${hub.url}">All ${listed.length} sign types →</a></div>
 <div class="bdvg-grid">${listed.slice(0, 9).map((c, i) => {
@@ -382,5 +387,5 @@ ${panel([...seoRows(p), ['Category', `<a href="${c.url}">${esc(c.name)}</a>`], [
       options: p.options.map((o) => (o.range ? { label: o.label, range: o.range } : { label: o.label, choices: o.choices, ...(o.add ? { add: o.add } : {}) })) };
   }
   writeFileSync(join(root, 'worker/business-signs-catalog.json'), JSON.stringify(catalog) + '\n');
-  return { paths, live: !staging, from, shop: { card: shopCard, section: shopSection }, count: { categories: listed.length, products: prods.length } };
+  return { paths, live: !staging, from, shop: { card: shopCard, section: shopSection, slide: shopSlide }, count: { categories: listed.length, products: prods.length } };
 }

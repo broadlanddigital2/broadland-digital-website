@@ -2697,6 +2697,28 @@ h1.bd-was4,h1.bd-was5,h1.bd-was6{font-weight:700}
 /* shop page: business signs "popular" pills stay on one line each */
 .bds-pop a{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
+/* Shop: rotating banner, one slide per shop section (tools/build.mjs shopPage) */
+.bdsh-hero{padding-bottom:40px}
+.bdsh-hero-top .bdc{margin-bottom:22px}
+.bdhub-hero .bdsh-hero-top{display:block}
+.bdsh-slides{display:grid;max-width:1366px;margin:0 auto;padding:0 100px}
+.bdsh-slide{grid-area:1/1;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:56px;align-items:center;opacity:0;visibility:hidden;transform:translateX(24px);transition:opacity .6s ease,transform .6s ease,visibility .6s}
+.bdsh-slide.is-on{opacity:1;visibility:visible;transform:none}
+.bdsh-slide-h{font-family:"Adelle",adelle,Georgia,serif;font-weight:800;font-size:clamp(40px,5vw,72px)!important;line-height:1.02!important;letter-spacing:-.02em;color:var(--on);margin:0 0 22px}
+.bdsh-rot-ctrl{display:flex!important;align-items:center;gap:12px;margin-top:34px}
+.bdsh-rot-ctrl[hidden]{display:none!important}
+.bdsh-rot-btn{display:inline-grid;place-items:center;width:42px;height:42px;padding:0;border:2px solid rgba(255,255,255,.6);border-radius:50%;background:transparent;color:#fff;cursor:pointer}
+.bdsh-rot-btn:hover{background:rgba(255,255,255,.16);border-color:#fff}
+.bdsh-rot-btn:focus-visible,.bdsh-dot:focus-visible{outline:3px solid #fff;outline-offset:3px}
+.bdsh-rot-pause.is-paused svg{opacity:.55}
+.bdsh-dots{display:flex;gap:8px}
+.bdsh-dot{width:10px;height:10px;padding:0;border:0;border-radius:10px;background:rgba(255,255,255,.45);cursor:pointer;transition:width .3s,background .3s}
+.bdsh-dot[aria-selected=true]{width:30px;background:#fff}
+@media (max-width:1199px){.bdsh-slides{padding:0 50px}}
+@media (max-width:900px){.bdsh-slide{grid-template-columns:1fr;gap:28px}.bdsh-slide .bdhub-hero-img{order:-1}}
+@media (max-width:575px){.bdsh-slides{padding:0 20px}}
+@media (prefers-reduced-motion:reduce){.bdsh-slide{transition:none;transform:none}}
+
 /* /_static/bd-footer.css */
 /* Broadland Digital footer and enquiry form (built from content/menu.json; replaces the theme's footer).
    Background follows the page's section colour, as the theme's did. */
