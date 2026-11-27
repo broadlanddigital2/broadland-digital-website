@@ -3664,3 +3664,17 @@ details[open] .bdp-plus:after{transform:rotate(0)}
 .bdx-done{padding:44px;text-align:center}.bdx-done h2{font:800 30px/1.2 Adelle,adelle,Georgia,serif;margin:0 0 12px}.bdx-done p{color:#5e6168;font-size:17px;margin:0 0 24px}.bdx-done .bdx-btn{width:auto}
 @media (max-width:980px){.bdx-split,.bdx-co{grid-template-columns:1fr;gap:36px}.bdx-summary{position:static;order:-1}.bdx-hero--split{padding:60px 0}}
 @media (max-width:560px){.bdx-hero{padding:48px 0 40px}.bdx-signin,.bdx-summary{padding:24px}.bdx-total{margin:0 -24px;padding:16px 24px}.bdx-set{padding:22px 18px 4px}.bdx-grid{grid-template-columns:1fr}}
+
+/* Where to use it: cards styled as the signage hub's "Buying guides" (.bdr-card) */
+.bdp-uses.bdp-scroll li,.bdp-uses li.has-img{padding:0;gap:0;overflow:hidden;border-radius:16px;border:1px solid #e6e3ee;background:#fff;box-shadow:none;transition:transform .2s,box-shadow .2s}
+.bdp-uses li:hover,.bdp-uses li.has-img:hover{transform:translateY(-3px);box-shadow:0 14px 34px rgba(42,45,50,.12);border-color:#e6e3ee}
+.bdp-uses .bdp-use-img,.bdp-uses li.has-img .bds-ph{aspect-ratio:16/9}
+.bdp-uses li.has-img:hover .bdp-use-img{transform:none}
+.bdp-uses .bdp-use-body,.bdp-uses li.has-img .bdp-use-body{gap:8px;padding:18px 20px 22px}
+.bdp-use-kind{font-size:12px!important;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#713FFF!important;line-height:1.3!important}
+.bdp-uses b{font-family:Adelle,adelle,Georgia,serif;font-weight:800;font-size:19px;line-height:1.25;color:#2a2d32}
+.bdp-uses .bdp-use-body span:not(.bdp-use-kind){font-size:15px;line-height:1.5;color:#5d6066}
+.bdp-uses.bdp-scroll li{flex:0 0 calc((100% - 36px) / 3)}
+@media (max-width:1000px){.bdp-uses.bdp-scroll li{flex-basis:calc((100% - 18px) / 2)}}
+@media (max-width:640px){.bdp-uses.bdp-scroll li{flex-basis:82%}}
+.bdp-uses .bdp-use-img{margin:0!important}
