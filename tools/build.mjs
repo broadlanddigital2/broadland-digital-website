@@ -1563,7 +1563,7 @@ const BS = buildBusinessSigns({ root: ROOT, shell: shBS, write, esc, origin: ORI
     .replace('<title>Broadland Digital</title>', '<title>My account | Broadland Digital</title>')
     .replace(/<link rel="canonical" href="[^"]*">/, `<link rel="canonical" href="${ORIGIN}/account/">`)
     .replace('<!--crm:head-->', `<meta name="robots" content="noindex, nofollow">\n<link rel="stylesheet" href="/_static/bd-business-signs.css?v=${v('site/bd-business-signs.css')}">\n<script src="https://crm.racecargraphics.uk/embed/booking.js" defer></script>`)
-    .replace('<div class="crm-main" data-crm-blog="slot"></div>', `<section class="bdb bdacc"><div class="bds-wrap"><h1>My account</h1><p class="bdacc-lead">Sign in with your email address and we'll send you a code. No password needed. See your quotes, orders and invoices, and keep your details up to date.</p>
+    .replace('<div class="crm-main" data-crm-blog="slot"></div>', `<section class="bdb bdacc"><div class="bds-wrap">
 <div class="bdacc-box" data-crm-booking="account" data-business="bc08f82c-908c-4ecb-8ae5-4cc5b6a4de7c" data-endpoint="/api/crm/booking" data-account-url="/account/" data-home-url="/" data-contact-url="/contact-us/" data-privacy-url="/privacy-policy/" data-booking-url="/get-a-quote/"
  style="--crm-accent:#713FFF;--crm-on-accent:#fff;--crm-accent-hover:#5f2ef0;--crm-accent-strong:#713FFF;--crm-accent-bright:#b49bff;--crm-on-bright:#1e1139;--crm-accent-line:#d9ccff;--crm-accent-wash:#f1ecff;--crm-panel:#2a2d32;--crm-panel-deep:#202226;--crm-panel-raised:#34373d"></div></div></section>`));
 }
