@@ -738,3 +738,5 @@ details[open] .bdp-plus:after{transform:rotate(0)}
 @media (max-width:1000px){.bdp-uses.bdp-scroll li{flex-basis:calc((100% - 18px) / 2)}}
 @media (max-width:640px){.bdp-uses.bdp-scroll li{flex-basis:82%}}
 .bdp-uses .bdp-use-img{margin:0!important}
+/* room for the hover lift and shadow inside the scrolling row (overflow would clip them) */
+.bdp-uses.bdp-scroll{padding:14px 6px 48px;margin:-14px -6px -30px;scroll-padding-left:6px}
