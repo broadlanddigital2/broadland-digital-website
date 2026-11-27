@@ -147,6 +147,9 @@ ${panel([...seoRows(c), ['Products', String(list.length)], ['FAQs', c.faqs?.leng
   ];
   const TRUST = [['proof', 'Proof before production'], ['make', 'Made to order'], ['pin', 'Fitted across Norfolk & Suffolk']];
   const reveal = 'bdp-reveal';
+  // "Where to use it" photos: <product slug>-use-<use title slug>.webp in site/public/img/business-signs/.
+  const slugify = (t) => String(t).toLowerCase().replace(/&/g, 'and').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40).replace(/-$/, '');
+  const useImage = (p, t) => { const slug = p.url.split('/').filter(Boolean).pop(); return { file: `${slug}-use-${slugify(t)}.webp`, alt: `${short(p.h1)} for ${String(t).toLowerCase()}` }; };
   const productSections = (p, c) => {
     const nav = [], out = [];
     const has = (k) => Array.isArray(p[k]) && p[k].length;
@@ -169,7 +172,7 @@ ${glance.length ? `<ul class="bdp-glance">${glance.map(([k, v], i) => `<li class
     }
     if (has('uses')) {
       nav.push(['uses', 'Where to use it']);
-      out.push(`<section class="bdp-sec" id="uses"><div class="bds-wrap">${head('Ideas', 'Where to use it')}<ul class="bdp-uses">${p.uses.map((u, i) => { const [t, ...d] = u.split(': '); return `<li class="${reveal}" style="--d:${i % 6}"><span class="bdp-num">${String(i + 1).padStart(2, '0')}</span><b>${inline(t)}</b>${d.length ? `<span>${inline(d.join(': '))}</span>` : ''}</li>`; }).join('')}</ul></div></section>`);
+      out.push(`<section class="bdp-sec" id="uses"><div class="bds-wrap">${head('Ideas', 'Where to use it')}<ul class="bdp-uses">${p.uses.map((u, i) => { const [t, ...d] = u.split(': '); const img = useImage(p, t); const pic = (srcOf(img) || staging) ? image(img, 'bdp-use-img') : ''; return `<li class="${reveal}${pic ? ' has-img' : ''}" style="--d:${i % 6}">${pic}<div class="bdp-use-body"><span class="bdp-num">${String(i + 1).padStart(2, '0')}</span><b>${inline(t)}</b>${d.length ? `<span>${inline(d.join(': '))}</span>` : ''}</div></li>`; }).join('')}</ul></div></section>`);
     }
     nav.push(['ordering', has('install') ? 'Installation' : 'How ordering works']);
     out.push(`<section class="bdp-sec bdp-sec--ink" id="ordering"><div class="bds-wrap">${head('From order to installed', 'How ordering works')}<ol class="bdp-timeline">${STEPS.map(([t, d], i) => `<li class="${reveal}" style="--d:${i}"><span class="bdp-dot">${i + 1}</span><b>${esc(t)}</b><span>${esc(d)}</span></li>`).join('')}</ol>${has('install') ? `<div class="bdp-install ${reveal}"><h3>${icon('ruler')}Installation & fixing</h3>${paras(p.install)}</div>` : ''}</div></section>`);
@@ -241,10 +244,9 @@ ${steps.map(([t, h], i) => `<fieldset class="bdp-stepbox"><legend><span class="b
 </form>`;
     const imgs = p.images;
     const body = `<section class="bds-product bdp-hero"><div class="bds-wrap">${crumbs(trail)}<div class="bds-product-grid">
-<div class="bdp-gallery-col">${gallery(imgs)}</div>
+<div class="bdp-gallery-col">${gallery(imgs)}<button type="button" class="bdp-builder" data-builder="${esc(JSON.stringify(builderStyle(p, c)))}"><span class="bdp-builder-art" aria-hidden="true"><span class="bdp-builder-frame"><span class="bdp-builder-logo">Your logo</span></span></span><span class="bdp-builder-copy"><span class="bdp-builder-tag">Free sign builder</span><b>Preview your sign</b><small>Upload your logo and see it as a ${esc(short(p.h1).toLowerCase())} on a wall or building.</small></span><span class="bdp-builder-go" aria-hidden="true">${ARROW}</span></button></div>
 <div class="bds-buy"><span class="bds-eyebrow"><a href="${c.url}">${esc(c.name)}</a></span><h1>${esc(p.h1)}</h1><p class="bds-lead">${esc(p.lead)}</p>
 <ul class="bdp-trust">${TRUST.map(([k, t]) => `<li>${icon(k)}${esc(t)}</li>`).join('')}</ul>
-<button type="button" class="bdp-builder-btn" data-builder="${esc(JSON.stringify(builderStyle(p, c)))}"><span class="bdp-builder-ic" aria-hidden="true">✦</span><span><b>Preview your sign</b><small>Upload your logo and see it as a ${esc(short(p.h1).toLowerCase())}</small></span></button>
 <p class="bds-price bdp-price">${priceText(p)}${p.price ? ` <span class="bdp-inc">(${money(Math.round(p.price * 120) / 100)} inc VAT)</span>` : ''}</p>
 ${config}
 ${p.facts?.length ? `<div class="bdp-features"><h2 class="bdp-h3">Key features</h2><ul>${p.facts.map((f) => `<li>${icon('check')}<span>${inline(f)}</span></li>`).join('')}</ul></div>` : staging ? '<p class="bds-todo">Key features to be written</p>' : ''}</div>

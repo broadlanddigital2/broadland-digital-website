@@ -299,3 +299,30 @@ details[open] .bdp-plus:after{transform:rotate(0)}
 .bdsb-actions{display:flex;flex-wrap:wrap;gap:10px;margin:6px 0 0}
 .bdsb-note{font-size:13px;color:var(--mute);margin:0}
 @media (max-width:860px){.bdsb{padding:0}.bdsb-panel{max-height:100vh;border-radius:0}.bdsb-app{grid-template-columns:1fr}}
+
+/* where to use it: photo cards */
+.bdp-uses li.has-img{padding:0;overflow:hidden;gap:0}
+.bdp-uses .bdp-use-img{display:block;width:100%;height:auto;aspect-ratio:4/3;object-fit:cover;border-radius:0;transition:transform .5s}
+.bdp-uses li.has-img:hover .bdp-use-img{transform:scale(1.05)}
+.bdp-uses li.has-img .bds-ph{aspect-ratio:4/3;border-radius:0}
+.bdp-use-body{display:flex;flex-direction:column;gap:8px;position:relative;background:#fff}
+.bdp-uses li.has-img .bdp-use-body{padding:20px 22px 24px}
+.bdp-uses li.has-img .bdp-num{position:absolute;top:-22px;right:18px;width:44px;height:44px;border-radius:50%;background:var(--c);color:#fff;opacity:1;font-size:16px;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 16px rgba(113,63,255,.35)}
+
+/* sign builder banner (under the gallery) */
+.bdp-builder{display:grid;grid-template-columns:120px minmax(0,1fr) 44px;align-items:center;gap:18px;width:100%;margin:16px 0 0;padding:16px 18px;border:0;border-radius:18px;background:linear-gradient(120deg,#713FFF 0%,#8f63ff 55%,#b49bff 100%);color:#fff;font:inherit;text-align:left;cursor:pointer;box-shadow:0 14px 34px rgba(113,63,255,.32);position:relative;overflow:hidden;transition:transform .25s,box-shadow .25s}
+.bdp-builder:before{content:"";position:absolute;inset:-40% -10% auto auto;width:220px;height:220px;border-radius:50%;background:rgba(255,255,255,.12)}
+.bdp-builder:hover{transform:translateY(-3px);box-shadow:0 20px 44px rgba(113,63,255,.4)}
+.bdp-builder:focus-visible{outline:3px solid #2a2d32;outline-offset:3px}
+.bdp-builder-art{position:relative;height:84px;border-radius:12px;background:linear-gradient(180deg,#efe9e0,#d9d0c3);display:flex;align-items:center;justify-content:center}
+.bdp-builder-frame{padding:10px 14px;border-radius:6px;background:rgba(255,255,255,.55);border:1.5px solid rgba(255,255,255,.95);box-shadow:4px 8px 14px rgba(0,0,0,.18)}
+.bdp-builder-logo{display:block;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#713FFF;animation:bdpPulse 2.4s ease-in-out infinite}
+@keyframes bdpPulse{50%{opacity:.45}}
+.bdp-builder-copy{position:relative;display:flex;flex-direction:column;gap:2px}
+.bdp-builder-tag{align-self:flex-start;padding:3px 9px;border-radius:20px;background:rgba(255,255,255,.2);font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase}
+.bdp-builder b{font-size:19px;line-height:1.25}
+.bdp-builder small{font-size:13px;opacity:.9;line-height:1.4}
+.bdp-builder-go{position:relative;width:44px;height:44px;border-radius:50%;background:#fff;color:#713FFF;display:flex;align-items:center;justify-content:center;transition:transform .25s}
+.bdp-builder:hover .bdp-builder-go{transform:translateX(4px)}
+@media (max-width:640px){.bdp-builder{grid-template-columns:84px minmax(0,1fr)}.bdp-builder-go{display:none}.bdp-builder-art{height:64px}}
+@media (prefers-reduced-motion:reduce){.bdp-builder-logo{animation:none}}
