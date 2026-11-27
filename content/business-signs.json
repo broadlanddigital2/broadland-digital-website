@@ -29666,7 +29666,15 @@
      "t": "Care",
      "d": "Clean with a soft cloth and mild soapy water. Avoid abrasive pads and solvent cleaners, which can scratch acrylic or damage printed surfaces."
     }
-   ]
+   ],
+   "tools": [
+    "Spirit level",
+    "Pencil",
+    "Drill and suitable wall plugs",
+    "Soft cloth"
+   ],
+   "noteTitle": "Check before drilling",
+   "note": "Check the wall for hidden pipes and cables, and use fixings suited to the wall and the weight of the sign."
   },
   "letters": {
    "title": "Fitting & care guide",
@@ -29691,7 +29699,15 @@
      "t": "Finish and care",
      "d": "Remove the template once every letter is in place. Dust letters with a soft dry cloth; use mild soapy water for marks."
     }
-   ]
+   ],
+   "tools": [
+    "Fitting template (supplied)",
+    "Spirit level",
+    "Masking tape",
+    "Drill and wall plugs"
+   ],
+   "noteTitle": "Check before drilling",
+   "note": "Check the wall for hidden pipes and cables before drilling for stand-offs or locating pins."
   },
   "illuminated": {
    "title": "Installation & care guide",
@@ -29716,7 +29732,15 @@
      "t": "Care",
      "d": "Switch off before cleaning. Wipe faces with a soft cloth and mild soapy water. LEDs need no routine maintenance."
     }
-   ]
+   ],
+   "tools": [
+    "Site photos",
+    "Tape measure",
+    "Fixing plan",
+    "Manufacturer's instructions"
+   ],
+   "noteTitle": "Arrange electrical work",
+   "note": "Illuminated signs must be connected by a qualified electrician, and may need planning consent. Check with your local planning authority."
   },
   "hanging": {
    "title": "Fitting & care guide",
@@ -29741,7 +29765,15 @@
      "t": "Care",
      "d": "Wipe the sign with mild soapy water. Avoid pressure washers, which can damage print and edges."
     }
-   ]
+   ],
+   "tools": [
+    "Tape measure",
+    "Spirit level",
+    "Masonry drill and anchors",
+    "Spanner"
+   ],
+   "noteTitle": "Mind the height and consent",
+   "note": "Hang the sign at least 2.6m above the pavement and fix the bracket into sound masonry. Projecting signs can need consent, especially in conservation areas."
   },
   "pavement": {
    "title": "Using & caring for your A-board",
@@ -29766,7 +29798,14 @@
      "t": "Care",
      "d": "Wipe frames and panels with mild soapy water. Wooden boards last longer when kept dry and brought in at night."
     }
-   ]
+   ],
+   "tools": [
+    "A clear spot near your door",
+    "Damp cloth",
+    "Chalk pens or new posters"
+   ],
+   "noteTitle": "Check the pavement rules",
+   "note": "Many councils have rules or licences for pavement boards. Keep a clear path for pedestrians, wheelchairs and pushchairs."
   },
   "parking": {
    "title": "Fitting & care guide",
@@ -29791,7 +29830,15 @@
      "t": "Care",
      "d": "Clean with mild soapy water a few times a year to keep it bright and readable."
     }
-   ]
+   ],
+   "tools": [
+    "Spade or post-hole digger",
+    "Postcrete or bolt-down base",
+    "Spirit level",
+    "Spanner"
+   ],
+   "noteTitle": "Check before digging",
+   "note": "Check for underground pipes and cables before digging post holes, and keep signs clear of sightlines at junctions."
   },
   "banner": {
    "title": "Fitting & care guide",
@@ -29816,7 +29863,15 @@
      "t": "Care and storage",
      "d": "Clean with mild soapy water, let it dry, then roll it (print side out) rather than folding it."
     }
-   ]
+   ],
+   "tools": [
+    "Cable ties or bungees",
+    "Rope (for large banners)",
+    "Scissors",
+    "Tape measure"
+   ],
+   "noteTitle": "Exposed sites",
+   "note": "Mesh lets wind through, but take banners down ahead of storms. Never fix banners to structures that aren't designed to take the load."
   },
   "display": {
    "title": "Set-up & care guide",
@@ -29841,7 +29896,14 @@
      "t": "Pack away",
      "d": "Reverse the steps, roll graphics carefully and store everything in the carry case."
     }
-   ]
+   ],
+   "tools": [
+    "The carry bag (supplied)",
+    "Clear floor space",
+    "Soft cloth"
+   ],
+   "noteTitle": "Set up safely",
+   "note": "Build the stand on a flat floor and keep it away from doorways and walkways so nobody can knock it over."
   },
   "wall": {
    "title": "Application & removal guide",
@@ -29866,7 +29928,15 @@
      "t": "Remove",
      "d": "Warm the vinyl gently with a hairdryer and peel slowly at a low angle. Any residue can be removed with a suitable cleaner."
     }
-   ]
+   ],
+   "tools": [
+    "Mild detergent and cloth",
+    "Felt squeegee",
+    "Craft knife",
+    "Hairdryer (for removal)"
+   ],
+   "noteTitle": "Check the paint",
+   "note": "Apply to sound walls painted at least four weeks ago. Fresh paint, matt paint or flaking surfaces can affect how well the vinyl sticks."
   },
   "window": {
    "title": "Application & care guide",
@@ -29891,7 +29961,15 @@
      "t": "Care and removal",
      "d": "Clean with a soft cloth and non-abrasive glass cleaner. To remove, peel slowly from a corner and clean off any residue."
     }
-   ]
+   ],
+   "tools": [
+    "Glass cleaner and lint-free cloth",
+    "Felt squeegee",
+    "Spray bottle (for wet application)",
+    "Masking tape"
+   ],
+   "noteTitle": "Check the glass",
+   "note": "Avoid applying to very cold or damp glass, and check that film is suitable for your glass type (e.g. some double glazing)."
   },
   "floor": {
    "title": "Application & care guide",
@@ -29916,7 +29994,14 @@
      "t": "Care and removal",
      "d": "Sweep and damp-mop; avoid scrubbing machines. Peel off slowly when the campaign ends."
     }
-   ]
+   ],
+   "tools": [
+    "Mop and degreaser",
+    "Felt squeegee",
+    "Masking tape"
+   ],
+   "noteTitle": "Check the floor and grip",
+   "note": "Apply to clean, dry, sealed floors only. Inspect graphics regularly and replace any that lift at the edges, so nobody trips."
   },
   "mat": {
    "title": "Care guide",
@@ -29937,7 +30022,14 @@
      "t": "Drying",
      "d": "Let mats dry flat before putting them back."
     }
-   ]
+   ],
+   "tools": [
+    "Vacuum cleaner",
+    "Mild detergent",
+    "Space to dry flat"
+   ],
+   "noteTitle": "Keep it flat",
+   "note": "Lay the mat on a clean, dry floor and check the edges stay flat. Never fold the mat; roll it if you need to move it."
   },
   "wood": {
    "title": "Fitting & care guide",
@@ -29958,7 +30050,14 @@
      "t": "Care",
      "d": "Wipe slate with a damp cloth; dust timber and clean with mild soapy water. Avoid harsh chemicals."
     }
-   ]
+   ],
+   "tools": [
+    "Drill and suitable fixings",
+    "Spirit level",
+    "Wood oil or preserver (outdoors)"
+   ],
+   "noteTitle": "Outdoor wood",
+   "note": "Treat outdoor wooden signs with oil or preserver once or twice a year to protect the timber from weather."
   },
   "office": {
    "title": "Fitting & care guide",
@@ -29983,7 +30082,15 @@
      "t": "Care",
      "d": "Clean with a soft cloth and mild soapy water. Avoid abrasive pads and solvent cleaners, which can scratch acrylic or damage printed surfaces."
     }
-   ]
+   ],
+   "tools": [
+    "Spirit level",
+    "Pencil",
+    "Drill and suitable wall plugs",
+    "Soft cloth"
+   ],
+   "noteTitle": "Check before drilling",
+   "note": "Check the wall for hidden pipes and cables, and use fixings suited to the wall and the weight of the sign."
   }
  },
  "artworkGuide": {

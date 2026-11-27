@@ -402,3 +402,14 @@
     state();
   });
 })();
+
+/* FAQs: one open at a time (fallback for browsers without <details name>) */
+(() => {
+  document.querySelectorAll('.bdp-faqs').forEach((box) => {
+    box.addEventListener('toggle', (e) => {
+      const d = e.target;
+      if (d.tagName !== 'DETAILS' || !d.open) return;
+      box.querySelectorAll('details[open]').forEach((o) => { if (o !== d) o.open = false; });
+    }, true);
+  });
+})();

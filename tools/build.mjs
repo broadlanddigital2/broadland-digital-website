@@ -1522,7 +1522,19 @@ for (const [p, h] of FINISHED) write(p === '/' ? 'index.html' : `${p.slice(1)}/i
 writeFileSync(join(ROOT, 'worker/seo-sections.json'), JSON.stringify({ sections: SEO_SECTIONS, videos: VIDEOS, pools: Object.fromEntries([...(FINISHED.pools || new Map())].map(([k, list]) => [k, list.map((t) => ({ src: (t.match(/\ssrc="([^"]+)"/) || [])[1], alt: decode((t.match(/\salt="([^"]*)"/) || [])[1] || '') })).filter((x) => x.src)])) }) + '\n');
 const sh = shell();
 // Business signs section (content/business-signs.json → dist/business-signs/; test site only while "staging")
-const BS = buildBusinessSigns({ root: ROOT, shell: sh, write, esc, origin: ORIGIN });
+// Business signs use the finished home page's header and footer (menus, redirect-free links, image sizes), so they
+// always match the main site.
+const shBS = (() => {
+  const home = FINISHED.get('/') || '';
+  const pick = (h, re) => (h.match(re) || [])[0];
+  const HDR = /<header\b[^>]*id="masthead"[\s\S]*?<\/header>/, FTR = /<footer\b[\s\S]*?<\/footer>/;
+  let h = sh;
+  const hd = pick(home, HDR), ft = pick(home, FTR);
+  if (hd && pick(h, HDR)) h = h.replace(HDR, () => hd.replace(/\s*aria-current="page"/g, ''));
+  if (ft && pick(h, FTR)) h = h.replace(FTR, () => ft.replace(/\s*aria-current="page"/g, ''));
+  return h;
+})();
+const BS = buildBusinessSigns({ root: ROOT, shell: shBS, write, esc, origin: ORIGIN });
 writeFileSync(join(ROOT, 'worker/business-signs.json'), JSON.stringify({ live: BS.live }) + '\n');
 write('_crm-page/index.html', pruneAssets(sh));
 write('404.html', page404(sh));
