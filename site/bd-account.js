@@ -29,18 +29,16 @@
   }
   var next = function () { var n = new URLSearchParams(location.search).get('next') || '/account/'; return /^\/[a-z0-9/_-]*$/i.test(n) ? n : '/account/'; };
 
-  // ---------- /login/ ----------
-  var login = document.querySelector('[data-bd-login]');
-  if (login) {
-    if (getSession()) { location.replace(next()); return; }
-    var step1 = login.querySelector('[data-step="email"]'), step2 = login.querySelector('[data-step="code"]'), msg = login.querySelector('[data-msg]'), email = '';
+  // Email-code sign-in inside a box (two forms: data-step="email" and "code"); onDone(session) once signed in.
+  function signInFlow(box, msg, onDone) {
+    var step1 = box.querySelector('[data-step="email"]'), step2 = box.querySelector('[data-step="code"]'), email = '';
     var say = function (t, bad) { msg.hidden = !t; msg.textContent = t || ''; msg.className = 'bdx-msg' + (bad ? ' is-error' : ''); };
     step1.addEventListener('submit', function (e) {
       e.preventDefault(); email = step1.email.value.trim().toLowerCase();
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) { say('Please enter a valid email address.', true); step1.email.focus(); return; }
       var b = step1.querySelector('button'); b.disabled = true; b.textContent = 'Sending…'; say('');
       crm('public_request_login_code', { email: email, business_unit_id: BIZ }).then(function () {
-        step1.hidden = true; step2.hidden = false; login.querySelector('[data-sent-to]').textContent = email; step2.code.focus();
+        step1.hidden = true; step2.hidden = false; box.querySelector('[data-sent-to]').textContent = email; step2.code.focus();
       }).catch(function (err) { say(err.message, true); }).then(function () { b.disabled = false; b.textContent = 'Email me a code'; });
     });
     step2.addEventListener('submit', function (e) {
@@ -48,10 +46,17 @@
       if (code.length !== 6) { say('Enter the 6-digit code from your email.', true); step2.code.focus(); return; }
       var b = step2.querySelector('button[type=submit]'); b.disabled = true; b.textContent = 'Signing in…'; say('');
       crm('public_verify_login_code', { email: email, code: code, business_unit_id: BIZ }).then(function (d) {
-        setSession(d.session); location.replace(next());
+        setSession(d.session); onDone(d.session);
       }).catch(function (err) { say(err.message, true); b.disabled = false; b.textContent = 'Sign in'; });
     });
-    login.querySelector('[data-back]').addEventListener('click', function () { step2.hidden = true; step1.hidden = false; say(''); step1.email.focus(); });
+    box.querySelector('[data-back]').addEventListener('click', function () { step2.hidden = true; step1.hidden = false; say(''); step1.email.focus(); });
+  }
+
+  // ---------- /login/ ----------
+  var login = document.querySelector('[data-bd-login]');
+  if (login) {
+    if (getSession()) { location.replace(next()); return; }
+    signInFlow(login, login.querySelector('[data-msg]'), function () { location.replace(next()); });
   }
 
   // ---------- /account/ ----------
@@ -75,20 +80,30 @@
     ['pointerdown', 'keydown', 'touchstart'].forEach(function (ev) { window.addEventListener(ev, function (e) { if (e.isTrusted) HUMAN = 1; }, { passive: true, capture: true }); });
     var list = []; try { list = JSON.parse(localStorage.getItem('bd-basket') || '[]') || []; } catch (e) {}
     if (!list.length) { location.replace('/basket/'); return; }
-    var form = co.querySelector('form'), cmsg = co.querySelector('[data-msg]'), priced = null;
+    var form = co.querySelector('.bdx-co-form'), cmsg = co.querySelector('[data-msg]'), priced = null;
     var csay = function (t, bad) { cmsg.hidden = !t; cmsg.innerHTML = t || ''; cmsg.className = 'bdx-msg' + (bad ? ' is-error' : ''); if (t) cmsg.scrollIntoView({ block: 'center', behavior: 'smooth' }); };
     var items = function () { return list.map(function (i) { return { url: i.url, opts: i.opts, qty: i.qty }; }); };
     // signed in: the tabs show "Signed in as", details come from the CRM customer record
-    var sess = getSession();
-    if (sess) {
-      co.querySelector('[data-tabs]').hidden = true; var si = co.querySelector('[data-signed-in]'); si.hidden = false; si.querySelector('b').textContent = (sess.user && sess.user.email) || '';
+    var tabs = co.querySelector('[data-tabs]'), panel = co.querySelector('[data-co-signin]');
+    function tab(which) {
+      tabs.querySelectorAll('[data-tab]').forEach(function (t) { var on = t.getAttribute('data-tab') === which; t.classList.toggle('is-on', on); t.setAttribute('aria-selected', on ? 'true' : 'false'); });
+      panel.hidden = which !== 'signin'; form.hidden = which === 'signin';
+      if (which === 'signin') panel.querySelector('[data-step="email"]').hidden ? panel.querySelector('[name=code]').focus() : panel.querySelector('[name=email]').focus();
+    }
+    function signedIn(sess) {
+      tabs.hidden = true; panel.hidden = true; form.hidden = false;
+      var si = co.querySelector('[data-signed-in]'); si.hidden = false; si.querySelector('b').textContent = (sess.user && sess.user.email) || '';
       crm('customer_profile', {}, true).then(function (d) {
         var c = d.customer || {}; var set = function (n, v) { if (v && !form[n].value) form[n].value = v; };
-        set('first_name', c.first_name); set('last_name', c.last_name); set('email', c.email); set('mobile', c.mobile);
+        set('first_name', c.first_name); set('last_name', c.last_name); set('email', c.email || (sess.user && sess.user.email)); set('mobile', c.mobile);
         set('postcode', c.postcode); set('line1', c.address_line_1); set('line2', c.address_line_2); set('city', c.city);
-      }).catch(function () {});
+      }).catch(function () { if (sess.user && sess.user.email && !form.email.value) form.email.value = sess.user.email; });
     }
-    co.querySelector('[data-signin]').addEventListener('click', function () { location.href = '/login/?next=/checkout/'; });
+    tabs.addEventListener('click', function (e) { var t = e.target.closest('[data-tab]'); if (t) tab(t.getAttribute('data-tab')); });
+    panel.querySelector('[data-guest]').addEventListener('click', function () { tab('guest'); });
+    signInFlow(panel, panel.querySelector('[data-sl-msg]'), function (sess) { signedIn(sess); window.scrollTo({ top: co.offsetTop - 120, behavior: 'smooth' }); });
+    var sess = getSession();
+    if (sess) signedIn(sess);
     // order summary, priced on the server
     fetch('/api/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ quote: 1, items: items() }) })
       .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })

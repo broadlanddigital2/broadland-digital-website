@@ -1577,10 +1577,14 @@ const BS = buildBusinessSigns({ root: ROOT, shell: shBS, write, esc, origin: ORI
   const fld = (n, label, attrs = '', wide = false) => `<label class="bdx-field${wide ? ' bdx-wide' : ''}"><span>${label}</span><input name="${n}" ${attrs}></label>`;
   page2('/checkout/', 'Checkout', `<section class="bdx-hero"><div class="bds-wrap"><span class="bdx-kicker">Secure checkout</span><h1>Complete your order</h1><p class="bdx-lead">Check out as a guest, or sign in with an emailed code so the order is saved to your account.</p></div></section>
 <section class="bdx-body" data-bd-checkout><div class="bds-wrap bdx-co">
-<div class="bdx-main"><div class="bdx-tabs" data-tabs><span class="is-on">Guest checkout</span><button type="button" data-signin>Sign in</button></div>
+<div class="bdx-main"><div class="bdx-tabs" data-tabs role="tablist"><button type="button" class="is-on" data-tab="guest" role="tab" aria-selected="true">Guest checkout</button><button type="button" data-tab="signin" role="tab" aria-selected="false">Sign in</button></div>
+<div class="bdx-card bdx-co-signin" data-co-signin hidden><div class="bdx-msg" data-sl-msg role="alert" hidden></div>
+<form data-step="email" novalidate><p>Enter your email and we'll send you a 6-digit code. Your order will be saved to your account, and your details filled in.</p><label class="bdx-field"><span>Email address</span><input type="email" name="email" autocomplete="email" required></label><button type="submit" class="bdx-btn">Email me a code</button></form>
+<form data-step="code" hidden novalidate><p>We've sent a 6-digit code to <b data-sent-to></b>. It expires in 10 minutes.</p><label class="bdx-field"><span>Sign-in code</span><input name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" required class="bdx-code"></label><button type="submit" class="bdx-btn">Sign in</button><button type="button" class="bdx-link" data-back>Use a different email</button></form>
+<button type="button" class="bdx-link" data-guest>Continue as a guest instead</button></div>
 <p class="bdx-signed" data-signed-in hidden>Signed in as <b></b>. This order will be saved to your account.</p>
 <div class="bdx-msg" data-msg role="alert" hidden></div>
-<form novalidate>
+<form novalidate class="bdx-co-form">
 <fieldset class="bdx-card bdx-set"><legend>Contact details</legend><div class="bdx-grid">${fld('first_name', 'First name', 'autocomplete="given-name" required')}${fld('last_name', 'Last name', 'autocomplete="family-name" required')}${fld('email', 'Email address', 'type="email" autocomplete="email" required')}${fld('mobile', 'Mobile number', 'type="tel" autocomplete="tel" required')}</div></fieldset>
 <fieldset class="bdx-card bdx-set"><legend>Billing and delivery address</legend><div class="bdx-grid">${fld('postcode', 'Postcode', 'autocomplete="postal-code" required', true)}${fld('line1', 'Address line 1', 'autocomplete="address-line1" placeholder="House number or name and street" required')}${fld('line2', 'Address line 2', 'autocomplete="address-line2"')}${fld('city', 'Town or city', 'autocomplete="address-level2" required')}</div></fieldset>
 <fieldset class="bdx-card bdx-set"><legend>Delivery</legend><p class="bdx-note">Delivery or fitting is agreed with you after you order. We'll confirm the cost and date before anything is sent.</p></fieldset>
