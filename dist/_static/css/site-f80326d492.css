@@ -3194,7 +3194,6 @@ details[open] .bdp-plus:after{transform:rotate(0)}
 .bdp-builder-btn{display:flex;align-items:center;gap:14px;width:100%;margin:0 0 18px;padding:14px 18px;border:1.5px dashed var(--c);border-radius:16px;background:linear-gradient(135deg,#f6f2ff,#fff);cursor:pointer;text-align:left;font:inherit;color:var(--ink);transition:transform .2s,box-shadow .2s}
 .bdp-builder-btn:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(113,63,255,.18)}
 .bdp-builder-btn b{display:block;font-size:16px}.bdp-builder-btn small{display:block;font-size:13px;color:var(--mute)}
-.bdp-builder-ic{flex:none;width:42px;height:42px;border-radius:12px;background:var(--c);color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px}
 .bdsb{position:fixed;inset:0;z-index:2147483646;background:rgba(14,12,24,.72);display:flex;align-items:center;justify-content:center;padding:24px;font-family:azo-sans-web,Arial,sans-serif;color:#2a2d32;--c:#713FFF;--line:#e3dff0;--soft:#f5f1ff;--mute:#5e6168}
 .bdsb[hidden]{display:none}
 .bdsb-panel{position:relative;width:min(1180px,100%);max-height:calc(100vh - 48px);overflow:auto;background:#fff;border-radius:22px;box-shadow:0 30px 80px rgba(0,0,0,.4)}
@@ -3233,22 +3232,6 @@ details[open] .bdp-plus:after{transform:rotate(0)}
 .bdp-uses li.has-img .bdp-num{position:absolute;top:-22px;right:18px;width:44px;height:44px;border-radius:50%;background:var(--c);color:#fff;opacity:1;font-size:16px;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 16px rgba(113,63,255,.35)}
 
 /* sign builder banner (under the gallery) */
-.bdp-builder{display:grid;grid-template-columns:120px minmax(0,1fr) 44px;align-items:center;gap:18px;width:100%;margin:16px 0 0;padding:16px 18px;border:0;border-radius:18px;background:linear-gradient(120deg,#713FFF 0%,#8f63ff 55%,#b49bff 100%);color:#fff;font:inherit;text-align:left;cursor:pointer;box-shadow:0 14px 34px rgba(113,63,255,.32);position:relative;overflow:hidden;transition:transform .25s,box-shadow .25s}
-.bdp-builder:before{content:"";position:absolute;inset:-40% -10% auto auto;width:220px;height:220px;border-radius:50%;background:rgba(255,255,255,.12)}
-.bdp-builder:hover{transform:translateY(-3px);box-shadow:0 20px 44px rgba(113,63,255,.4)}
-.bdp-builder:focus-visible{outline:3px solid #2a2d32;outline-offset:3px}
-.bdp-builder-art{position:relative;height:84px;border-radius:12px;background:linear-gradient(180deg,#efe9e0,#d9d0c3);display:flex;align-items:center;justify-content:center}
-.bdp-builder-frame{padding:10px 14px;border-radius:6px;background:rgba(255,255,255,.55);border:1.5px solid rgba(255,255,255,.95);box-shadow:4px 8px 14px rgba(0,0,0,.18)}
-.bdp-builder-logo{display:block;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#713FFF;animation:bdpPulse 2.4s ease-in-out infinite}
-@keyframes bdpPulse{50%{opacity:.45}}
-.bdp-builder-copy{position:relative;display:flex;flex-direction:column;gap:2px}
-.bdp-builder-tag{align-self:flex-start;padding:3px 9px;border-radius:20px;background:rgba(255,255,255,.2);font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase}
-.bdp-builder b{font-size:19px;line-height:1.25}
-.bdp-builder small{font-size:13px;opacity:.9;line-height:1.4}
-.bdp-builder-go{position:relative;width:44px;height:44px;border-radius:50%;background:#fff;color:#713FFF;display:flex;align-items:center;justify-content:center;transition:transform .25s}
-.bdp-builder:hover .bdp-builder-go{transform:translateX(4px)}
-@media (max-width:640px){.bdp-builder{grid-template-columns:84px minmax(0,1fr)}.bdp-builder-go{display:none}.bdp-builder-art{height:64px}}
-@media (prefers-reduced-motion:reduce){.bdp-builder-logo{animation:none}}
 
 /* where to use it: one scrolling row with arrows */
 .bdp-row-head{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;margin-bottom:28px}
@@ -3355,3 +3338,164 @@ details[open] .bdp-plus:after{transform:rotate(0)}
 .bds .bdhub-faq{scroll-margin-top:calc(var(--bdp-top,0px) + 70px)}
 .bds .bds-faq-note{margin:16px 0 0;font-size:16px;line-height:1.6;color:#5b5e66}
 .bds .bds-faq-note a{color:var(--c,#713FFF);font-weight:700}
+
+
+/* ===== Preview your sign banner (design pack: banner.css) ===== */
+.bdp-sp{container: sign-preview / inline-size}
+.bdp-builder.sign-preview-banner {
+  --sp-purple: #713fff;
+  --sp-lilac: #b49bff;
+  --sp-focus: #20123d;
+  --sp-scrim: rgb(30 17 57 / 62%);
+  --sp-shadow: 0 8px 20px rgb(54 28 107 / 16%), 0 2px 4px rgb(54 28 107 / 12%);
+  box-sizing: border-box;
+  appearance: none;
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: clamp(68px, 20%, 120px) minmax(0, 1fr) auto;
+  gap: clamp(8px, 2.4%, 16px);
+  align-items: center;
+  justify-content: stretch;
+  width: 100%;
+  min-height: 112px;
+  margin: 16px 0 0;
+  padding: 12px;
+  border: 1px solid rgb(255 255 255 / 19%);
+  border-radius: 18px;
+  overflow: hidden;
+  color: #fff;
+  text-align: left;
+  font: inherit;
+  font-family: azo-sans-web, 'Azo Sans', system-ui, sans-serif;
+  background: linear-gradient(var(--sp-scrim), var(--sp-scrim)),
+              linear-gradient(112deg, var(--sp-purple), var(--sp-lilac));
+  box-shadow: var(--sp-shadow);
+  cursor: pointer;
+  transition: transform 160ms ease, box-shadow 160ms ease;
+}
+
+.sign-preview-banner::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  right: -28px;
+  top: -68px;
+  width: 132px;
+  height: 132px;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 12%);
+  pointer-events: none;
+}
+
+.sign-preview-banner .sign-preview-scene {
+  display: block;
+  width: 100%;
+  aspect-ratio: 10 / 7;
+  min-width: 0;
+  border-radius: 12px;
+  object-fit: cover;
+  box-shadow: 0 0 0 1px rgb(255 255 255 / 24%), 0 3px 9px rgb(25 14 55 / 26%);
+}
+
+.sign-preview-banner .sign-preview-copy {
+  display: grid;
+  justify-items: start;
+  gap: 4px;
+  min-width: 0;
+}
+
+.sign-preview-banner .sign-preview-tag {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #e9ddff;
+  color: #3c2167;
+  font-size: 11px;
+  font-weight: 750;
+  line-height: 15px;
+  letter-spacing: .075em;
+  text-transform: uppercase;
+}
+
+.sign-preview-banner .sign-preview-heading {
+  font-size: 20px;
+  line-height: 1.15;
+  font-weight: 750;
+  letter-spacing: -.018em;
+}
+
+.sign-preview-banner .sign-preview-description {
+  color: rgb(255 255 255 / 90%);
+  font-size: 14px;
+  line-height: 1.36;
+  max-width: 44ch;
+  overflow-wrap: anywhere;
+}
+
+.sign-preview-banner .sign-preview-arrow {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid rgb(255 255 255 / 42%);
+  border-radius: 50%;
+  background: #f5eeff;
+  color: #41216e;
+  transition: transform 160ms ease, background-color 160ms ease;
+}
+
+.sign-preview-arrow svg { display: block; }
+
+@media (hover: hover) {
+  .bdp-builder.sign-preview-banner:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 13px 25px rgb(54 28 107 / 26%), 0 3px 6px rgb(54 28 107 / 14%);
+  }
+  .sign-preview-banner:hover .sign-preview-arrow { transform: translateX(3px); }
+}
+
+.bdp-builder.sign-preview-banner:focus-visible {
+  outline: 3px solid var(--sp-focus);
+  outline-offset: 3px;
+}
+
+.bdp-builder.sign-preview-banner:active {
+  transform: translateY(1px);
+  box-shadow: 0 3px 7px rgb(54 28 107 / 19%);
+}
+
+.sign-preview-banner:active .sign-preview-arrow {
+  transform: none;
+  background: #e2d2ff;
+}
+
+@container sign-preview (max-width: 480px) {
+  .bdp-builder.sign-preview-banner {
+    grid-template-columns: clamp(64px, 20%, 76px) minmax(0, 1fr) auto;
+    min-height: 104px;
+    gap: 8px;
+    padding: 10px;
+  }
+  .sign-preview-banner .sign-preview-scene { border-radius: 8px; }
+  .sign-preview-banner .sign-preview-copy { gap: 3px; }
+  .sign-preview-banner .sign-preview-heading { font-size: 19px; }
+  .sign-preview-banner .sign-preview-description { font-size: 13px; }
+  .sign-preview-banner .sign-preview-arrow { width: 28px; height: 28px; }
+  .sign-preview-banner .sign-preview-arrow svg { width: 15px; height: 15px; }
+  .sign-preview-banner::before { right: -52px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bdp-builder.sign-preview-banner, .sign-preview-banner .sign-preview-arrow { transition: none; }
+  .bdp-builder.sign-preview-banner:hover, .bdp-builder.sign-preview-banner:active,
+  .sign-preview-banner:hover .sign-preview-arrow { transform: none; }
+}
+
+/* Light section backgrounds match the signage hub (#f4f3f7); step numbers in solid bright purple (as .bdhub-steps) */
+.bds{--soft:#f4f3f7}
+.bdp-hero{background:linear-gradient(180deg,#f4f3f7 0,#fff 420px)}
+.bfc{--fc-lilac:#f4f3f7}
+.bfc-index,.baw-card:after{color:#713FFF}
+@container (max-width:570px){.bfc .bfc-index{color:#fff;background:#713FFF;border-radius:50%}}
+.bdp-features .bdp-ic,.bdp-checklist .bdp-ic,.bdp-plus,.bds-subnav a:hover,.bdp-nav-links a:hover{background:#f1ecff}
+.baw-icon{background:#f1ecff}

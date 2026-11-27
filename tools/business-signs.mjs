@@ -43,6 +43,44 @@ export function buildBusinessSigns({ root, shell, write, esc, origin }) {
   const imgDir = join(root, 'site/public/img/business-signs');
   const photo = (f) => (existsSync(join(imgDir, f)) ? `/img/business-signs/${f}` : null);
   const short = (s) => s.replace(/\s*\([^)]*\)/g, '');
+
+  // "Preview your sign" banner (design pack): a scene picked from the category/product, live wording per product.
+  const SCENES = {
+    'reception-wall': 'on a reception wall', 'raised-letters': 'on a shop fascia', 'projecting-sign': 'outside your premises',
+    'night-shopfront': 'lit up on a shopfront at night', 'pavement-a-board': 'out on the pavement', 'car-park-post': 'on a car park post',
+    'shop-window': 'in a shop window', 'floor-graphic': 'on your floor', 'roller-banner': 'on a stand at an event',
+  };
+  const sceneFor = (p, c) => {
+    const n = `${p.h1} ${p.slug || ''}`.toLowerCase();
+    if (/a-board|pavement|swing|forecourt/.test(n)) return 'pavement-a-board';
+    if (/\bposts?\b|totem/.test(n)) return 'car-park-post';
+    if (/roller|pop.?up|display stand|exhibition/.test(n)) return 'roller-banner';
+    if (/\bmats?\b|floor/.test(n)) return 'floor-graphic';
+    if (/window|frosted|vinyl lettering for glass/.test(n)) return 'shop-window';
+    if (/hanging|projecting/.test(n)) return 'projecting-sign';
+    if (/letter/.test(n) && c.key !== 'window') return 'raised-letters';
+    return ({ letters: 'raised-letters', illuminated: 'night-shopfront', lightbox: 'night-shopfront', hanging: 'projecting-sign',
+      outdoor: 'projecting-sign', aluminium: 'projecting-sign', banners: 'projecting-sign', hoarding: 'projecting-sign', correx: 'projecting-sign',
+      pavement: 'pavement-a-board', cafe: 'pavement-a-board', parking: 'car-park-post', noparking: 'car-park-post', window: 'shop-window',
+      floor: 'floor-graphic', mats: 'floor-graphic', roller: 'roller-banner', displays: 'roller-banner' })[c.key] || 'reception-wall';
+  };
+  // product name in running text: lower case except words with digits or capitals inside (3D, LED, UV), plus a/an for singular names
+  const runName = (h) => {
+    const t = short(h).split(/\s+/).map((w) => (/\d|^[A-Z]{2,}|[a-z][A-Z]/.test(w) ? w : w.toLowerCase())).join(' ').replace(/\ba-board/g, 'A-board');
+    const last = t.split(' ').pop().toLowerCase();
+    const plural = /s$/.test(last) && !/(ss|us|glass|perspex|foamex|dibond)$/.test(last);
+    return plural || /\b(art|carpet|wallpaper)$/.test(t) ? t : `${/^[aeiou]/i.test(t) && !/^(uv|u\b|eu)/i.test(t) ? 'an' : 'a'} ${t}`;
+  };
+  const placeFor = (p, sc) => {
+    const n = p.h1.toLowerCase();
+    if (/desk|trophy|award|plaque|freestanding/.test(n)) return 'in your reception';
+    if (/totem/.test(n)) return 'outside your premises';
+    return SCENES[sc];
+  };
+  const previewBanner = (p, c) => {
+    const sc = sceneFor(p, c);
+    return `<div class="bdp-sp"><button type="button" class="bdp-builder sign-preview-banner" data-builder="${esc(JSON.stringify(builderStyle(p, c)))}" aria-labelledby="sp-heading" aria-describedby="sp-desc"><img class="sign-preview-scene" src="/img/business-signs/scenes/${sc}.svg" width="120" height="84" alt="" loading="lazy" decoding="async"><span class="sign-preview-copy"><span class="sign-preview-tag">Free sign builder</span><span class="sign-preview-heading" id="sp-heading">Preview your sign</span><span class="sign-preview-description" id="sp-desc">Upload your logo and see it as ${esc(runName(p.h1))} ${placeFor(p, sc)}.</span></span><span class="sign-preview-arrow"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></span></button></div>`;
+  };
   const money = (n) => `£${Number(n).toFixed(2).replace(/\.00$/, '')}`;
   // copy fields are lists of paragraphs; **bold** and [text](/link/) are allowed
   const inline = (t) => esc(t).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/\[([^\]]+)\]\((\/[^)\s]*)\)/g, '<a href="$2">$1</a>');
@@ -282,7 +320,7 @@ ${steps.map(([t, h], i) => `<fieldset class="bdp-stepbox"><legend><span class="b
 </form>`;
     const imgs = p.images;
     const body = `<section class="bds-product bdp-hero"><div class="bds-wrap">${crumbs(trail)}<div class="bds-product-grid">
-<div class="bdp-gallery-col">${gallery(imgs)}<button type="button" class="bdp-builder" data-builder="${esc(JSON.stringify(builderStyle(p, c)))}"><span class="bdp-builder-art" aria-hidden="true"><span class="bdp-builder-frame"><span class="bdp-builder-logo">Your logo</span></span></span><span class="bdp-builder-copy"><span class="bdp-builder-tag">Free sign builder</span><b>Preview your sign</b><small>Upload your logo and see it as a ${esc(short(p.h1).toLowerCase())} on a wall or building.</small></span><span class="bdp-builder-go" aria-hidden="true">${ARROW}</span></button></div>
+<div class="bdp-gallery-col">${gallery(imgs)}${previewBanner(p, c)}</div>
 <div class="bds-buy"><span class="bds-eyebrow"><a href="${c.url}">${esc(c.name)}</a></span><h1>${esc(p.h1)}</h1><p class="bds-lead">${esc(p.lead)}</p>
 <ul class="bdp-trust">${TRUST.map(([k, t]) => `<li>${icon(k)}${esc(t)}</li>`).join('')}</ul>
 <p class="bds-price bdp-price">${priceText(p)}${p.price ? ` <span class="bdp-inc">(${money(Math.round(p.price * 120) / 100)} inc VAT)</span>` : ''}</p>
