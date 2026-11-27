@@ -19,6 +19,7 @@ const SUBJECTS = {
   quote: (d) => `Quote request${d.service ? ': ' + d.service : ''}`,
   guide: () => 'Vehicle graphics guide download',
   order: (d) => `Website order enquiry: ${d.product || d.where}`,
+  builder: (d) => `Sign builder: ${d.product || d.where}`,
 };
 
 export async function handleForms(request, env = {}) {
@@ -51,7 +52,7 @@ export async function handleForms(request, env = {}) {
   if (d.name.length < 2) return bad('name', 'Please tell us your name.');
   if (!EMAIL.test(d.email)) return bad('email', 'That email address doesn’t look right — please check it.');
   const digits = d.phone.replace(/\D/g, '');
-  if (d.kind !== 'guide' && !d.phone) return bad('phone', 'Please enter a phone number so we can call you back.');
+  if (d.kind !== 'guide' && d.kind !== 'builder' && !d.phone) return bad('phone', 'Please enter a phone number so we can call you back.');
   if (d.phone && (/[a-z]/i.test(d.phone) || digits.length < 10 || digits.length > 13)) return bad('phone', 'Please enter a full UK phone number, e.g. 01603 407786.');
   // UK numbers only (0…, +44 or 0044); the spam bots use made-up US numbers such as +1 202 555 0143.
   if (d.phone && !/^(\+?44|0044|0)/.test(d.phone.replace(/[\s()-]/g, ''))) return bad('phone', 'Please enter a UK phone number, e.g. 01603 407786 or 07700 900123.');

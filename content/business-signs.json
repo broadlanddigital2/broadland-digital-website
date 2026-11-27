@@ -1144,20 +1144,7 @@
    "metaDescription": "Stainless, brass and painted metal letters for walls and fascias. Supplied with a fitting template. Made to order. Order online or ask for a quote.",
    "lead": "Stainless, brass and painted metal letters for walls and fascias.",
    "variants": [],
-   "options": [
-    {
-     "label": "Thickness",
-     "choices": [
-      "3mm",
-      "5mm",
-      "10mm"
-     ],
-     "add": {
-      "5mm": 1.98,
-      "10mm": 9.89
-     }
-    }
-   ],
+   "options": [],
    "images": [
     {
      "file": "3d-metal-letters-front.webp",
@@ -1272,7 +1259,7 @@
      "a": "As a rule of thumb, allow around 25mm of letter height for every metre of reading distance, then go bigger for impact. We can mock up sizes on a photo of your wall."
     }
    ],
-   "price": 99.89
+   "price": 97.91
   },
   {
    "ref": "P002",
@@ -6726,27 +6713,7 @@
    "metaDescription": "Acrylic letters painted to any RAL or brand colour. Supplied with a fitting template. Made to order. Order online or ask for a quote.",
    "lead": "Acrylic letters painted to any RAL or brand colour.",
    "variants": [],
-   "options": [
-    {
-     "label": "Thickness",
-     "choices": [
-      "3mm",
-      "5mm",
-      "10mm"
-     ]
-    },
-    {
-     "label": "Extra colours",
-     "choices": [
-      "None",
-      "1 extra colour",
-      "2 extra colours",
-      "3 extra colours",
-      "4 extra colours",
-      "5 extra colours"
-     ]
-    }
-   ],
+   "options": [],
    "images": [
     {
      "file": "painted-acrylic-letters-front.webp",
@@ -11160,22 +11127,7 @@
    "metaDescription": "LED-lit acrylic panel that glows at the edges. Energy-efficient LEDs built for shopfronts. Made to order. Order online or ask for a quote.",
    "lead": "LED-lit acrylic panel that glows at the edges.",
    "variants": [],
-   "options": [
-    {
-     "label": "Width (mm)",
-     "range": [
-      90,
-      0
-     ]
-    },
-    {
-     "label": "Height (mm)",
-     "range": [
-      40,
-      0
-     ]
-    }
-   ],
+   "options": [],
    "images": [
     {
      "file": "edge-lit-acrylic-sign-night.webp",
@@ -11264,18 +11216,7 @@
      "a": "It's designed for indoor and sheltered locations."
     }
    ],
-   "price": 117.46,
-   "size": {
-    "by": null,
-    "rows": {
-     "*": [
-      114.89,
-      135.43,
-      3.79,
-      117.46
-     ]
-    }
-   }
+   "price": 115.55
   },
   {
    "ref": "P081",

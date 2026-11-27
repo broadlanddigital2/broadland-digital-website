@@ -58,7 +58,7 @@ export function buildBusinessSigns({ root, shell, write, esc, origin }) {
   const gallery = (imgs) => {
     const real = imgs.filter(srcOf);
     if (!real.length) return `<div class="bds-gallery">${image(imgs[0], 'bds-main')}<div class="bds-thumbs">${imgs.slice(1).map((i) => image(i, 'bds-thumb')).join('')}</div></div>`;
-    const main = `<a class="bds-zoom" href="${srcOf(real[0])}" data-zoom aria-label="Enlarge photo: ${esc(real[0].alt)}">${image(real[0], 'bds-main')}<span class="bds-zoom-hint" aria-hidden="true">Click to enlarge</span></a>`;
+    const main = `<a class="bds-zoom" href="${srcOf(real[0])}" data-zoom aria-label="Enlarge photo: ${esc(real[0].alt)}">${image(real[0], 'bds-main').replace('loading="lazy"', 'loading="eager" fetchpriority="high"')}<span class="bds-zoom-hint" aria-hidden="true">Click to enlarge</span></a>`;
     const thumbs = real.length > 1 ? `<div class="bds-thumbs">${real.map((i, n) => `<button type="button" class="bds-thumb-btn${n ? '' : ' is-on'}" data-src="${srcOf(i)}" data-alt="${esc(i.alt)}" aria-label="Show photo ${n + 1}: ${esc(i.alt)}"${n ? '' : ' aria-current="true"'}>${image(i, 'bds-thumb')}</button>`).join('')}</div>` : '';
     return `<div class="bds-gallery" data-gallery>${main}${thumbs}</div>`;
   };
@@ -153,7 +153,15 @@ ${panel([...seoRows(c), ['Products', String(list.length)], ['FAQs', c.faqs?.leng
     const head = (kicker, title, sub) => `<div class="bdp-head ${reveal}"><span class="bdp-kicker">${esc(kicker)}</span><h2>${title}</h2>${sub ? `<p class="bds-sub">${sub}</p>` : ''}</div>`;
     if (has('description') || has('included') || has('goodToKnow')) {
       nav.push(['overview', 'Overview']);
-      out.push(`<section class="bdp-sec" id="overview"><div class="bds-wrap bdp-overview"><div class="bds-copy ${reveal}"><span class="bdp-kicker">Overview</span><h2>About the ${esc(short(p.h1).toLowerCase())}</h2>${has('description') ? paras(p.description) : ''}</div>${has('included') || has('goodToKnow') ? `<aside class="bdp-cards">${has('included') ? `<div class="bdp-card ${reveal}"><h3>${icon('check')}What's included</h3><ul>${p.included.map((x) => `<li>${inline(x)}</li>`).join('')}</ul></div>` : ''}${has('goodToKnow') ? `<div class="bdp-card bdp-card--soft ${reveal}"><h3>${icon('tag')}Good to know</h3><ul>${p.goodToKnow.map((x) => `<li>${inline(x)}</li>`).join('')}</ul></div>` : ''}</aside>` : ''}</div></section>`);
+      const desc = has('description') ? p.description : [];
+      const shot = p.images.find((i) => /installed/.test(i.file) && srcOf(i)) || p.images.slice(1).find(srcOf);
+      const glance = (p.specs || []).filter(([k]) => !/^use$/i.test(k)).slice(0, 4);
+      out.push(`<section class="bdp-sec bdp-ov" id="overview"><div class="bds-wrap">
+<div class="bdp-ov-top ${reveal}"><div><span class="bdp-kicker">Overview</span><h2>About the ${esc(short(p.h1).toLowerCase())}</h2></div>${desc[0] ? `<p class="bdp-ov-lead">${inline(desc[0])}</p>` : ''}</div>
+${glance.length ? `<ul class="bdp-glance">${glance.map(([k, v], i) => `<li class="${reveal}" style="--d:${i}"><span>${esc(k)}</span><b>${inline(v)}</b></li>`).join('')}</ul>` : ''}
+<div class="bdp-ov-body"><div class="bds-copy bdp-ov-copy ${reveal}">${paras(desc.slice(1))}</div>
+<aside class="bdp-ov-side">${shot ? `<figure class="bdp-ov-photo ${reveal}"><img src="${srcOf(shot)}" alt="${esc(shot.alt)}" loading="lazy" width="1600" height="1200"><figcaption>${esc(shot.alt)}</figcaption></figure>` : ''}${has('included') ? `<div class="bdp-card ${reveal}"><h3>${icon('check')}What's included</h3><ul>${p.included.map((x) => `<li>${inline(x)}</li>`).join('')}</ul></div>` : ''}${has('goodToKnow') ? `<div class="bdp-card bdp-card--soft ${reveal}"><h3>${icon('tag')}Good to know</h3><ul>${p.goodToKnow.map((x) => `<li>${inline(x)}</li>`).join('')}</ul></div>` : ''}</aside></div>
+</div></section>`);
     } else if (staging) out.push('<section class="bdp-sec"><div class="bds-wrap bds-copy"><h2>About this sign</h2><p class="bds-todo">Description to be written.</p></div></section>');
     if (has('specs')) {
       nav.push(['specifications', 'Specifications']);
@@ -182,6 +190,33 @@ ${panel([...seoRows(c), ['Products', String(list.length)], ['FAQs', c.faqs?.leng
     return bar + out.join('\n');
   };
 
+
+  // Sign builder: which material and scene the preview is drawn in, from the category and the product's name.
+  const builderStyle = (p, c) => {
+    const n = `${p.h1} ${p.slug || p.url}`.toLowerCase(), k = c.key;
+    const has = (...w) => w.some((x) => n.includes(x));
+    let material = 'white', scene = 'indoor', shape = 'panel';
+    if (has('clear', 'glass', 'frosted')) material = 'clear';
+    else if (has('black')) material = 'black';
+    else if (has('brushed', 'aluminium', 'metal', 'brass', 'gold', 'dibond', 'steel')) material = has('gold', 'brass') ? 'gold' : 'metal';
+    else if (has('wood', 'plywood', 'mdf', 'oak', 'timber')) material = 'wood';
+    else if (has('slate')) material = 'slate';
+    else if (has('glitter')) material = 'glitter';
+    if (k === 'letters' || has('letters', '3d logo')) shape = 'letters';
+    if (k === 'illuminated' || k === 'lightbox' || has('illuminated', 'light box', 'halo', 'led', 'edge-lit')) { shape = shape === 'letters' ? 'letters' : 'panel'; material = material === 'white' ? 'lit' : material; scene = 'night'; }
+    if (k === 'hanging' || has('projecting', 'hanging')) { shape = 'hanging'; scene = 'brick'; }
+    if (k === 'pavement' || k === 'cafe') { shape = has('chalk') ? 'aboard-chalk' : 'aboard'; scene = 'pavement'; }
+    if (k === 'cafe') shape = 'barrier';
+    if (k === 'banners' || k === 'hoarding' || has('banner', 'mesh', 'flag')) { shape = has('roller', 'display', 'pop up', 'stand') ? 'roller' : 'banner'; scene = shape === 'roller' ? 'indoor' : 'brick'; }
+    if (k === 'roller' || k === 'displays') { shape = 'roller'; scene = 'indoor'; }
+    if (k === 'parking' || k === 'noparking' || has('post', 'spike', 'totem')) { shape = has('totem') ? 'totem' : 'post'; scene = 'outdoor'; if (material === 'white') material = 'white'; }
+    if (k === 'outdoor' || k === 'aluminium' || k === 'correx' || k === 'foamex') { if (scene === 'indoor') scene = 'brick'; }
+    if (k === 'window') { shape = 'window'; scene = 'window'; }
+    if (k === 'floor' || k === 'mats') { shape = 'floor'; scene = 'floor'; }
+    if (k === 'wall') { shape = 'wall'; scene = 'indoor'; }
+    if (k === 'reception' || k === 'office' || k === 'wayfinding' || k === 'acrylic') { if (!['letters'].includes(shape)) scene = scene === 'night' ? 'night' : 'indoor'; }
+    return { product: p.h1, material, scene, shape };
+  };
   // ----- products -----
   for (const p of prods) {
     const c = catOf.get(p.cat);
@@ -209,6 +244,7 @@ ${steps.map(([t, h], i) => `<fieldset class="bdp-stepbox"><legend><span class="b
 <div class="bdp-gallery-col">${gallery(imgs)}</div>
 <div class="bds-buy"><span class="bds-eyebrow"><a href="${c.url}">${esc(c.name)}</a></span><h1>${esc(p.h1)}</h1><p class="bds-lead">${esc(p.lead)}</p>
 <ul class="bdp-trust">${TRUST.map(([k, t]) => `<li>${icon(k)}${esc(t)}</li>`).join('')}</ul>
+<button type="button" class="bdp-builder-btn" data-builder="${esc(JSON.stringify(builderStyle(p, c)))}"><span class="bdp-builder-ic" aria-hidden="true">✦</span><span><b>Preview your sign</b><small>Upload your logo and see it as a ${esc(short(p.h1).toLowerCase())}</small></span></button>
 <p class="bds-price bdp-price">${priceText(p)}${p.price ? ` <span class="bdp-inc">(${money(Math.round(p.price * 120) / 100)} inc VAT)</span>` : ''}</p>
 ${config}
 ${p.facts?.length ? `<div class="bdp-features"><h2 class="bdp-h3">Key features</h2><ul>${p.facts.map((f) => `<li>${icon('check')}<span>${inline(f)}</span></li>`).join('')}</ul></div>` : staging ? '<p class="bds-todo">Key features to be written</p>' : ''}</div>
