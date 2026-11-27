@@ -166,7 +166,12 @@ async function route(request, env) {
   // A permanent redirect to the "/" address (the static files would answer with a temporary one).
   if (STATIC.has(key) && key !== '/' && !path.endsWith('/')) return redirect(key + '/', url);
   if (!STATIC.has(key) && (/^\/product\/.+-\d+$/.test(key) || key.startsWith('/product-category/'))) return redirect('/shop', url);
-  const res = await env.ASSETS.fetch(request);
+  let res = await env.ASSETS.fetch(request);
+  // Shop page: the business signs blocks show only where the section is visible (preview address) until it goes live.
+  if (key === '/shop' && !BUSINESS_SIGNS.live && request.method === 'GET' && res.ok) {
+    const preview = url.hostname.endsWith('.workers.dev') || url.hostname === 'localhost' || url.hostname === '127.0.0.1';
+    if (!preview) { const html = (await res.text()).replace(/<!--bs-staging-->[\s\S]*?<!--\/bs-staging-->/g, ''); res = new Response(html, { status: res.status, headers: res.headers }); }
+  }
   // Section hubs: guides, comparisons, areas and blog posts from the CRM, added live
   if (HUBS.has(key) && request.method === 'GET') return withHubResources(res, { feedKey: FEED_KEY, blog: BLOG });
   // Signage category and service pages: "Popular with" links to the sectors that use them

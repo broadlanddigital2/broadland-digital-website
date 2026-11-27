@@ -1288,7 +1288,8 @@ function shopPage(h) {
 </div></section>
 <section class="bdhub-intro"><div class="wrap"><h2>How the shop works.</h2><div class="bdhub-text"><p>Each package has a fixed starting price for a typical vehicle of that size. Choose the package, add your details and we will confirm the layout, artwork and price for your vehicle before anything is made.</p><p>Fitted packages are applied at our Norwich workshop. Supply-only kits are for fitting yourself, and Full Dip spray wrap is for your own projects.</p></div></div></section>
 <section class="bdsh-cats-sec"><div class="wrap"><div class="bdhub-head"><h2>Shop by category.</h2><a class="bdhub-textlink" href="/get-a-quote/">Need something made to measure? Ask us →</a></div>
-<div class="bdsh-cats">${shopCategoryCards()}</div></div></section>
+<div class="bdsh-cats">${shopCategoryCards()}<!--bs-shop-card--></div></div></section>
+<!--bs-shop-section-->
 ${shopVanSection()}
 ${shopLiquidSection()}
 ${shopSpraySection()}
@@ -1598,6 +1599,13 @@ const BS = buildBusinessSigns({ root: ROOT, shell: shBS, write, esc, origin: ORI
   write('_static/bd-account.js', readFileSync(join(ROOT, 'site/bd-account.js')));
 }
 writeFileSync(join(ROOT, 'worker/business-signs.json'), JSON.stringify({ live: BS.live }) + '\n');
+// Business signs on the shop page (between <!--bs-staging--> markers, which the worker strips on the live domain while
+// the section is staging).
+if (BS.shop && existsSync(join(OUT, 'shop/index.html'))) {
+  const wrapBs = (h) => (BS.live ? h : `<!--bs-staging-->${h}<!--/bs-staging-->`);
+  const f = join(OUT, 'shop/index.html');
+  writeFileSync(f, readFileSync(f, 'utf8').replace('<!--bs-shop-card-->', wrapBs(BS.shop.card)).replace('<!--bs-shop-section-->', wrapBs(BS.shop.section)));
+}
 write('_crm-page/index.html', pruneAssets(sh));
 write('404.html', page404(sh));
 write('_static/bd-forms.js', formsJs);

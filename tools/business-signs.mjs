@@ -353,6 +353,18 @@ ${panel([...seoRows(p), ['Category', `<a href="${c.url}">${esc(c.name)}</a>`], [
     paths.push(page({ url: p.url, title: p.metaTitle, desc: p.metaDescription, body, ld: [crumbLd(trail), ...(p.price ? [product] : []), ...faqLd] }));
   }
 
+  // Shop page (/shop/) blocks: a "Business signs" category card and a section of sign types (patched into the shop
+  // page by tools/build.mjs; the worker hides them on the live domain while the section is staging).
+  const catFrom = (c) => { const ps = (byCat.get(c.key) || []).map((p) => p.price).filter(Boolean); return ps.length ? Math.min(...ps) : null; };
+  const catImg = (c) => { for (const p of byCat.get(c.key) || []) { const s = p.images.map(srcOf).find(Boolean); if (s) return s; } return ''; };
+  const allFrom = Math.min(...prods.map((p) => p.price).filter(Boolean));
+  const ARR = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15m-6-6 6 6-6 6"/></svg>';
+  const shopCard = `<a class="bdsh-cat bdsh-cat--signs" href="${hub.url}"><span class="bdsh-cat-img"><img src="${esc(catImg(listed[0]))}" alt="A business sign from the Broadland Digital shop" width="1600" height="1200" loading="lazy" decoding="async"></span>
+<span class="bdsh-cat-body"><span class="bdvg-tier">Business signs</span><span class="bdsh-cat-t">Business signs</span><span class="bdsh-cat-d">Acrylic, aluminium and foamex panels, 3D letters, pavement and parking signs, made to your size and added to your basket.</span><span class="bdsh-cat-meta">${listed.length} sign types · from ${money(allFrom)} + VAT</span><span class="bdsh-cat-go">Shop business signs <i aria-hidden="true">${ARR}</i></span></span></a>`;
+  const shopSection = `<section class="bdshop-sec" id="business-signs"><div class="wrap"><div class="bdhub-head"><h2>Business signs.</h2><a class="bdhub-textlink" href="${hub.url}">All ${listed.length} sign types →</a></div>
+<p class="bdshop-sec-desc">Choose your size and options, see the price straight away and add it to your basket. We send a proof before anything is made.</p>
+<div class="bdr-grid bds-shopgrid">${listed.slice(0, 9).map((c, _i, shown) => { const from = catFrom(c), img = shown.every(catImg) ? catImg(c) : ''; return `<a class="bdr-card" href="${c.url}">${img ? `<span class="bdr-img"><img src="${esc(img)}" alt="${esc(c.name)}" width="1600" height="1200" loading="lazy" decoding="async"></span>` : ''}<span class="bdr-body"><span class="bdr-kind">${(byCat.get(c.key) || []).length} products${from ? ` · from ${money(from)} + VAT` : ''}</span><span class="bdr-title">${esc(c.name)}</span><span class="bdr-desc">${esc(c.metaDescription)}</span></span></a>`; }).join('')}</div></div></section>`;
+
   // Basket catalogue for the worker (worker/sign-pricing.js): only what's needed to price an item on the server.
   const catalog = {};
   for (const p of prods) if (p.price || p.size) {
@@ -361,5 +373,5 @@ ${panel([...seoRows(p), ['Category', `<a href="${c.url}">${esc(c.name)}</a>`], [
       options: p.options.map((o) => (o.range ? { label: o.label, range: o.range } : { label: o.label, choices: o.choices, ...(o.add ? { add: o.add } : {}) })) };
   }
   writeFileSync(join(root, 'worker/business-signs-catalog.json'), JSON.stringify(catalog) + '\n');
-  return { paths, live: !staging, from, count: { categories: listed.length, products: prods.length } };
+  return { paths, live: !staging, from, shop: { card: shopCard, section: shopSection }, count: { categories: listed.length, products: prods.length } };
 }
