@@ -210,13 +210,18 @@ ${panel([...seoRows(c), ['Products', String(list.length)], ['FAQs', c.faqs?.leng
     const head = (kicker, title, sub) => `<div class="bdp-head ${reveal}"><span class="bdp-kicker">${esc(kicker)}</span><h2>${title}</h2>${sub ? `<p class="bds-sub">${sub}</p>` : ''}</div>`;
     if (has('description') || has('included') || has('goodToKnow')) {
       nav.push(['overview', 'Overview']);
-      const desc = has('description') ? p.description : [];
+      // "See also …" cross-link paragraphs become link pills, styled as the signage hub's "Areas we cover" (.bdr-pills)
+      const isSee = (x) => /^(see also|need [^?]+\? see|compare)\b/i.test(x) && (x.match(/\]\(/g) || []).length >= 2;
+      const desc = (has('description') ? p.description : []).filter((x, i) => i === 0 || !isSee(x));
+      const seeLinks = (has('description') ? p.description.slice(1) : []).filter(isSee).flatMap((x) => [...x.matchAll(/\[([^\]]+)\]\(([^)\s]+)\)/g)].map((m) => [m[1], m[2]]));
+      const cap = (t) => t.charAt(0).toUpperCase() + t.slice(1);
+      const seeAlso = seeLinks.length ? `<div class="bdr-group bds-see ${reveal}"><div class="bdr-group-head"><h3>See also</h3></div><ul class="bdr-pills">${seeLinks.map(([t, u]) => `<li><a href="${esc(u)}">${esc(cap(t))}</a></li>`).join('')}</ul></div>` : '';
       const shot = p.images.find((i) => /installed/.test(i.file) && srcOf(i)) || p.images.slice(1).find(srcOf);
       const glance = (p.specs || []).filter(([k]) => !/^use$/i.test(k)).slice(0, 4);
       out.push(`<section class="bdp-sec bdp-ov" id="overview"><div class="bds-wrap">
 <div class="bdp-ov-top ${reveal}"><div><span class="bdp-kicker">Overview</span><h2>About the ${esc(short(p.h1).toLowerCase())}</h2></div>${desc[0] ? `<p class="bdp-ov-lead">${inline(desc[0])}</p>` : ''}</div>
 ${glance.length ? `<ul class="bdp-glance">${glance.map(([k, v], i) => `<li class="${reveal}" style="--d:${i}"><span>${esc(k)}</span><b>${inline(v)}</b></li>`).join('')}</ul>` : ''}
-<div class="bdp-ov-body"><div class="bds-copy bdp-ov-copy ${reveal}">${paras(desc.slice(1))}</div>
+<div class="bdp-ov-body"><div><div class="bds-copy bdp-ov-copy ${reveal}">${paras(desc.slice(1))}</div>${seeAlso}</div>
 <aside class="bdp-ov-side">${shot ? `<figure class="bdp-ov-photo ${reveal}"><img src="${srcOf(shot)}" alt="${esc(shot.alt)}" loading="lazy" width="1600" height="1200"><figcaption>${esc(shot.alt)}</figcaption></figure>` : ''}${has('included') ? `<div class="bdp-card ${reveal}"><h3>${icon('check')}What's included</h3><ul>${p.included.map((x) => `<li>${inline(x)}</li>`).join('')}</ul></div>` : ''}${has('goodToKnow') ? `<div class="bdp-card bdp-card--soft ${reveal}"><h3>${icon('tag')}Good to know</h3><ul>${p.goodToKnow.map((x) => `<li>${inline(x)}</li>`).join('')}</ul></div>` : ''}</aside></div>
 </div></section>`);
     } else if (staging) out.push('<section class="bdp-sec"><div class="bds-wrap bds-copy"><h2>About this sign</h2><p class="bds-todo">Description to be written.</p></div></section>');

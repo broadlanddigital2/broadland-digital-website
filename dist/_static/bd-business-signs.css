@@ -582,3 +582,8 @@ details[open] .bdp-plus:after{transform:rotate(0)}
 @media (hover:hover){.bdp-builder.sign-preview-banner:hover{box-shadow:0 13px 25px rgb(113 63 255 / 32%),0 3px 6px rgb(54 28 107 / 14%)}}
 .sign-preview-banner .sign-preview-description{color:#fff}
 .sign-preview-banner .sign-preview-arrow{background:#fff;color:#713FFF}
+
+/* "See also" pills (same as the signage hub's Areas we cover) */
+.bds .bds-see{--on:#fff;margin-top:34px}
+.bds .bds-see .bdr-group-head{margin-bottom:14px}
+.bds .bds-see .bdr-group-head h3{font-size:22px}
