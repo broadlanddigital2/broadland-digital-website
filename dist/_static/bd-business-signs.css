@@ -326,3 +326,18 @@ details[open] .bdp-plus:after{transform:rotate(0)}
 .bdp-builder:hover .bdp-builder-go{transform:translateX(4px)}
 @media (max-width:640px){.bdp-builder{grid-template-columns:84px minmax(0,1fr)}.bdp-builder-go{display:none}.bdp-builder-art{height:64px}}
 @media (prefers-reduced-motion:reduce){.bdp-builder-logo{animation:none}}
+
+/* where to use it: one scrolling row with arrows */
+.bdp-row-head{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;margin-bottom:28px}
+.bdp-row-head .bdp-head{margin:0}
+.bdp-arrows{display:flex;gap:10px;flex:none}
+.bdp-arrow{width:48px;height:48px;border-radius:50%;border:1.5px solid var(--line);background:#fff;color:var(--c);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .2s,color .2s,border-color .2s,opacity .2s}
+.bdp-arrow[data-scroll="-1"] svg{transform:rotate(180deg)}
+.bdp-arrow:hover:not(:disabled){background:var(--c);color:#fff;border-color:var(--c)}
+.bdp-arrow:disabled{opacity:.35;cursor:default}
+.bdp-uses.bdp-scroll{display:flex;grid-template-columns:none;gap:18px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth;scrollbar-width:none;padding:6px 2px 18px;margin:0 -2px}
+.bdp-uses.bdp-scroll::-webkit-scrollbar{display:none}
+.bdp-uses.bdp-scroll li{flex:0 0 calc((100% - 54px) / 4);min-width:260px;scroll-snap-align:start}
+.bdp-uses.bdp-scroll:focus-visible{outline:2px solid var(--c);outline-offset:4px;border-radius:18px}
+@media (max-width:1000px){.bdp-uses.bdp-scroll li{flex-basis:calc((100% - 18px) / 2)}}
+@media (max-width:640px){.bdp-uses.bdp-scroll li{flex-basis:82%}.bdp-arrow{width:42px;height:42px}}

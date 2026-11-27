@@ -383,3 +383,22 @@
     send(msg).then(function (r) { b.textContent = r.ok ? 'Sent – we\'ll be in touch' : 'Try again'; b.disabled = !r.ok ? false : true; }).catch(function () { b.textContent = 'Try again'; b.disabled = false; });
   });
 })();
+
+// Scrolling card rows (Where to use it): arrows move one card at a time and grey out at either end.
+(function () {
+  document.querySelectorAll('.bdp-scroll').forEach(function (row) {
+    var wrap = row.closest('section'); if (!wrap) return;
+    var btns = wrap.querySelectorAll('[data-scroll]');
+    function step() { var li = row.querySelector('li'); return li ? li.getBoundingClientRect().width + 18 : row.clientWidth * .8; }
+    function state() {
+      var max = row.scrollWidth - row.clientWidth - 2;
+      btns.forEach(function (b) { var d = Number(b.getAttribute('data-scroll')); b.disabled = d < 0 ? row.scrollLeft <= 2 : row.scrollLeft >= max; });
+      wrap.querySelector('.bdp-arrows').hidden = row.scrollWidth <= row.clientWidth + 2;
+    }
+    btns.forEach(function (b) { b.addEventListener('click', function () { row.scrollBy({ left: step() * Number(b.getAttribute('data-scroll')), behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }); }); });
+    row.addEventListener('keydown', function (e) { if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') { e.preventDefault(); row.scrollBy({ left: step() * (e.key === 'ArrowRight' ? 1 : -1) }); } });
+    row.addEventListener('scroll', function () { requestAnimationFrame(state); }, { passive: true });
+    window.addEventListener('resize', state);
+    state();
+  });
+})();
