@@ -169,8 +169,17 @@
   });
 
   // ?product=… in the address does the same.
-  var q = new URLSearchParams(location.search).get('product');
-  if (q) { var f = document.querySelector('.bdf-form') || document.querySelector('form[data-bd-form]'); if (f) { f.dataset.product = q; var t = f.querySelector('textarea'); if (t) t.value = 'I would like to order: ' + q + '\n'; } }
+  // From a business signs "Fitted · Get a quote" box: ?fit=1&product=…&from=…&page=… writes a short quote request.
+  var qs = new URLSearchParams(location.search), q = qs.get('product');
+  if (q) {
+    var f = document.querySelector('.bdq-form') || document.querySelector('.bdf-form') || document.querySelector('form[data-bd-form]');
+    if (f) {
+      q = q.slice(0, 200); f.dataset.product = q;
+      var t = f.querySelector('textarea'), from = (qs.get('from') || '').replace(/[^0-9.]/g, ''), page = (qs.get('page') || '').replace(/[^a-z0-9/_-]/gi, '');
+      if (t && qs.get('fit')) t.value = 'Quote request: ' + q + ', supplied and fitted\n' + (from ? 'Supply price from £' + from + ' + VAT\n' : '') + (page ? 'Product page: ' + location.origin + page + '\n' : '') + '\nSize (width x height): \nWhere it\'s going: \nQuantity: \n';
+      else if (t) t.value = 'I would like to order: ' + q + '\n';
+    }
+  }
   // Quote page: ?service=signage (from a section's "Get a free quote") ticks that service.
   var svc = new URLSearchParams(location.search).get('service');
   if (svc) { var chip = document.querySelector('.bdq-chips input[data-key="' + svc.replace(/[^a-z-]/g, '') + '"]'); if (chip) chip.checked = true; }
