@@ -2694,6 +2694,9 @@ h1.bd-was4,h1.bd-was5,h1.bd-was6{font-weight:700}
 /* a two-column table (e.g. Full Dip "how much you need") fits the screen instead of scrolling */
 .bdvp-table:not(:has(thead th:nth-child(3))){min-width:0}
 
+/* shop page: business signs "popular" pills stay on one line each */
+.bds-pop a{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
 /* /_static/bd-footer.css */
 /* Broadland Digital footer and enquiry form (built from content/menu.json; replaces the theme's footer).
    Background follows the page's section colour, as the theme's did. */

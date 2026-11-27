@@ -361,9 +361,18 @@ ${panel([...seoRows(p), ['Category', `<a href="${c.url}">${esc(c.name)}</a>`], [
   const ARR = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15m-6-6 6 6-6 6"/></svg>';
   const shopCard = `<a class="bdsh-cat bdsh-cat--signs" href="${hub.url}"><span class="bdsh-cat-img"><img src="${esc(catImg(listed[0]))}" alt="A business sign from the Broadland Digital shop" width="1600" height="1200" loading="lazy" decoding="async"></span>
 <span class="bdsh-cat-body"><span class="bdvg-tier">Business signs</span><span class="bdsh-cat-t">Business signs</span><span class="bdsh-cat-d">Acrylic, aluminium and foamex panels, 3D letters, pavement and parking signs, made to your size and added to your basket.</span><span class="bdsh-cat-meta">${listed.length} sign types · from ${money(allFrom)} + VAT</span><span class="bdsh-cat-go">Shop business signs <i aria-hidden="true">${ARR}</i></span></span></a>`;
-  const shopSection = `<section class="bdshop-sec" id="business-signs"><div class="wrap"><div class="bdhub-head"><h2>Business signs.</h2><a class="bdhub-textlink" href="${hub.url}">All ${listed.length} sign types →</a></div>
-<p class="bdshop-sec-desc">Choose your size and options, see the price straight away and add it to your basket. We send a proof before anything is made.</p>
-<div class="bdr-grid bds-shopgrid">${listed.slice(0, 9).map((c, _i, shown) => { const from = catFrom(c), img = shown.every(catImg) ? catImg(c) : ''; return `<a class="bdr-card" href="${c.url}">${img ? `<span class="bdr-img"><img src="${esc(img)}" alt="${esc(c.name)}" width="1600" height="1200" loading="lazy" decoding="async"></span>` : ''}<span class="bdr-body"><span class="bdr-kind">${(byCat.get(c.key) || []).length} products${from ? ` · from ${money(from)} + VAT` : ''}</span><span class="bdr-title">${esc(c.name)}</span><span class="bdr-desc">${esc(c.metaDescription)}</span></span></a>`; }).join('')}</div></div></section>`;
+  // Same card as the shop's van graphics packages (.bdvg-card): photo, name, popular products, price boxes.
+  const shopSection = `<section class="bdvg-size bdsh-sec" id="business-signs"><div class="wrap"><div class="bdhub-head"><div><span class="bdvg-kicker">Business signs</span><h2>Business signs.</h2><p class="bdvg-like">Choose your size and options, see the price and add it to your basket. Prices are "from", plus VAT. We send a proof before anything is made.</p></div><a class="bdhub-textlink" href="${hub.url}">All ${listed.length} sign types →</a></div>
+<div class="bdvg-grid">${listed.slice(0, 9).map((c, i) => {
+    const from = catFrom(c), img = catImg(c), mine = byCat.get(c.key) || [];
+    const popular = [...mine].sort((x, y) => (y.price ? 1 : 0) - (x.price ? 1 : 0)).slice(0, 3);
+    return `<article class="bdvg-card${i === 0 ? ' bdvg-card--pick' : ''}"><a class="bdvg-img" href="${c.url}" tabindex="-1" aria-hidden="true">${img ? `<img src="${esc(img)}" alt="${esc(c.name)}" width="1600" height="1200" loading="lazy" decoding="async">` : ''}</a>
+<div class="bdvg-body">${i === 0 ? '<span class="bdvg-badge">Most popular</span>' : ''}<span class="bdvg-tier">${mine.length} products</span>
+<h3><a href="${c.url}">${esc(c.name)}</a></h3>
+<p>${esc(c.metaDescription)}</p>
+<div class="bdsh-sizes bds-pop"><span>Popular</span>${popular.slice(0, 2).map((p) => `<a href="${p.url}" title="${esc(short(p.h1))}">${esc(short(p.h1).replace(/\s+(with|for)\s.*$/i, '').replace(/\s+signs?$/i, ''))}</a>`).join('')}</div>
+<ul class="bdvg-prices"><li><a href="${c.url}"><span>${from ? 'Supply from' : 'Supply only'}</span><b>${from ? money(from) : 'On request'}</b><small>${from ? '+ VAT' : 'Ask for a price'}</small></a></li><li class="bdvg-quote"><a href="/get-a-quote/?service=signage"><span>Fitted</span><b>Quoted</b><small>Norfolk &amp; Suffolk</small></a></li></ul>
+</div></article>`; }).join('')}</div></div></section>`;
 
   // Basket catalogue for the worker (worker/sign-pricing.js): only what's needed to price an item on the server.
   const catalog = {};
