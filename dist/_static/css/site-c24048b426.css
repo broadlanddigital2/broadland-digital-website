@@ -1103,3 +1103,10 @@ body.bdm-lock #masthead .main-navigation>.menu,body.bdm-lock #masthead .main-nav
 /* No jump on load: the header sits in the page flow until it sticks; the spacer only holds its place once it's fixed */
 #masthead:not(.sticky){position:relative!important}
 #masthead:not(.sticky)~#spacing{height:0!important}
+/* basket icon (count from localStorage "bd-basket", site/bd-forms.js) */
+.bdh-basket{position:relative;display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;flex-shrink:0;border:2px solid rgba(255,255,255,.6);border-radius:50%;color:#fff!important;text-decoration:none}
+.bdh-basket:hover{background:rgba(255,255,255,.16);border-color:#fff}
+.bdh-basket:focus-visible{outline:2px solid #fff;outline-offset:3px}
+.bdh-basket-n{position:absolute;top:-6px;right:-7px;min-width:20px;height:20px;padding:0 5px;border-radius:10px;background:#fff;color:#713FFF;font:700 12px/20px azo-sans-web,Arial,sans-serif;text-align:center;box-shadow:0 2px 6px rgba(0,0,0,.2)}
+.bdh-basket-n[hidden]{display:none}
+@media (max-width:400px){.bdh-basket{width:36px;height:36px}}

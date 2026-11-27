@@ -13,6 +13,7 @@
     try { size = JSON.parse(form.getAttribute('data-size') || 'null'); } catch (e) {}
     try { breaks = JSON.parse(form.getAttribute('data-qty-breaks') || '[]'); } catch (e) {}
     var qtyEl = form.querySelector('[name="qty"]');
+    var state = {};
     var out = {
       total: form.querySelector('[data-total]'), inc: form.querySelector('[data-inc]'), each: form.querySelector('[data-each]'),
       save: form.querySelector('[data-save]'), note: form.querySelector('[data-note]'), box: form.querySelector('.bdp-summary'),
@@ -43,6 +44,7 @@
         if (map) { try { var m = JSON.parse(map); if (m[el.value]) add += Number(m[el.value]); } catch (e) {} }
       });
       btn.setAttribute('data-enquire', name + (parts.length ? ' (' + parts.join(', ') + ')' : ''));
+      state = { parts: parts.filter(function (x) { return !/^Quantity:/.test(x); }), sizeOk: !size || (sizeOk && w && h), each: null };
       var q = Math.max(1, parseInt(qtyEl && qtyEl.value, 10) || 1);
       var unit = isNaN(base) ? null : base, exact = true;
       if (size) {
@@ -54,7 +56,8 @@
       }
       if (unit === null || !out.total) return;
       var pct = 0; breaks.forEach(function (b) { if (q >= b[0]) pct = b[1]; });
-      var each = unit * (1 - pct / 100) + add, total = each * q;
+      var each = Math.round((unit * (1 - pct / 100) + add) * 100) / 100, total = each * q; // to the penny, as the server does
+      state.each = exact ? Math.round(each * 100) / 100 : null;
       out.box.hidden = false;
       out.total.textContent = (exact ? '' : 'From ') + gbp(total);
       if (out.inc) out.inc.textContent = '(' + gbp(total * 1.2) + ' inc VAT)';
@@ -65,6 +68,31 @@
     }
     form.addEventListener('input', update);
     form.addEventListener('change', update);
+    // Add to basket: the chosen options (field names o0, o1, …) and quantity go into localStorage "bd-basket"; the
+    // server works the price out again at checkout (worker/sign-pricing.js), so what's stored here is only for display.
+    var addBtn = form.querySelector('[data-add-basket]'), added = form.querySelector('[data-added]');
+    if (addBtn) addBtn.addEventListener('click', function () {
+      update();
+      if (!state.sizeOk) {
+        added.hidden = false; added.className = 'bdp-added is-error';
+        added.textContent = 'Please enter your width and height (within the sizes shown) first.';
+        var first = form.querySelector('[data-dim]'); if (first) first.focus();
+        return;
+      }
+      var opts = {};
+      form.querySelectorAll('[name^="o"]').forEach(function (el) { if (/^o\d+$/.test(el.name)) opts[el.name] = String(el.value || '').trim(); });
+      var qty = Math.max(1, parseInt(qtyEl && qtyEl.value, 10) || 1);
+      var item = { url: addBtn.getAttribute('data-url'), name: name, img: addBtn.getAttribute('data-img'), opts: opts, desc: state.parts.join(', '), qty: qty, each: state.each };
+      var list = []; try { list = JSON.parse(localStorage.getItem('bd-basket') || '[]') || []; } catch (e) {}
+      var key = function (i) { return i.url + '|' + JSON.stringify(i.opts); };
+      var same = list.filter(function (i) { return key(i) === key(item); })[0];
+      if (same) { same.qty = Math.min(1000, same.qty + qty); same.each = item.each; } else list.push(item);
+      try { localStorage.setItem('bd-basket', JSON.stringify(list)); } catch (e) {}
+      window.dispatchEvent(new Event('bd-basket'));
+      var n = 0; list.forEach(function (i) { n += i.qty; });
+      added.hidden = false; added.className = 'bdp-added';
+      added.innerHTML = '<span>✓ Added to your basket (' + n + (n === 1 ? ' item' : ' items') + ')</span><a href="/basket/">View basket &amp; checkout →</a>';
+    });
     form.addEventListener('submit', function (e) { e.preventDefault(); btn.click(); });
     update();
   });

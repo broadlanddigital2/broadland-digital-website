@@ -280,6 +280,7 @@ const SITE_SEARCH = '<script src="https://crm.racecargraphics.uk/embed/site-sear
 const CRM_BOT = '<script src="https://crm.racecargraphics.uk/rcg-enquiry-bot.js" data-bot-key="1fc0c248-2a70-4c51-9ed0-b43b1ba5a339" defer></script>';
 function headerActions() {
   return `<div class="bdh-actions"><button class="bdh-search" type="button" data-site-search hidden aria-label="Search the site or ask a question">${SEARCH_ICON}<span>Search</span></button><a class="bdh-phone" href="tel:${menu.phone.replace(/\s/g, '')}" aria-label="Call ${esc(menu.phone)}">${PHONE_ICON}<span>${esc(menu.phone)}</span></a>`
+    + `<a class="bdh-basket" href="/basket/" aria-label="Basket"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h2.2l2.3 11.2a2 2 0 0 0 2 1.6h7.9a2 2 0 0 0 2-1.5L21 8H6.1"/><circle cx="10" cy="20.2" r="1.3"/><circle cx="17.5" cy="20.2" r="1.3"/></svg><span class="bdh-basket-n" data-basket-count hidden>0</span></a>`
     + `<a class="bdh-quote" href="/get-a-quote/"><span class="bdh-long">Get a quote</span><span class="bdh-short">Quote</span></a></div>`;
 }
 function sectionHeader(h, path) {
@@ -1535,6 +1536,28 @@ const shBS = (() => {
   return h;
 })();
 const BS = buildBusinessSigns({ root: ROOT, shell: shBS, write, esc, origin: ORIGIN });
+// Basket (/basket/, /basket/thanks/): the home page's header and footer; items in localStorage, priced on the server.
+{
+  const home = FINISHED.get('/') || '';
+  const HDR = /<header\b[^>]*id="masthead"[\s\S]*?<\/header>/, FTR = /<footer\b[\s\S]*?<\/footer>/;
+  let shell = sh;
+  for (const re of [HDR, FTR]) { const m = home.match(re); if (m && re.test(shell)) shell = shell.replace(re, () => m[0].replace(/\s*aria-current="page"/g, '')); }
+  const v = (f) => createHash('md5').update(readFileSync(join(ROOT, f))).digest('hex').slice(0, 10);
+  const pg = (url, title, body) => write(`${url.slice(1)}index.html`, shell
+    .replace('<title>Broadland Digital</title>', `<title>${title} | Broadland Digital</title>`)
+    .replace(/<link rel="canonical" href="[^"]*">/, `<link rel="canonical" href="${ORIGIN}${url}">`)
+    .replace('<!--crm:head-->', `<meta name="robots" content="noindex, nofollow">\n<link rel="stylesheet" href="/_static/bd-business-signs.css?v=${v('site/bd-business-signs.css')}">\n<script src="/_static/bd-basket.js?v=${v('site/bd-basket.js')}" defer></script>`)
+    .replace('<div class="crm-main" data-crm-blog="slot"></div>', body));
+  pg('/basket/', 'Your basket', `<section class="bdb"><div class="bds-wrap" data-basket><h1>Your basket</h1><div class="bdb-grid"><div class="bdb-items" data-items><p>Loading your basket…</p></div>
+<aside class="bdb-summary" data-summary hidden><h2>Order summary</h2><div class="bdb-msg" data-msg hidden></div>
+<dl><dt>Subtotal</dt><dd data-net>…</dd><dt>VAT (20%)</dt><dd data-vat>…</dd><dt>Delivery</dt><dd>At checkout</dd><dt class="bdb-total">Total</dt><dd class="bdb-total" data-gross>…</dd></dl>
+<button type="button" class="bdb-btn" data-checkout>Checkout securely</button>
+<p class="bdb-small">Secure card payment. After you order, we'll ask for your artwork and send a proof before anything is made.</p>
+<form class="bdb-offline" data-offline hidden novalidate><label>Name<input name="name" autocomplete="name" required></label><label>Email<input name="email" type="email" autocomplete="email" required></label><label>Phone<input name="phone" type="tel" autocomplete="tel" required></label><label>Notes (optional)<textarea name="notes" rows="3"></textarea></label><input class="bdb-hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true"><button type="submit" class="bdb-btn">Send my order</button></form>
+</aside></div></div></section>`);
+  pg('/basket/thanks/', 'Thank you for your order', `<section class="bdb"><div class="bds-wrap" data-basket data-basket-thanks><div class="bdb-done"><h2>Thank you for your order.</h2><p>Your payment has gone through and we've emailed your receipt. We'll be in touch shortly to ask for your artwork and send a proof before anything is made.</p><a class="bdb-btn" href="/signage-home/">Back to signage</a></div></div></section>`);
+  write('_static/bd-basket.js', readFileSync(join(ROOT, 'site/bd-basket.js')));
+}
 writeFileSync(join(ROOT, 'worker/business-signs.json'), JSON.stringify({ live: BS.live }) + '\n');
 write('_crm-page/index.html', pruneAssets(sh));
 write('404.html', page404(sh));

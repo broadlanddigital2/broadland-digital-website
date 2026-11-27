@@ -175,3 +175,16 @@
   var svc = new URLSearchParams(location.search).get('service');
   if (svc) { var chip = document.querySelector('.bdq-chips input[data-key="' + svc.replace(/[^a-z-]/g, '') + '"]'); if (chip) chip.checked = true; }
 })();
+
+// Basket count on the header's basket icon (items live in localStorage "bd-basket": site/bd-business-signs.js adds
+// them, /basket/ shows them). Updates when the basket changes in this or another tab.
+(function () {
+  function paint() {
+    var n = 0;
+    try { (JSON.parse(localStorage.getItem('bd-basket') || '[]') || []).forEach(function (i) { n += Math.max(1, parseInt(i.qty, 10) || 1); }); } catch (e) {}
+    document.querySelectorAll('[data-basket-count]').forEach(function (el) { el.textContent = n > 99 ? '99+' : String(n); el.hidden = !n; el.parentNode.setAttribute('aria-label', n ? 'Basket, ' + n + (n === 1 ? ' item' : ' items') : 'Basket'); });
+  }
+  window.addEventListener('storage', function (e) { if (e.key === 'bd-basket') paint(); });
+  window.addEventListener('bd-basket', paint);
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', paint); else paint();
+})();

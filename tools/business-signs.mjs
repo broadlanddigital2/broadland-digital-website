@@ -180,6 +180,7 @@ ${panel([...seoRows(c), ['Products', String(list.length)], ['FAQs', c.faqs?.leng
     pin: '<path d="M12 21s-7-6.3-7-11.5A7 7 0 0 1 19 9.5C19 14.7 12 21 12 21z" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="9.5" r="2.5" fill="currentColor"/>',
     ruler: '<path d="M3 16L16 3l5 5L8 21z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M7 12l2 2M10 9l2 2M13 6l2 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
     phone: '<path d="M5 3h4l2 5-2.5 1.5a11 11 0 0 0 6 6L16 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 5a2 2 0 0 1 2-2" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>',
+    cart: '<path d="M3 4h2.2l2.3 11.2a2 2 0 0 0 2 1.6h7.9a2 2 0 0 0 2-1.5L21 8H6.1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="10" cy="20.2" r="1.3" fill="currentColor"/><circle cx="17.5" cy="20.2" r="1.3" fill="currentColor"/>',
     box: '<path d="M3 7.5 12 3l9 4.5v9L12 21l-9-4.5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M3 7.5 12 12l9-4.5M12 12v9" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>',
     tag: '<path d="M3 12V4h8l10 10-8 8z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="7.5" cy="8.5" r="1.6" fill="currentColor"/>',
   };
@@ -323,7 +324,9 @@ ${help ? `<div class="baw-help ${reveal}"><div class="baw-help-art" aria-hidden=
     const config = `<form class="bds-config bdp-config" id="configure" data-name="${esc(p.h1)}"${p.price ? ` data-price="${p.price}"` : ''}${p.size ? ` data-size="${esc(JSON.stringify(p.size))}"` : ''}${p.qtyBreaks?.length ? ` data-qty-breaks="${esc(JSON.stringify(p.qtyBreaks))}"` : ''} novalidate aria-label="Choose your options">
 ${steps.map(([t, h], i) => `<fieldset class="bdp-stepbox"><legend><span class="bdp-stepn">${i + 1}</span>${esc(t)}</legend>${h}</fieldset>`).join('')}
 <div class="bdp-summary"${p.price ? '' : ' hidden'}><div class="bdp-sum-main"><span class="bdp-sum-label">Your price</span><b class="bdp-total" data-total>${p.price ? money(p.price) : ''}</b><small>+ VAT <span data-inc></span></small></div><div class="bdp-sum-side"><span data-each></span><span class="bdp-sum-save" data-save hidden></span><span class="bdp-sum-note" data-note>${p.size ? 'Enter your size for an exact price' : ''}</span></div></div>
-<p class="bds-actions"><a class="bds-btn bds-btn--lg" href="#enquire" data-enquire="${esc(p.h1)}">Enquire with these options ${ARROW}</a><a class="bdp-call" href="tel:${PHONE.replace(/\s/g, '')}">${icon('phone')}Call ${PHONE}</a></p>
+${p.price || p.size ? `<p class="bds-actions bdp-buy-actions"><button type="button" class="bds-btn bds-btn--lg bdp-add" data-add-basket data-url="${esc(p.url)}" data-img="${esc(srcOf(p.images.find(srcOf)) || '')}">${icon('cart')}Add to basket</button><a class="bdp-enq" href="#enquire" data-enquire="${esc(p.h1)}">Enquire instead</a></p>
+<div class="bdp-added" data-added role="status" aria-live="polite" hidden></div>
+<p class="bdp-buy-note">${icon('proof')}Pay securely by card. We'll ask for your artwork and send a proof before anything is made.</p>` : `<p class="bds-actions"><a class="bds-btn bds-btn--lg" href="#enquire" data-enquire="${esc(p.h1)}">Enquire with these options ${ARROW}</a><a class="bdp-call" href="tel:${PHONE.replace(/\s/g, '')}">${icon('phone')}Call ${PHONE}</a></p>`}
 </form>`;
     const imgs = p.images;
     const body = `<section class="bds-product bdp-hero"><div class="bds-wrap">${crumbs(trail)}<div class="bds-product-grid">
