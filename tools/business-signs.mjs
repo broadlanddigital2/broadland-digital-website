@@ -143,11 +143,39 @@ export function buildBusinessSigns({ root, shell, write, esc, origin }) {
   const HUB = [hub.name, hub.url];
   const listed = cats.filter((c) => c.key !== 'hub').sort((a, b) => a.priority - b.priority || a.name.localeCompare(b.name));
 
+  // Shop page (/shop/) blocks: a "Business signs" category card and a section of sign types (patched into the shop
+  // page by tools/build.mjs; the worker hides them on the live domain while the section is staging).
+  const catFrom = (c) => { const ps = (byCat.get(c.key) || []).map((p) => p.price).filter(Boolean); return ps.length ? Math.min(...ps) : null; };
+  const catImg = (c) => { for (const p of byCat.get(c.key) || []) { const s = p.images.map(srcOf).find(Boolean); if (s) return s; } return ''; };
+  const allFrom = Math.min(...prods.map((p) => p.price).filter(Boolean));
+  const ARR = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15m-6-6 6 6-6 6"/></svg>';
+  const shopCard = `<a class="bdsh-cat bdsh-cat--signs" href="${hub.url}"><span class="bdsh-cat-img"><img src="${esc(catImg(listed[0]))}" alt="A business sign from the Broadland Digital shop" width="1600" height="1200" loading="lazy" decoding="async"></span>
+<span class="bdsh-cat-body"><span class="bdvg-tier">Business signs</span><span class="bdsh-cat-t">Business signs</span><span class="bdsh-cat-d">Acrylic, aluminium and foamex panels, 3D letters, pavement and parking signs, made to your size and added to your basket.</span><span class="bdsh-cat-meta">${listed.length} sign types · from ${money(allFrom)} + VAT</span><span class="bdsh-cat-go">Shop business signs <i aria-hidden="true">${ARR}</i></span></span></a>`;
+  const shopSlide = `<div class="bdsh-slide" role="group" aria-roledescription="slide" aria-label="Business signs"><div class="bdhub-hero-text">
+<span class="bdhub-eyebrow">Business signs</span><p class="bdsh-slide-h">Business signs, priced as you choose.</p>
+<p class="bdhub-lead">Acrylic, aluminium and foamex panels, 3D letters, pavement and parking signs. Pick your size and options, see the price and add it to your basket.</p>
+<div class="bdhub-cta"><a class="bdhub-btn bdhub-btn--solid" href="#business-signs">Shop business signs</a><a class="bdhub-btn bdhub-btn--ghost" href="${hub.url}">All ${listed.length} sign types</a></div></div>
+<figure class="bdhub-hero-img"><img src="${esc(catImg(listed[1]) || catImg(listed[0]))}" alt="A business sign from the Broadland Digital shop" width="1600" height="1200" loading="lazy" decoding="async"></figure></div>`;
+  // Same card as the shop's van graphics packages (.bdvg-card): photo, name, popular products, price boxes.
+  const signTypeCard = (c, i) => {
+    const from = catFrom(c), img = catImg(c), mine = byCat.get(c.key) || [];
+    const popular = [...mine].sort((x, y) => (y.price ? 1 : 0) - (x.price ? 1 : 0)).slice(0, 3);
+    return `<article class="bdvg-card${i === 0 ? ' bdvg-card--pick' : ''}"><a class="bdvg-img" href="${c.url}" tabindex="-1" aria-hidden="true">${img ? `<img src="${esc(img)}" alt="${esc(c.name)}" width="1600" height="1200" loading="lazy" decoding="async">` : ''}</a>
+<div class="bdvg-body">${i === 0 ? '<span class="bdvg-badge">Most popular</span>' : ''}<span class="bdvg-tier">${mine.length} products</span>
+<h3><a href="${c.url}">${esc(c.name)}</a></h3>
+<p>${esc(c.metaDescription)}</p>
+<div class="bdsh-sizes bds-pop"><span>Popular</span>${popular.slice(0, 2).map((p) => `<a href="${p.url}" title="${esc(short(p.h1))}">${esc(short(p.h1).replace(/\s+(with|for)\s.*$/i, '').replace(/\s+signs?$/i, ''))}</a>`).join('')}</div>
+<ul class="bdvg-prices"><li><a href="${c.url}"><span>${from ? 'Supply from' : 'Supply only'}</span><b>${from ? money(from) : 'On request'}</b><small>${from ? '+ VAT' : 'Ask for a price'}</small></a></li><li class="bdvg-quote"><a href="/get-a-quote/?service=signage"><span>Fitted</span><b>Quoted</b><small>Norfolk &amp; Suffolk</small></a></li></ul>
+</div></article>`; };
+  const shopSection = `<section class="bdvg-size bdsh-sec" id="business-signs"><div class="wrap"><div class="bdhub-head"><div><span class="bdvg-kicker">Business signs</span><h2>Business signs.</h2><p class="bdvg-like">Choose your size and options, see the price and add it to your basket. Prices are "from", plus VAT. We send a proof before anything is made.</p></div><a class="bdhub-textlink" href="${hub.url}">All ${listed.length} sign types →</a></div>
+<div class="bdvg-grid">${listed.slice(0, 9).map(signTypeCard).join('')}</div></div></section>`;
+
   // ----- hub -----
   {
     const trail = [HOME, HUB];
     const body = `<section class="bds-hero"><div class="bds-wrap">${crumbs(trail)}<span class="bds-eyebrow">Business signs</span><h1>${esc(hub.h1)}</h1><p class="bds-lead">${esc(hub.metaDescription)}</p><p class="bds-actions"><a class="bds-btn" href="#types">Browse sign types</a><a class="bds-btn bds-btn--ghost" href="/get-a-quote/">Get a quote</a></p></div></section>
-<section class="bds-section" id="types"><div class="bds-wrap"><h2>Shop by sign type</h2><div class="bds-tiles">${listed.map(catCard).join('')}</div></div></section>
+<div class="bdhub signage bds-types"><section class="bdvg-size bdsh-sec" id="types"><div class="bds-wrap"><div class="bdhub-head"><div><span class="bdvg-kicker">Shop by sign type</span><h2>${listed.length} sign types.</h2><p class="bdvg-like">Choose your size and options, see the price and add it to your basket. Prices are "from", plus VAT. We send a proof before anything is made.</p></div><a class="bdhub-textlink" href="/get-a-quote/?service=signage">Something bespoke? Ask us →</a></div>
+<div class="bdvg-grid">${listed.map(signTypeCard).join('')}</div></div></section></div>
 ${panel([...seoRows(hub), ['Pages', `${listed.length} categories, ${prods.length} products`]])}${band}`;
     paths.push(page({ url: hub.url, title: hub.metaTitle, desc: hub.metaDescription, body,
       ld: [crumbLd(trail), { '@type': 'CollectionPage', name: hub.h1, url: origin + hub.url, description: hub.metaDescription, inLanguage: 'en-GB',
@@ -352,32 +380,6 @@ ${panel([...seoRows(p), ['Category', `<a href="${c.url}">${esc(c.name)}</a>`], [
     const faqLd = p.faqs?.length ? [{ '@type': 'FAQPage', mainEntity: p.faqs.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1').replace(/\*\*/g, '') } })) }] : [];
     paths.push(page({ url: p.url, title: p.metaTitle, desc: p.metaDescription, body, ld: [crumbLd(trail), ...(p.price ? [product] : []), ...faqLd] }));
   }
-
-  // Shop page (/shop/) blocks: a "Business signs" category card and a section of sign types (patched into the shop
-  // page by tools/build.mjs; the worker hides them on the live domain while the section is staging).
-  const catFrom = (c) => { const ps = (byCat.get(c.key) || []).map((p) => p.price).filter(Boolean); return ps.length ? Math.min(...ps) : null; };
-  const catImg = (c) => { for (const p of byCat.get(c.key) || []) { const s = p.images.map(srcOf).find(Boolean); if (s) return s; } return ''; };
-  const allFrom = Math.min(...prods.map((p) => p.price).filter(Boolean));
-  const ARR = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15m-6-6 6 6-6 6"/></svg>';
-  const shopCard = `<a class="bdsh-cat bdsh-cat--signs" href="${hub.url}"><span class="bdsh-cat-img"><img src="${esc(catImg(listed[0]))}" alt="A business sign from the Broadland Digital shop" width="1600" height="1200" loading="lazy" decoding="async"></span>
-<span class="bdsh-cat-body"><span class="bdvg-tier">Business signs</span><span class="bdsh-cat-t">Business signs</span><span class="bdsh-cat-d">Acrylic, aluminium and foamex panels, 3D letters, pavement and parking signs, made to your size and added to your basket.</span><span class="bdsh-cat-meta">${listed.length} sign types · from ${money(allFrom)} + VAT</span><span class="bdsh-cat-go">Shop business signs <i aria-hidden="true">${ARR}</i></span></span></a>`;
-  const shopSlide = `<div class="bdsh-slide" role="group" aria-roledescription="slide" aria-label="Business signs"><div class="bdhub-hero-text">
-<span class="bdhub-eyebrow">Business signs</span><p class="bdsh-slide-h">Business signs, priced as you choose.</p>
-<p class="bdhub-lead">Acrylic, aluminium and foamex panels, 3D letters, pavement and parking signs. Pick your size and options, see the price and add it to your basket.</p>
-<div class="bdhub-cta"><a class="bdhub-btn bdhub-btn--solid" href="#business-signs">Shop business signs</a><a class="bdhub-btn bdhub-btn--ghost" href="${hub.url}">All ${listed.length} sign types</a></div></div>
-<figure class="bdhub-hero-img"><img src="${esc(catImg(listed[1]) || catImg(listed[0]))}" alt="A business sign from the Broadland Digital shop" width="1600" height="1200" loading="lazy" decoding="async"></figure></div>`;
-  // Same card as the shop's van graphics packages (.bdvg-card): photo, name, popular products, price boxes.
-  const shopSection = `<section class="bdvg-size bdsh-sec" id="business-signs"><div class="wrap"><div class="bdhub-head"><div><span class="bdvg-kicker">Business signs</span><h2>Business signs.</h2><p class="bdvg-like">Choose your size and options, see the price and add it to your basket. Prices are "from", plus VAT. We send a proof before anything is made.</p></div><a class="bdhub-textlink" href="${hub.url}">All ${listed.length} sign types →</a></div>
-<div class="bdvg-grid">${listed.slice(0, 9).map((c, i) => {
-    const from = catFrom(c), img = catImg(c), mine = byCat.get(c.key) || [];
-    const popular = [...mine].sort((x, y) => (y.price ? 1 : 0) - (x.price ? 1 : 0)).slice(0, 3);
-    return `<article class="bdvg-card${i === 0 ? ' bdvg-card--pick' : ''}"><a class="bdvg-img" href="${c.url}" tabindex="-1" aria-hidden="true">${img ? `<img src="${esc(img)}" alt="${esc(c.name)}" width="1600" height="1200" loading="lazy" decoding="async">` : ''}</a>
-<div class="bdvg-body">${i === 0 ? '<span class="bdvg-badge">Most popular</span>' : ''}<span class="bdvg-tier">${mine.length} products</span>
-<h3><a href="${c.url}">${esc(c.name)}</a></h3>
-<p>${esc(c.metaDescription)}</p>
-<div class="bdsh-sizes bds-pop"><span>Popular</span>${popular.slice(0, 2).map((p) => `<a href="${p.url}" title="${esc(short(p.h1))}">${esc(short(p.h1).replace(/\s+(with|for)\s.*$/i, '').replace(/\s+signs?$/i, ''))}</a>`).join('')}</div>
-<ul class="bdvg-prices"><li><a href="${c.url}"><span>${from ? 'Supply from' : 'Supply only'}</span><b>${from ? money(from) : 'On request'}</b><small>${from ? '+ VAT' : 'Ask for a price'}</small></a></li><li class="bdvg-quote"><a href="/get-a-quote/?service=signage"><span>Fitted</span><b>Quoted</b><small>Norfolk &amp; Suffolk</small></a></li></ul>
-</div></article>`; }).join('')}</div></div></section>`;
 
   // Basket catalogue for the worker (worker/sign-pricing.js): only what's needed to price an item on the server.
   const catalog = {};
