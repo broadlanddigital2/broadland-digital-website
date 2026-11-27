@@ -3684,3 +3684,7 @@ details[open] .bdp-plus:after{transform:rotate(0)}
 .bdx-co-signin p{margin:0 0 20px;font-size:15.5px;line-height:1.6;color:#5e6168}
 .bdx-co-signin [data-guest]{display:block;margin:16px auto 0}
 .bdx-tabs button.is-on{background:#713FFF;color:#fff;cursor:default}
+/* order summary thumbnails */
+.bdx-lines li{align-items:flex-start}
+.bdx-thumb{flex:none;display:block;width:64px;height:48px;border-radius:8px;object-fit:cover;background:#ece9f3;border:1px solid #e6e3ee}
+.bdx-line-txt{flex:1;min-width:0}

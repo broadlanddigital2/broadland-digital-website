@@ -111,7 +111,7 @@
         var box = co.querySelector('[data-order]');
         if (!x.ok) { box.innerHTML = '<p class="bdx-err">' + esc(x.j.error || 'Please check your basket.') + ' <a href="/basket/">Back to basket</a></p>'; return; }
         priced = x.j; var net = priced.net, vat = Math.round(net * 0.2);
-        box.innerHTML = '<ul class="bdx-lines">' + priced.lines.map(function (l) { return '<li><span><b>' + l.qty + ' × ' + esc(l.name) + '</b>' + (l.desc ? '<small>' + esc(l.desc) + '</small>' : '') + '</span><em>' + gbp(Math.round(l.each * 100) * l.qty) + '</em></li>'; }).join('') + '</ul>' +
+        box.innerHTML = '<ul class="bdx-lines">' + priced.lines.map(function (l, n) { var img = l.img || (list[n] && list[n].img) || ''; return '<li>' + (img ? '<img class="bdx-thumb" src="' + esc(img) + '" alt="" width="64" height="48" loading="lazy">' : '<span class="bdx-thumb"></span>') + '<span class="bdx-line-txt"><b>' + l.qty + ' × ' + esc(l.name) + '</b>' + (l.desc ? '<small>' + esc(l.desc) + '</small>' : '') + '</span><em>' + gbp(Math.round(l.each * 100) * l.qty) + '</em></li>'; }).join('') + '</ul>' +
           '<dl><dt>Subtotal</dt><dd>' + gbp(net) + '</dd><dt>VAT (20%)</dt><dd>' + gbp(vat) + '</dd><dt>Delivery</dt><dd>To be agreed</dd></dl><div class="bdx-total"><span>Total including VAT</span><b>' + gbp(net + vat) + '</b></div>';
       });
     form.addEventListener('submit', function (e) {
