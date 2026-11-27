@@ -9,6 +9,7 @@
 //   /wp-content/uploads   files not copied into the repo yet are fetched from the old WordPress site (OLD_SITE_ORIGIN)
 import { handleForms } from './forms.js';
 import { handleCheckout, handleStripeWebhook } from './basket.js';
+import { handleCrmBooking } from './crm-account.js';
 import { crmPageResponse, addCrmPagesToSitemap, llmsTxt, setCrmAssets } from './crm-pages.js';
 import { blogResponse, addPostsToSitemap } from './crm-blog.js';
 import { trackAi } from './ai-visibility.js';
@@ -88,6 +89,7 @@ async function route(request, env) {
 
   if (path === '/api/forms') return handleForms(request, env);
   if (path === '/api/checkout') return handleCheckout(request, env);
+  if (path === '/api/crm/booking') return handleCrmBooking(request);
   if (path === '/api/stripe-webhook') return handleStripeWebhook(request, env);
   if (url.pathname.startsWith('/crm-media/')) return crmMedia(request, url);
   if (path.startsWith('/_static/')) return env.ASSETS.fetch(request);

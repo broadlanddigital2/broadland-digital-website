@@ -188,3 +188,18 @@
   window.addEventListener('bd-basket', paint);
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', paint); else paint();
 })();
+
+// Account icon: "My account" with a dot when signed in (the CRM account widget keeps its session in localStorage).
+(function () {
+  function paint() {
+    var s = null; try { s = JSON.parse(localStorage.getItem('crm-booking-session') || 'null'); } catch (e) {}
+    var on = !!(s && s.refresh_token);
+    document.querySelectorAll('[data-account-link]').forEach(function (a) {
+      a.setAttribute('aria-label', on ? 'My account' : 'Log in'); a.title = on ? 'My account' : 'Log in';
+      var d = a.querySelector('.bdh-account-dot'); if (d) d.hidden = !on;
+    });
+  }
+  window.addEventListener('storage', function (e) { if (e.key === 'crm-booking-session') paint(); });
+  window.addEventListener('crm-session-change', paint);
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', paint); else paint();
+})();

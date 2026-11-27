@@ -14,7 +14,10 @@
   var list = read(), priced = null, msg = root.querySelector('[data-msg]');
 
   function say(t, bad) { msg.hidden = !t; msg.className = 'bdb-msg' + (bad ? ' is-error' : ''); msg.innerHTML = t || ''; }
-  function body() { return { items: list.map(function (i) { return { url: i.url, opts: i.opts, qty: i.qty }; }) }; }
+  function body() {
+    var email = ''; try { var ss = JSON.parse(localStorage.getItem('crm-booking-session') || 'null'); email = (ss && ss.user && ss.user.email) || ''; } catch (e) {}
+    return { items: list.map(function (i) { return { url: i.url, opts: i.opts, qty: i.qty }; }), email: email };
+  }
 
   function render() {
     var box = root.querySelector('[data-items]'), sum = root.querySelector('[data-summary]');

@@ -279,8 +279,8 @@ const SITE_SEARCH = '<script src="https://crm.racecargraphics.uk/embed/site-sear
 // the CRM. It only remembers a visitor with "Analytics & marketing" consent (window.__crmBotTracking, set by bd-consent.js).
 const CRM_BOT = '<script src="https://crm.racecargraphics.uk/rcg-enquiry-bot.js" data-bot-key="1fc0c248-2a70-4c51-9ed0-b43b1ba5a339" defer></script>';
 function headerActions() {
-  return `<div class="bdh-actions"><button class="bdh-search" type="button" data-site-search hidden aria-label="Search the site or ask a question">${SEARCH_ICON}<span>Search</span></button><a class="bdh-phone" href="tel:${menu.phone.replace(/\s/g, '')}" aria-label="Call ${esc(menu.phone)}">${PHONE_ICON}<span>${esc(menu.phone)}</span></a>`
-    + `<a class="bdh-basket" href="/basket/" aria-label="Basket"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h2.2l2.3 11.2a2 2 0 0 0 2 1.6h7.9a2 2 0 0 0 2-1.5L21 8H6.1"/><circle cx="10" cy="20.2" r="1.3"/><circle cx="17.5" cy="20.2" r="1.3"/></svg><span class="bdh-basket-n" data-basket-count hidden>0</span></a>`
+  return `<div class="bdh-actions"><a class="bdh-phone" href="tel:${menu.phone.replace(/\s/g, '')}" aria-label="Call ${esc(menu.phone)}">${PHONE_ICON}<span>${esc(menu.phone)}</span></a>`
+    + `<span class="bdh-icons"><button class="bdh-search" type="button" data-site-search hidden aria-label="Search the site or ask a question">${SEARCH_ICON}<span>Search</span></button><a class="bdh-basket" href="/basket/" aria-label="Basket"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h2.2l2.3 11.2a2 2 0 0 0 2 1.6h7.9a2 2 0 0 0 2-1.5L21 8H6.1"/><circle cx="10" cy="20.2" r="1.3"/><circle cx="17.5" cy="20.2" r="1.3"/></svg><span class="bdh-basket-n" data-basket-count hidden>0</span></a><a class="bdh-account" href="/account/" aria-label="Log in" data-account-link><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span class="bdh-account-dot" hidden></span></a></span>`
     + `<a class="bdh-quote" href="/get-a-quote/"><span class="bdh-long">Get a quote</span><span class="bdh-short">Quote</span></a></div>`;
 }
 function sectionHeader(h, path) {
@@ -1557,6 +1557,15 @@ const BS = buildBusinessSigns({ root: ROOT, shell: shBS, write, esc, origin: ORI
 </aside></div></div></section>`);
   pg('/basket/thanks/', 'Thank you for your order', `<section class="bdb"><div class="bds-wrap" data-basket data-basket-thanks><div class="bdb-done"><h2>Thank you for your order.</h2><p>Your payment has gone through and we've emailed your receipt. We'll be in touch shortly to ask for your artwork and send a proof before anything is made.</p><a class="bdb-btn" href="/signage-home/">Back to signage</a></div></div></section>`);
   write('_static/bd-basket.js', readFileSync(join(ROOT, 'site/bd-basket.js')));
+  // Customer account (/account/): the CRM's customer account widget (sign in with an emailed code; quotes, orders,
+  // invoices, details) for the Broadland Digital business unit, through the same-site proxy /api/crm/booking.
+  write('account/index.html', shell
+    .replace('<title>Broadland Digital</title>', '<title>My account | Broadland Digital</title>')
+    .replace(/<link rel="canonical" href="[^"]*">/, `<link rel="canonical" href="${ORIGIN}/account/">`)
+    .replace('<!--crm:head-->', `<meta name="robots" content="noindex, nofollow">\n<link rel="stylesheet" href="/_static/bd-business-signs.css?v=${v('site/bd-business-signs.css')}">\n<script src="https://crm.racecargraphics.uk/embed/booking.js" defer></script>`)
+    .replace('<div class="crm-main" data-crm-blog="slot"></div>', `<section class="bdb bdacc"><div class="bds-wrap"><h1>My account</h1><p class="bdacc-lead">Sign in with your email address and we'll send you a code. No password needed. See your quotes, orders and invoices, and keep your details up to date.</p>
+<div class="bdacc-box" data-crm-booking="account" data-business="bc08f82c-908c-4ecb-8ae5-4cc5b6a4de7c" data-endpoint="/api/crm/booking" data-account-url="/account/" data-home-url="/" data-contact-url="/contact-us/" data-privacy-url="/privacy-policy/" data-booking-url="/get-a-quote/"
+ style="--crm-accent:#713FFF;--crm-on-accent:#fff;--crm-accent-hover:#5f2ef0;--crm-accent-strong:#713FFF;--crm-accent-bright:#b49bff;--crm-on-bright:#1e1139;--crm-accent-line:#d9ccff;--crm-accent-wash:#f1ecff;--crm-panel:#2a2d32;--crm-panel-deep:#202226;--crm-panel-raised:#34373d"></div></div></section>`));
 }
 writeFileSync(join(ROOT, 'worker/business-signs.json'), JSON.stringify({ live: BS.live }) + '\n');
 write('_crm-page/index.html', pruneAssets(sh));

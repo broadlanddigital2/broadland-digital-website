@@ -52,6 +52,8 @@ export async function handleCheckout(request, env = {}) {
   f.set('shipping_address_collection[allowed_countries][0]', 'GB');
   f.set('phone_number_collection[enabled]', 'true');
   f.set('locale', 'en-GB');
+  const email = String(b.email || '').trim().toLowerCase();
+  if (/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email) && email.length < 254) f.set('customer_email', email); // signed in on /account/
   priced.lines.forEach((l, i) => {
     f.set(`line_items[${i}][quantity]`, String(l.qty));
     f.set(`line_items[${i}][price_data][currency]`, 'gbp');

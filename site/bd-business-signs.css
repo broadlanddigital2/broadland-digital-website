@@ -654,3 +654,9 @@ details[open] .bdp-plus:after{transform:rotate(0)}
 .bdb-done h2{font:800 30px/1.2 Adelle,adelle,Georgia,serif;margin:0 0 10px}
 @media (max-width:900px){.bdb-grid{grid-template-columns:1fr}.bdb-summary{position:static}}
 @media (max-width:560px){.bdb-item{grid-template-columns:76px minmax(0,1fr)}.bdb-item img,.bdb-noimg{width:76px;height:60px}.bdb-price{grid-column:2;text-align:left}}
+
+/* My account */
+.bdacc .bds-wrap{max-width:980px}
+.bdacc-lead{margin:-10px 0 26px;font-size:17px;line-height:1.6;color:#5e6168;max-width:640px}
+.bdacc-box{display:block;min-height:320px;padding:28px;border-radius:20px;background:#fff;border:1px solid #e6e3ee;box-shadow:0 12px 34px rgba(42,45,50,.07)}
+@media (max-width:560px){.bdacc-box{padding:16px}}
