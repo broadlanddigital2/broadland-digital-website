@@ -1522,10 +1522,10 @@ for (const [p, h] of FINISHED) write(p === '/' ? 'index.html' : `${p.slice(1)}/i
 writeFileSync(join(ROOT, 'worker/seo-sections.json'), JSON.stringify({ sections: SEO_SECTIONS, videos: VIDEOS, pools: Object.fromEntries([...(FINISHED.pools || new Map())].map(([k, list]) => [k, list.map((t) => ({ src: (t.match(/\ssrc="([^"]+)"/) || [])[1], alt: decode((t.match(/\salt="([^"]*)"/) || [])[1] || '') })).filter((x) => x.src)])) }) + '\n');
 const sh = shell();
 // Business signs section (content/business-signs.json → dist/business-signs/; test site only while "staging")
-// Business signs use the finished home page's header and footer (menus, redirect-free links, image sizes), so they
+// Business signs use the main signage page's (purple) header and footer (menus, redirect-free links, image sizes), so they
 // always match the main site.
 const shBS = (() => {
-  const home = FINISHED.get('/') || '';
+  const home = FINISHED.get('/signage-home') || FINISHED.get('/') || '';
   const pick = (h, re) => (h.match(re) || [])[0];
   const HDR = /<header\b[^>]*id="masthead"[\s\S]*?<\/header>/, FTR = /<footer\b[\s\S]*?<\/footer>/;
   let h = sh;

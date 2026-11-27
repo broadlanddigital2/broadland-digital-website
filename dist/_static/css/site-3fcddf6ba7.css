@@ -3351,12 +3351,7 @@ details[open] .bdp-plus:after{transform:rotate(0)}
 @media (max-width:1000px){.baw-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:640px){.baw-grid{grid-template-columns:1fr}.baw-help{grid-template-columns:1fr;text-align:left}.baw-help-art{width:60px;height:60px}}
 
-/* "Not sure which sign" band: a card on a light background, separated from the dark footer */
-.bds-band{background:var(--soft,#f5f2ff);color:#fff;padding:64px 0 72px}
-.bds-band .bds-wrap{position:relative;overflow:hidden;padding:44px 48px;border-radius:24px;background:linear-gradient(120deg,var(--c) 0%,#5326d6 100%);box-shadow:0 20px 44px rgba(83,38,214,.22)}
-.bds-band .bds-wrap:before{content:"";position:absolute;right:-60px;top:-80px;width:260px;height:260px;border-radius:50%;background:rgba(255,255,255,.08);pointer-events:none}
-.bds-band .bds-wrap>*{position:relative}
-.bds-band .bds-btn{background:#fff!important;color:var(--c)!important}
-.bds-band .bds-btn--ghost{background:transparent!important;color:#fff!important;border:2px solid rgba(255,255,255,.7)}
-.bds-band p{color:rgba(255,255,255,.88)}
-@media (max-width:640px){.bds-band{padding:44px 0 52px}.bds-band .bds-wrap{padding:30px 24px;border-radius:18px;margin:0 16px;width:auto}}
+/* FAQs and closing band reuse the signage hub's components; just the note under the FAQ heading and the sticky-nav offset */
+.bds .bdhub-faq{scroll-margin-top:calc(var(--bdp-top,0px) + 70px)}
+.bds .bds-faq-note{margin:16px 0 0;font-size:16px;line-height:1.6;color:#5b5e66}
+.bds .bds-faq-note a{color:var(--c,#713FFF);font-weight:700}

@@ -70,7 +70,13 @@ export function buildBusinessSigns({ root, shell, write, esc, origin }) {
   const priceText = (p) => (p.price ? `From ${money(p.price)} <small>+ VAT</small>` : staging ? '<span class="bds-todo">Price to be set</span>' : 'Price on request');
   const card = (p) => `<a class="bds-card" href="${p.url}">${image(p.images[0], 'bds-card-img')}<span class="bds-card-body"><span class="bds-card-title">${esc(p.h1)}</span><span class="bds-card-sum">${esc(p.lead)}</span><span class="bds-card-price">${priceText(p)}</span></span></a>`;
   const catCard = (c) => `<a class="bds-tile" href="${c.url}"><span class="bds-tile-title">${esc(c.name)}</span><span class="bds-tile-desc">${esc(c.metaDescription)}</span><span class="bds-tile-go">${(byCat.get(c.key) || []).length} products ${ARROW}</span></a>`;
-  const band = `<section class="bds-band"><div class="bds-wrap"><div><h2>Not sure which sign you need?</h2><p>Tell us where it's going and what it needs to say, and we'll recommend the right material and size.</p></div><p class="bds-actions"><a class="bds-btn" href="/get-a-quote/">Get a quote</a><a class="bds-btn bds-btn--ghost" href="tel:${PHONE.replace(/\s/g, '')}">Call ${PHONE}</a></p></div></section>`;
+  // closing band and FAQs: the main signage section's own components (.bdhub-band / .bdhub-faq in bd-pages.css)
+  const band = `<div class="bdhub"><section class="bdhub-band"><div class="wrap"><div><h2>Not sure which sign you need?</h2><p>Tell us where it's going and what it needs to say, and we'll recommend the right material and size.</p></div>
+<div class="bdhub-cta"><a class="bdhub-btn bdhub-btn--solid" href="/get-a-quote/?service=signage">Get a free quote</a><a class="bdhub-btn bdhub-btn--ghost" href="tel:${PHONE.replace(/\s/g, '')}">Call ${PHONE}</a></div></div></section></div>`;
+  const faqBlock = (title, faqs, id = 'faqs') => `<div class="bdhub"><section class="bdhub-faq" id="${id}" aria-labelledby="${id}-h"><div class="wrap">
+<div><h2 id="${id}-h">${title}</h2><p class="bds-faq-note">Can't see your question? Call <a href="tel:${PHONE.replace(/\s/g, '')}">${PHONE}</a> or send an enquiry.</p></div>
+<div class="bdhub-faqs">${faqs.map((f, i) => `<details name="${id}"${i === 0 ? ' open' : ''}><summary>${esc(f.q)}</summary><p>${inline(f.a)}</p></details>`).join('')}</div>
+</div></section></div>`;
   const panel = (rows, extra = '') => (!staging ? '' : `<aside class="bds-dev" aria-label="SEO panel (test site only)"><div class="bds-wrap"><p class="bds-dev-head"><b>Test page: not live.</b> Only shown on the preview address; noindex, not in the sitemap.</p><dl>${rows.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${v}</dd>`).join('')}</dl>${extra}</div></aside>`);
   const lenFlag = (s, max) => `${esc(s)} <span class="bds-len${s.length > max ? ' bad' : ''}">${s.length}/${max}</span>`;
   const seoRows = (x) => [['Primary keyword', esc(x.primary) + vol(x.primaryVolume)], ['Secondary keywords', esc((x.secondary || []).join(', '))],
@@ -118,7 +124,7 @@ ${panel([...seoRows(hub), ['Pages', `${listed.length} categories, ${prods.length
     const body = `<section class="bds-hero bds-hero--slim"><div class="bds-wrap">${crumbs(trail)}<h1>${esc(c.h1)}</h1><p class="bds-lead">${esc(c.metaDescription)}</p></div></section>
 <section class="bds-section"><div class="bds-wrap"><div class="bds-grid">${list.map(card).join('')}</div></div></section>
 ${c.intro?.length ? `<section class="bds-section bds-section--alt"><div class="bds-wrap bds-copy"><h2>About ${esc(c.name.toLowerCase())}</h2>${paras(c.intro)}</div></section>` : ''}
-${c.faqs?.length ? `<section class="bds-section"><div class="bds-wrap bds-copy"><h2>${esc(c.name)} FAQs</h2><div class="bds-faqs">${c.faqs.map((f) => `<details><summary>${esc(f.q)}</summary><p>${inline(f.a)}</p></details>`).join('')}</div></div></section>` : ''}
+${c.faqs?.length ? faqBlock(`${esc(c.name)} FAQs`, c.faqs, 'cat-faqs') : ''}
 <section class="bds-section bds-section--alt"><div class="bds-wrap"><h2>Other sign types</h2><p class="bds-chips">${others.map((o) => `<a href="${o.url}">${esc(o.name)}</a>`).join('')}</p></div></section>
 ${panel([...seoRows(c), ['Products', String(list.length)], ['FAQs', c.faqs?.length ? String(c.faqs.length) : '<span class="bds-todo">none yet</span>'], ['Category copy', c.intro?.length ? `${c.intro.length} paragraphs` : '<span class="bds-todo">to be written: add "intro" (a list of paragraphs) to this category</span>']])}${band}`;
     paths.push(page({ url: c.url, title: c.metaTitle, desc: c.metaDescription, body,
@@ -219,7 +225,7 @@ ${help ? `<div class="baw-help ${reveal}"><div class="baw-help-art" aria-hidden=
     }
     if (has('faqs')) {
       nav.push(['faqs', 'FAQs']);
-      out.push(`<section class="bdp-sec" id="faqs"><div class="bds-wrap bdp-split">${head('Questions', `${esc(short(p.h1))} FAQs`, `Can't see your question? Call <a href="tel:${PHONE.replace(/\s/g, '')}">${PHONE}</a> or send an enquiry.`)}<div class="bdp-faqs ${reveal}">${p.faqs.map((f, i) => `<details name="bdp-faq"${i === 0 ? ' open' : ''}><summary>${esc(f.q)}<span class="bdp-plus" aria-hidden="true"></span></summary><div class="bdp-ans"><p>${inline(f.a)}</p></div></details>`).join('')}</div></div></section>`);
+      out.push(faqBlock(`${esc(short(p.h1))} FAQs`, p.faqs));
     }
     const bar = nav.length > 1 ? `<nav class="bdp-nav" aria-label="On this page" data-bdp-nav><div class="bds-wrap bdp-nav-in"><div class="bdp-nav-links">${nav.map(([id, label]) => `<a href="#${id}">${esc(label)}</a>`).join('')}</div><div class="bdp-nav-buy"><span class="bdp-nav-name">${esc(short(p.h1))}</span>${p.price ? `<span class="bdp-nav-price" data-live-price>From ${money(p.price)}</span>` : ''}<a class="bds-btn bds-btn--sm" href="#configure">Configure</a></div></div><span class="bdp-progress" aria-hidden="true"></span></nav>` : '';
     return bar + out.join('\n');
