@@ -6,8 +6,8 @@
  *
  * Needs the worker secrets STRIPE_SECRET_KEY and STRIPE_WEBHOOK_SECRET (Cloudflare → Workers → this worker → Settings →
  * Variables and Secrets). Until STRIPE_SECRET_KEY is set, checkout answers "not switched on" and the basket page offers
- * to send the basket as an order enquiry instead. Delivery: BASKET_DELIVERY_PENCE (ex VAT, var in wrangler.jsonc).
- * Prices on the site are ex VAT; the customer pays them plus 20% VAT (a separate line) plus delivery.
+ * to send the basket as an order enquiry instead. Delivery is agreed with the
+ * customer separately (not charged here). Prices on the site are ex VAT; the customer pays them plus 20% VAT (a separate line).
  */
 import CATALOG from './business-signs-catalog.json' with { type: 'json' };
 import { priceItem } from './sign-pricing.js';
@@ -43,7 +43,6 @@ export async function handleCheckout(request, env = {}) {
   if (b.quote) return json({ ok: true, lines: priced.lines, net: priced.net }); // basket page: server prices
   if (!env.STRIPE_SECRET_KEY) return json({ error: 'Online payment isn’t switched on yet. You can send your basket to us as an order instead and we’ll send a payment link with your proof.', offline: true }, 503);
 
-  const delivery = Math.max(0, Math.round(Number(env.BASKET_DELIVERY_PENCE || 0)));
   const f = new URLSearchParams();
   f.set('mode', 'payment');
   f.set('success_url', `${self.origin}/basket/thanks/?session_id={CHECKOUT_SESSION_ID}`);
@@ -66,12 +65,8 @@ export async function handleCheckout(request, env = {}) {
   const n = priced.lines.length;
   f.set(`line_items[${n}][quantity]`, '1');
   f.set(`line_items[${n}][price_data][currency]`, 'gbp');
-  f.set(`line_items[${n}][price_data][unit_amount]`, String(Math.round((priced.net + delivery) * VAT)));
+  f.set(`line_items[${n}][price_data][unit_amount]`, String(Math.round(priced.net * VAT)));
   f.set(`line_items[${n}][price_data][product_data][name]`, 'VAT (20%)');
-  f.set('shipping_options[0][shipping_rate_data][type]', 'fixed_amount');
-  f.set('shipping_options[0][shipping_rate_data][display_name]', env.BASKET_DELIVERY_LABEL || 'UK delivery');
-  f.set('shipping_options[0][shipping_rate_data][fixed_amount][amount]', String(delivery));
-  f.set('shipping_options[0][shipping_rate_data][fixed_amount][currency]', 'gbp');
   // what was ordered, for the CRM lead (Stripe metadata values are limited to 500 characters each)
   f.set('metadata[source]', 'business-signs-basket');
   priced.lines.slice(0, 40).forEach((l, i) => f.set(`metadata[item_${i + 1}]`, `${l.qty} × ${l.name}${l.desc ? ` (${l.desc})` : ''} @ £${l.each.toFixed(2)}`.slice(0, 500)));
@@ -113,10 +108,10 @@ export async function handleStripeWebhook(request, env = {}) {
   const details = [
     `First name: ${first}`, rest.length ? `Last name: ${rest.join(' ')}` : '', `Email: ${c.email || ''}`, c.phone ? `Phone: ${c.phone}` : '',
     `Product: Business signs order (paid online)`,
-    `\nMessage:\nPAID ONLINE: £${((s.amount_total || 0) / 100).toFixed(2)} inc VAT and delivery (Stripe ${s.payment_intent || s.id}).`,
+    `\nMessage:\nPAID ONLINE: £${((s.amount_total || 0) / 100).toFixed(2)} inc VAT (Stripe ${s.payment_intent || s.id}).`,
     `\nItems:\n${items.join('\n')}`,
     ship.address ? `\nDeliver to: ${ship.name || name}, ${addr(ship.address)}` : '', c.address ? `Billing address: ${addr(c.address)}` : '',
-    '\nNext step: ask for artwork and send a proof before production.',
+    '\nNext step: agree delivery or fitting, ask for artwork and send a proof before production.',
   ].filter(Boolean).join('\n');
   const ok = await sendCrmLead({ subject: `Paid order: business signs (£${((s.amount_total || 0) / 100).toFixed(2)})`, details, email: c.email || '', name, page_url: '/basket/' });
   return ok ? json({ received: true }) : json({ error: 'CRM unavailable' }, 500); // 500 → Stripe retries
