@@ -3499,3 +3499,9 @@ details[open] .bdp-plus:after{transform:rotate(0)}
 @container (max-width:570px){.bfc .bfc-index{color:#fff;background:#713FFF;border-radius:50%}}
 .bdp-features .bdp-ic,.bdp-checklist .bdp-ic,.bdp-plus,.bds-subnav a:hover,.bdp-nav-links a:hover{background:#f1ecff}
 .baw-icon{background:#f1ecff}
+
+/* Preview banner in the site's bright purple (no dark scrim) */
+.bdp-builder.sign-preview-banner{background:linear-gradient(112deg,#713FFF 0%,#5f2ef0 100%);box-shadow:0 8px 20px rgb(113 63 255 / 22%),0 2px 4px rgb(54 28 107 / 12%)}
+@media (hover:hover){.bdp-builder.sign-preview-banner:hover{box-shadow:0 13px 25px rgb(113 63 255 / 32%),0 3px 6px rgb(54 28 107 / 14%)}}
+.sign-preview-banner .sign-preview-description{color:#fff}
+.sign-preview-banner .sign-preview-arrow{background:#fff;color:#713FFF}
