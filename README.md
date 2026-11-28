@@ -41,6 +41,24 @@ the same header and footer.
 - **Sitemap and llms.txt** add the CRM's pages and posts to the static ones; AI crawler visits are reported to the CRM
   (Marketing → SEO tracking) from the live domain only.
 
+## Shop products (`/product/…`: van graphics, liquid wrapping, Full Dip)
+
+The 57 shop products are edited in the CRM: **Commerce → Products** with Broadland Digital chosen (table
+`shop_products`, imported from the WordPress products on 28 Nov 2026). Saved changes go live with the hourly
+**Publish from CRM**: `tools/fetch-crm.mjs` saves them to `crm-data/shop-products.json` (seo-feed `?products=1`) and,
+when they changed, rebuilds the site.
+
+- **What the CRM controls:** title (renaming it also changes the page heading), price (van packages: "From £… + VAT",
+  blank = "Quoted per van"; Full Dip: blank = "Priced on request"; liquid wrapping pages always say "Quoted per
+  vehicle"), price note, shop categories, short intro, description (blank lines = paragraphs), the tick list, images
+  (first = main picture, the rest = the "Vans we've done" gallery), FAQs, meta title and description, and Live/Hidden.
+- **Hidden** products aren't built: their address redirects to `/shop/` and they drop out of the shop lists and switches.
+- **Blank fields** keep the page's own wording, so the site is unchanged until something is edited.
+- `tools/build.mjs` applies them (`SHOP`, `productContent()`); the page designs stay in the build. A product added
+  in the CRM with an address the site doesn't have isn't built yet (each product type has its own page design).
+- `BD_EXPORT_PRODUCTS=1 node tools/build.mjs` writes what every product page shows to
+  `content/shop-products-export.json` (how the import was made).
+
 ## Business signs section (`/business-signs/`)
 
 A shop-style section: a hub, 25 categories and 195 products, edited in the CRM and built (with `content/business-signs.json`) by

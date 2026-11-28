@@ -12,7 +12,7 @@
 //
 // Pages the CRM manages (Marketing → SEO pages) and the blog are not built here: the worker serves them live inside
 // dist/_crm-page, a copy of a WordPress page with its content taken out (see worker/crm-pages.js).
-import { finishSeo, pruneAssets, NOINDEX as SEO_NOINDEX } from './seo.mjs';
+import { finishSeo, pruneAssets, NOINDEX as SEO_NOINDEX, faqSet as faqSetFor } from './seo.mjs';
 import { buildBusinessSigns } from './business-signs.mjs';
 import { readFileSync, writeFileSync, mkdirSync, rmSync, existsSync, readdirSync, statSync, copyFileSync, cpSync } from 'node:fs';
 import { createHash } from 'node:crypto';
@@ -29,6 +29,42 @@ const VEH = JSON.parse(readFileSync(join(ROOT, 'content/vehicle.json'), 'utf8'))
 const OPTS = existsSync(join(ROOT, 'content/opt-srcset.json')) ? JSON.parse(readFileSync(join(ROOT, 'content/opt-srcset.json'), 'utf8')) : {};
 const OPT = existsSync(join(ROOT, 'content/opt-images.json')) ? JSON.parse(readFileSync(join(ROOT, 'content/opt-images.json'), 'utf8')) : {};
 const IMG_SIZES_EARLY = existsSync(join(ROOT, 'content/img-sizes.json')) ? JSON.parse(readFileSync(join(ROOT, 'content/img-sizes.json'), 'utf8')) : {};
+// ---------- Shop products from the CRM (CRM → Products, Broadland Digital) ----------
+// tools/fetch-crm.mjs saves them to crm-data/shop-products.json. A product edited there replaces the WordPress
+// product's title, price, pictures and categories here, and its wording on the product page (see productContent);
+// a hidden product isn't built (its address redirects to the shop). BD_EXPORT_PRODUCTS=1 writes what each product
+// page currently shows to content/shop-products-export.json (used for the first import into the CRM).
+const SHOP_FILE = join(ROOT, 'crm-data/shop-products.json');
+const SHOP = new Map((existsSync(SHOP_FILE) ? JSON.parse(readFileSync(SHOP_FILE, 'utf8')).products || [] : []).map((p) => [String(p.path).replace(/\/+$/, ''), p]));
+const SHOP_HIDDEN = new Set([...SHOP.values()].filter((p) => !p.is_active).map((p) => String(p.path).replace(/\/+$/, '')));
+const WP_TITLE = new Map(wp.products.map((p) => [p.path, p.title]));
+wp.products = wp.products.filter((p) => !SHOP_HIDDEN.has(p.path)).map((p) => {
+  const c = SHOP.get(p.path);
+  if (!c) return p;
+  const img = (c.images || [])[0];
+  return { ...p, title: c.title || p.title, price: c.price != null ? Number(c.price) : 0, categories: (c.categories || []).length ? c.categories : p.categories,
+    image: img?.url && img.url !== c.source?.image ? { ...(p.image || {}), src: img.url, alt: img.alt || p.image?.alt || c.title } : p.image };
+});
+const PRODUCT_EXPORT = new Map();
+// What a product page shows: the CRM's wording where it has some, else the page's own (cur).
+function productContent(path, cur) {
+  PRODUCT_EXPORT.set(path, cur);
+  const c = SHOP.get(path);
+  if (!c) return cur;
+  const paras = String(c.description || '').split(/\n\s*\n/).map((t) => t.replace(/\s+/g, ' ').trim()).filter(Boolean);
+  const feats = (c.features || []).map((x) => String(typeof x === 'string' ? x : x?.text || '').trim()).filter(Boolean);
+  const imgs = (c.images || []).filter((i) => i?.url);
+  const renamed = c.title && c.title !== WP_TITLE.get(path);
+  return { ...cur, title: c.title || cur.title, h1: renamed ? c.title.replace(/\.?$/, '.') : cur.h1, lead: String(c.summary || '').trim() || cur.lead,
+    paras: paras.length ? paras : cur.paras, features: feats.length ? feats : cur.features, priceNote: String(c.price_note || '').trim() || cur.priceNote,
+    // gallery: the page's own <img> (with its srcset) for a picture it already had, else a plain one
+    gallery: imgs.length ? imgs.slice(1).map((i) => {
+      const had = (cur.gallery || []).find((t) => (t.match(/\ssrc="([^"]+)"/) || [])[1] === i.url);
+      return had ? had.replace(/\salt="[^"]*"/, ` alt="${esc(i.alt || '')}"`) : `<img src="${esc(OPT[i.url] || i.url)}" alt="${esc(i.alt || '')}">`;
+    }) : cur.gallery,
+    // main picture: only when it was changed in the CRM (liquid wrapping pages keep their own banner picture otherwise)
+    hero: imgs[0]?.url && imgs[0].url !== c.source?.image ? imgs[0].url : cur.hero };
+}
 const productTitle = new Map(wp.products.map((p) => [p.path, p.title]));
 const lastmod = new Map([...wp.pages, ...wp.products].map((p) => [p.path, p.modified]));
 
@@ -48,7 +84,7 @@ const crmPages = [...captured].filter(([, h]) => h.includes('crmseo-main')).map(
 // The blog (/blog, and the old /guides/<post> addresses) is served live from the CRM by the worker.
 // The van graphics shop lists every package on one page now: its old WordPress "page 2" redirects to it.
 const MERGED_PAGES = { '/category/signage/vehicle-graphics/page/2': '/category/signage/vehicle-graphics/' };
-const staticPaths = new Set([...captured.keys()].filter((p) => !crmPages.includes(p) && p !== '/blog' && !p.startsWith('/guides/') && !MERGED_PAGES[p]));
+const staticPaths = new Set([...captured.keys()].filter((p) => !crmPages.includes(p) && p !== '/blog' && !p.startsWith('/guides/') && !MERGED_PAGES[p] && !SHOP_HIDDEN.has(p)));
 
 // ---------- Assets ----------
 const assetVersion = new Map();
@@ -897,6 +933,9 @@ function vanProductPage(h, path) {
   lead = lead.trim();
   const restOfFirst = (paras[0] || '').slice(lead.length).trim();
   if (restOfFirst) paras.splice(1, 0, restOfFirst);
+  // CRM → Products wording (when edited there), else the WordPress page's own
+  const pcv = productContent(path, { family: 'van', title: me.title, h1, lead, paras: paras.slice(1), features: includes, gallery: [...gallery], hero: me.img, priceNote: '' });
+  gallery.splice(0, gallery.length, ...pcv.gallery);
   // switches: the same package for another van size / the other fitting option
   const chip = (p, label, on) => (p ? `<a href="${p.path}/"${on ? ' aria-current="page"' : ''}>${esc(label)}</a>` : `<span class="bdvg-off" title="Not available">${esc(label)}</span>`);
   const switches = `<nav class="bdvg-filter" aria-label="Choose van size and fitting"><div class="wrap">
@@ -905,9 +944,9 @@ function vanProductPage(h, path) {
 </div></nav>`;
   const hero = `<section class="bdhub-hero bdvp-hero"><div class="wrap"><div class="bdhub-hero-text">${crumbs}
 <span class="bdhub-eyebrow">${esc(tier.name)} package · ${esc(size.name)}</span>
-<h1>${esc(h1)}</h1>
-<p class="bdhub-lead">${esc(lead)}</p>
-<div class="bdvp-buy"><div class="bdvp-price"><span>${fitWord[me.fit]}</span>${me.price ? `<b>From £${esc(me.price)}</b><small>+ VAT</small>` : '<b>Quoted per van</b><small>Send photos of your van for a price</small>'}</div>
+<h1>${esc(pcv.h1)}</h1>
+<p class="bdhub-lead">${esc(pcv.lead)}</p>
+<div class="bdvp-buy"><div class="bdvp-price"><span>${fitWord[me.fit]}</span>${me.price ? `<b>From £${esc(me.price)}</b><small>${esc(pcv.priceNote || '+ VAT')}</small>` : `<b>Quoted per van</b><small>${esc(pcv.priceNote || 'Send photos of your van for a price')}</small>`}</div>
 ${other ? `<a class="bdvp-alt" href="${other.path}/">${other.fit === 'fitted' ? 'Rather we fit it?' : 'Fitting it yourself?'} ${fitWord[other.fit]} ${priceTxt(other)} →</a>` : ''}</div>
 <div class="bdhub-cta"><a class="bdhub-btn bdhub-btn--solid" href="#enquiry" data-enquire="${esc(enquire)}">${wrap ? 'Ask for a wrap quote' : 'Enquire now'}</a><a class="bdhub-btn bdhub-btn--ghost" href="tel:${tel}">Call ${esc(menu.phone)}</a></div></div>
 ${me.img ? `<figure class="bdhub-hero-img bdvg-hero-img bdvg-hero-img--fill"><img src="${esc(me.img)}" alt="${esc(me.title)} package" width="${sz[0]}" height="${sz[1]}" fetchpriority="high"></figure>` : ''}
@@ -919,8 +958,8 @@ ${me.img ? `<figure class="bdhub-hero-img bdvg-hero-img bdvg-hero-img--fill"><im
     ['Proof first', 'Nothing is printed until you approve the layout on your van'],
   ];
   const included = `<section class="bdhub-intro"><div class="wrap bdvp-inc"><h2>What's included.</h2><div class="bdhub-text">
-${paras.slice(1).map((t) => `<p>${esc(t)}</p>`).join('') || `<p>${esc(tier.text)}</p>`}
-${includes.length ? `<ul class="bdvp-ticks">${includes.map((l) => `<li>${esc(l)}</li>`).join('')}</ul>` : ''}
+${pcv.paras.map((t) => `<p>${esc(t)}</p>`).join('') || `<p>${esc(tier.text)}</p>`}
+${pcv.features.length ? `<ul class="bdvp-ticks">${pcv.features.map((l) => `<li>${esc(l)}</li>`).join('')}</ul>` : ''}
 <dl class="bdvp-facts">${facts.map(([a, b]) => `<div><dt>${esc(a)}</dt><dd>${esc(b)}</dd></div>`).join('')}</dl>
 </div></div></section>`;
   const big = (tag) => { const ss = (tag.match(/srcset="([^"]*)"/) || [])[1] || ''; const c = ss.split(',').map((x) => x.trim().split(/\s+/)).filter((x) => x[1]).sort((a, b) => parseInt(b[1]) - parseInt(a[1])); const fit = c.find((x) => parseInt(x[1]) <= 1600); return (fit || c[c.length - 1] || [(tag.match(/src="([^"]+)"/) || [])[1]])[0]; };
@@ -1005,7 +1044,10 @@ function liquidProductPage(h, path) {
   const sents = (paras[0] || tier[2]).match(/[^.!?]+[.!?]+/g) || [paras[0] || tier[2]];
   let lead = ''; for (const x of sents) { if (lead && (lead + x).length > 220) break; lead += x; }
   lead = lead.trim();
-  const restParas = [(paras[0] || '').slice(lead.length).trim(), ...paras.slice(1)].filter(Boolean);
+  const restParas0 = [(paras[0] || '').slice(lead.length).trim(), ...paras.slice(1)].filter(Boolean);
+  // CRM → Products wording (when edited there), else the WordPress page's own
+  const pcv = productContent(path, { family: 'liquid', title: me.title, h1, lead, paras: restParas0, features: includes, gallery: [], hero: heroSrc, priceNote: '' });
+  const restParas = pcv.paras;
   const enquire = `${me.title} – liquid wrapping (quoted per vehicle)`;
   const hsz = IMG_SIZES_EARLY[heroSrc] || [1200, 900];
   const chip = (p, label, on) => (p ? `<a href="${p.path}/"${on ? ' aria-current="page"' : ''}>${esc(label)}</a>` : `<span class="bdvg-off">${esc(label)}</span>`);
@@ -1015,11 +1057,11 @@ function liquidProductPage(h, path) {
 </div></nav>`;
   const hero = `<section class="bdhub-hero bdvp-hero"><div class="wrap"><div class="bdhub-hero-text">${crumbs}
 <span class="bdhub-eyebrow">${esc(tierName)} package · ${esc(LIQUID_SIZE_NAMES[me.size])}</span>
-<h1>${esc(h1)}</h1>
-<p class="bdhub-lead">${esc(lead)}</p>
-<div class="bdvp-buy"><div class="bdvp-price"><span>Applied at our Norwich workshop</span><b>Quoted per vehicle</b><small>Send the make, model and colour you want for a price</small></div></div>
+<h1>${esc(pcv.h1)}</h1>
+<p class="bdhub-lead">${esc(pcv.lead)}</p>
+<div class="bdvp-buy"><div class="bdvp-price"><span>Applied at our Norwich workshop</span><b>Quoted per vehicle</b><small>${esc(pcv.priceNote || 'Send the make, model and colour you want for a price')}</small></div></div>
 <div class="bdhub-cta"><a class="bdhub-btn bdhub-btn--solid" href="#enquiry" data-enquire="${esc(enquire)}">Ask for a quote</a><a class="bdhub-btn bdhub-btn--ghost" href="tel:${tel}">Call ${esc(menu.phone)}</a></div></div>
-${heroSrc ? `<figure class="bdhub-hero-img"><img src="${esc(heroSrc)}" alt="${esc(h1.replace(/\.$/, ''))} by Broadland Digital" width="${hsz[0]}" height="${hsz[1]}" fetchpriority="high"></figure>` : ''}
+${pcv.hero ? `<figure class="bdhub-hero-img"><img src="${esc(pcv.hero)}" alt="${esc(pcv.h1.replace(/\.$/, ''))} by Broadland Digital" width="${(IMG_SIZES_EARLY[pcv.hero] || hsz)[0]}" height="${(IMG_SIZES_EARLY[pcv.hero] || hsz)[1]}" fetchpriority="high"></figure>` : ''}
 </div></section>`;
   const finish = { budget: 'Matt as standard; add a glossifier for a satin finish', standard: 'Matt as standard; add a glossifier for a satin finish', premium: 'OEM gloss that looks factory fresh', ultra: 'Better than OEM: fully flatted and mopped for a show shine' }[me.tier];
   const facts = [
@@ -1030,7 +1072,7 @@ ${heroSrc ? `<figure class="bdhub-hero-img"><img src="${esc(heroSrc)}" alt="${es
   ];
   const included = `<section class="bdhub-intro"><div class="wrap bdvp-inc"><h2>What's included.</h2><div class="bdhub-text">
 ${restParas.map((t) => `<p>${esc(t)}</p>`).join('') || `<p>${esc(tier[2])}</p>`}
-${includes.length ? `<ul class="bdvp-ticks">${includes.map((l) => `<li>${esc(l)}</li>`).join('')}</ul>` : ''}
+${pcv.features.length ? `<ul class="bdvp-ticks">${pcv.features.map((l) => `<li>${esc(l)}</li>`).join('')}</ul>` : ''}
 <dl class="bdvp-facts">${facts.map(([a, b]) => `<div><dt>${esc(a)}</dt><dd>${esc(b)}</dd></div>`).join('')}</dl>
 </div></div></section>`;
   const tiers = LIQUID_TIERS.map(([k, n]) => ({ k, n, p: find(k, me.size) }));
@@ -1070,7 +1112,7 @@ const DIP_PRODUCTS = new Map(wp.products.filter((p) => p.path.startsWith('/produ
   const kind = p.categories.includes('Full Dip Primers') ? 'primer' : p.categories.includes('Full Dip Glossifier') ? 'gloss' : 'colour';
   const title = decode(p.title).replace(/\s+/g, ' ').trim();
   const name = title.replace(/^Full Dip\s+/i, '').replace(/\s+(Spray Wrap|Primer)$/i, '').trim();
-  return [p.path, { path: p.path, title, name, kind, img: OPT[p.image?.src] || p.image?.src || '' }];
+  return [p.path, { path: p.path, title, name, kind, img: OPT[p.image?.src] || p.image?.src || '', price: SHOP.has(p.path) && p.price > 0 ? p.price : 0 }];
 }));
 const DIP_KIND = { colour: 'Solid colour', primer: 'Primer', gloss: 'Glossifier' };
 const DIP_NEED = [
@@ -1100,6 +1142,15 @@ function dipProductPage(h, path) {
     primer: `Full Dip ${lc} primer goes on first, under your Full Dip colour, for an even finish and a cleaner peel later on.`,
     gloss: 'Full Dip glossifier is a clear top coat for Full Dip colours: one coat gives a satin finish, two more give a gloss finish.',
   }[me.kind];
+  const intro = {
+    colour: [`Full Dip is a liquid vinyl: sprayed on like paint, it dries to an elastic, durable film that protects the surface underneath. ${me.name} comes with a matt finish as standard; add Full Dip glossifier on top for satin or gloss.`, 'It cleans with most car soaps and copes with water, mud and pressure washing. When you want a change, it peels off and leaves the original surface as it was.'],
+    primer: ['A primer gives the colour coats an even base to sit on. We recommend a grey primer under every Full Dip colour except black and grey.', 'Like the colour coats, the primer is part of the peelable film, so the whole lot comes off together when you remove the wrap.'],
+    gloss: ['Full Dip colours dry matt. The glossifier is sprayed over the colour once it has dried: one coat for a satin look, two additional coats for a glossy finish.', 'It becomes part of the same peelable film, so it comes off with the colour when you remove the wrap.'],
+  }[me.kind];
+  const ticks0 = ['Dries to a tough, elastic and durable film', 'Peels off when you want a change', 'Cleans with most soaps; resists water, mud and pressure washing', "Won't crack or peel off by itself with time"];
+  // CRM → Products wording (when edited there), else the standard Full Dip wording
+  const pcv = productContent(path, { family: 'dip', title: me.title, h1: me.title + '.', lead, paras: intro, features: ticks0, gallery: [], hero: me.img, priceNote: '' });
+  const ticks = pcv.features;
   const enquire = `${me.title} – price and stock`;
   const hsz = IMG_SIZES_EARLY[me.img] || [1080, 1080];
   const chip = (p, label, on) => (p ? `<a href="${p.path}/"${on ? ' aria-current="page"' : ''}>${esc(label)}</a>` : `<span class="bdvg-off">${esc(label)}</span>`);
@@ -1109,18 +1160,12 @@ function dipProductPage(h, path) {
   const switches = `<nav class="bdvg-filter bdfd-filter" aria-label="Choose type and colour"><div class="wrap">${typeRow}${listRow}</div></nav>`;
   const hero = `<section class="bdhub-hero bdvp-hero"><div class="wrap"><div class="bdhub-hero-text">${crumbs}
 <span class="bdhub-eyebrow">Full Dip spray wrap · ${esc(DIP_KIND[me.kind])}</span>
-<h1>${esc(me.title)}.</h1>
-<p class="bdhub-lead">${esc(lead)}</p>
-<div class="bdvp-buy"><div class="bdvp-price"><span>Aerosol or 4 litre premixed tin</span><b>Priced on request</b><small>Ask for today's price and stock</small></div></div>
+<h1>${esc(pcv.h1)}</h1>
+<p class="bdhub-lead">${esc(pcv.lead)}</p>
+<div class="bdvp-buy"><div class="bdvp-price"><span>Aerosol or 4 litre premixed tin</span>${me.price ? `<b>£${esc(String(me.price).replace(/\.0+$/, ''))}</b><small>${esc(pcv.priceNote || '+ VAT')}</small>` : `<b>Priced on request</b><small>${esc(pcv.priceNote || "Ask for today's price and stock")}</small>`}</div></div>
 <div class="bdhub-cta"><a class="bdhub-btn bdhub-btn--solid" href="#enquiry" data-enquire="${esc(enquire)}">Ask for a price</a><a class="bdhub-btn bdhub-btn--ghost" href="tel:${tel}">Call ${esc(menu.phone)}</a></div></div>
 ${me.img ? `<figure class="bdhub-hero-img bdfd-hero-img"><img src="${esc(me.img)}" alt="${esc(me.title)}" width="${hsz[0]}" height="${hsz[1]}" fetchpriority="high"></figure>` : ''}
 </div></section>`;
-  const intro = {
-    colour: [`Full Dip is a liquid vinyl: sprayed on like paint, it dries to an elastic, durable film that protects the surface underneath. ${me.name} comes with a matt finish as standard; add Full Dip glossifier on top for satin or gloss.`, 'It cleans with most car soaps and copes with water, mud and pressure washing. When you want a change, it peels off and leaves the original surface as it was.'],
-    primer: ['A primer gives the colour coats an even base to sit on. We recommend a grey primer under every Full Dip colour except black and grey.', 'Like the colour coats, the primer is part of the peelable film, so the whole lot comes off together when you remove the wrap.'],
-    gloss: ['Full Dip colours dry matt. The glossifier is sprayed over the colour once it has dried: one coat for a satin look, two additional coats for a glossy finish.', 'It becomes part of the same peelable film, so it comes off with the colour when you remove the wrap.'],
-  }[me.kind];
-  const ticks = ['Dries to a tough, elastic and durable film', 'Peels off when you want a change', 'Cleans with most soaps; resists water, mud and pressure washing', "Won't crack or peel off by itself with time"];
   const facts = [
     ['Finish', me.kind === 'gloss' ? 'Satin with one coat, gloss with two more' : me.kind === 'primer' ? 'Base coat under the colour' : 'Matt; satin or gloss with glossifier'],
     ['Comes as', 'Ready-to-use aerosol or 4 litre premixed tin'],
@@ -1128,7 +1173,7 @@ ${me.img ? `<figure class="bdhub-hero-img bdfd-hero-img"><img src="${esc(me.img)
     ['Lasts', lasts],
   ];
   const included = `<section class="bdhub-intro"><div class="wrap bdvp-inc"><h2>${me.kind === 'colour' ? 'About this colour.' : me.kind === 'primer' ? 'About this primer.' : 'About the glossifier.'}</h2><div class="bdhub-text">
-${intro.map((t) => `<p>${esc(t)}</p>`).join('')}
+${pcv.paras.map((t) => `<p>${esc(t)}</p>`).join('')}
 <ul class="bdvp-ticks">${ticks.map((l) => `<li>${esc(l)}</li>`).join('')}</ul>
 <dl class="bdvp-facts">${facts.map(([a, b]) => `<div><dt>${esc(a)}</dt><dd>${esc(b)}</dd></div>`).join('')}</dl>
 </div></div></section>`;
@@ -1495,7 +1540,25 @@ const VIDEOS = existsSync(join(ROOT, 'content/videos.json')) ? JSON.parse(readFi
 const SEO_KW = JSON.parse(readFileSync(join(ROOT, 'content/seo-keywords.json'), 'utf8'));
 for (const [p, x] of Object.entries(SEO_SECTIONS)) if (x.primary) SEO_KW[p] = [x.primary, x.secondary || []];
 writeFileSync(join(ROOT, 'worker/seo-sections.json'), JSON.stringify({ sections: SEO_SECTIONS, videos: VIDEOS }) + '\n');
-const FINISHED = finishSeo(built, { trail, sizes: IMG_SIZES, faqs: JSON.parse(readFileSync(join(ROOT, 'content/faqs.json'), 'utf8')), keywords: SEO_KW, sections: SEO_SECTIONS, videos: VIDEOS });
+const PRODUCT_FAQS = Object.fromEntries([...SHOP].filter(([, c]) => (c.faqs || []).length).map(([p, c]) => [p, c.faqs.filter((f) => f?.q && f?.a).map((f) => [f.q, f.a])]));
+const FINISHED = finishSeo(built, { trail, sizes: IMG_SIZES, faqs: JSON.parse(readFileSync(join(ROOT, 'content/faqs.json'), 'utf8')), keywords: SEO_KW, sections: SEO_SECTIONS, videos: VIDEOS, productFaqs: PRODUCT_FAQS });
+// CRM → Products: meta title and description where set there (after the SEO pass, so they're used as written).
+for (const [p, c] of SHOP) {
+  const h = FINISHED.get(p);
+  if (!h || !c.is_active) continue;
+  let out = h;
+  if (String(c.meta_title || '').trim()) { const t = esc(c.meta_title.trim()); out = out.replace(/<title>[\s\S]*?<\/title>/, `<title>${t}</title>`).replace(/(<meta (?:property="og:title"|name="twitter:title") content=")[^"]*"/g, `$1${t}"`); }
+  if (String(c.meta_description || '').trim()) { const d = esc(c.meta_description.trim()); out = out.replace(/(<meta (?:name="description"|property="og:description"|name="twitter:description") content=")[^"]*"/g, `$1${d}"`); }
+  FINISHED.set(p, out);
+}
+if (process.env.BD_EXPORT_PRODUCTS) {
+  const metaOf = (h, re) => decode((h.match(re) || [])[1] || '');
+  const list = wp.products.map((p) => { const cur = PRODUCT_EXPORT.get(p.path); const h = FINISHED.get(p.path) || '';
+    return { path: p.path, wpId: p.wpId, title: p.title, price: p.price, categories: p.categories, modified: p.modified, built: !!cur, ...(cur || {}),
+      faqs: PRODUCT_FAQS[p.path] || faqSetFor(p.path), metaTitle: metaOf(h, /<title>([\s\S]*?)<\/title>/), metaDescription: metaOf(h, /<meta name="description" content="([^"]*)"/) }; });
+  writeFileSync(join(ROOT, 'content/shop-products-export.json'), JSON.stringify(list, null, 1));
+  console.log(`Exported ${list.length} shop products (${list.filter((x) => x.built).length} with a product page) to content/shop-products-export.json.`);
+}
 // Internal links straight to their page: a link to an old address that redirects (menus, breadcrumbs, cards)
 // points at where it redirects to, so no click or crawl goes through a 301. Canonical and alternate links are untouched.
 {
@@ -1644,7 +1707,7 @@ if (existsSync(join(ROOT, 'crm-data'))) cpSync(join(ROOT, 'crm-data'), join(OUT,
 write('robots.txt', `User-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /_crm-page/\nDisallow: /_crm/\n\nSitemap: ${ORIGIN}/sitemap.xml\n`);
 
 // Redirects: content/site.json, plus old links to "/x" where the page is "/x-2" (or moved under a parent).
-const redirects = { ...extra.redirects, ...MERGED_PAGES };
+const redirects = { ...extra.redirects, ...MERGED_PAGES, ...Object.fromEntries([...SHOP_HIDDEN].map((p) => [p, '/shop/'])) };
 for (const p of brokenLinks) {
   if (redirects[p]) continue;
   const last = p.split('/').pop();

@@ -5,6 +5,7 @@
 //   crm-data/index.json          the page list: paths, headings, summaries, pictures, page CSS (no page HTML)
 //   crm-data/pages/<key>.json    one file per page with its HTML and schema (key: the path, "/" → "~")
 //   crm-data/blog.json           published blog posts
+//   crm-data/shop-products.json  the shop products (CRM → Products), built into the /product/ pages
 //
 // tools/build.mjs copies crm-data/ to dist/_crm/ (the worker reads it through env.ASSETS; the public can't).
 // If the CRM can't be reached nothing is changed, so the site keeps the last good copy.
@@ -32,10 +33,10 @@ const save = (file, obj) => {
   return true;
 };
 
-let feed, blog;
+let feed, blog, shop;
 try {
-  [feed, blog] = await Promise.all([get(`${FN}/seo-feed?key=${KEY}`), get(`${FN}/seo-blog?key=${KEY}`)]);
-  if (!Array.isArray(feed.pages) || !Array.isArray(blog.posts)) throw new Error('unexpected feed shape');
+  [feed, blog, shop] = await Promise.all([get(`${FN}/seo-feed?key=${KEY}`), get(`${FN}/seo-blog?key=${KEY}`), get(`${FN}/seo-feed?key=${KEY}&products=1`)]);
+  if (!Array.isArray(feed.pages) || !Array.isArray(blog.posts) || !Array.isArray(shop.products)) throw new Error('unexpected feed shape');
 } catch (e) {
   console.log(`CRM not reachable (${e.message}): keeping the last copy.`);
   process.exit(0);
@@ -49,6 +50,11 @@ feed.pages = feed.pages.filter((p) => !isSign(p));
 
 let changed = 0;
 if (save(join(DATA, 'business-signs.json'), { pages: signs })) { changed++; console.log('Business signs changed in the CRM: rebuild needed.'); writeFileSync(join(ROOT, '.business-signs-changed'), '1'); }
+// Shop products (CRM → Products): the product pages are built from them by tools/build.mjs, so a change needs a rebuild.
+// An empty list is ignored (keeps the last copy) so a CRM hiccup can't empty the shop.
+if (shop.products.length && save(join(DATA, 'shop-products.json'), { products: shop.products.map(({ updated_at, ...p }) => p) })) {
+  changed++; console.log('Shop products changed in the CRM: rebuild needed.'); writeFileSync(join(ROOT, '.shop-products-changed'), '1');
+}
 const keep = new Set();
 for (const p of feed.pages) {
   const k = pageKey(p.path);
@@ -69,4 +75,4 @@ if (existsSync(join(ROOT, 'dist'))) {
   rmSync(join(ROOT, 'dist', '_crm'), { recursive: true, force: true });
   cpSync(DATA, join(ROOT, 'dist', '_crm'), { recursive: true });
 }
-console.log(`CRM: ${feed.pages.length} pages, ${signs.length} business signs pages, ${blog.posts.length} posts, ${changed} file(s) changed.`);
+console.log(`CRM: ${feed.pages.length} pages, ${signs.length} business signs pages, ${shop.products.length} shop products, ${blog.posts.length} posts, ${changed} file(s) changed.`);

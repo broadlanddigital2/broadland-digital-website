@@ -8,3 +8,4 @@ node_modules/
 
 # set by tools/fetch-crm.mjs when the CRM changed business signs pages (the workflow then rebuilds)
 .business-signs-changed
+.shop-products-changed
