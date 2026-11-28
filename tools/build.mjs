@@ -634,6 +634,7 @@ ${vanImg ? `<a class="bdq-box bdq-offer" href="/liquid-wrapping-home/"><img src=
 // look. Hero with breadcrumbs, lead and buttons and the page picture; the WordPress text kept (its "show more");
 // the "find out more" blocks as gradient photo tiles; the inspiration gallery as a tidy grid (small, lazy-loaded
 // pictures, first nine shown, click to enlarge); the shop link and the product builder kept; a closing band.
+const WORK_PHOTOS = existsSync(join(ROOT, 'content/work-photos.json')) ? JSON.parse(readFileSync(join(ROOT, 'content/work-photos.json'), 'utf8')) : {};
 const SUB_SECTION = { signage: 'signage', print: 'print', design: 'design', 'web-dev': 'web', 'liquid-wrapping': 'liquid-wrapping' };
 function subPage(h, path) {
   const wrapM = h.match(/<div[^>]*class="category (page-service|page-products)\s*([a-z-]*)[^"]*"[^>]*>/);
@@ -674,7 +675,9 @@ ${heroImg ? `<figure class="bdhub-hero-img">${heroImg}</figure>` : ''}
   out = out.replace(/<section\b[^>]*class="container section-padding\s+section-three row"[^>]*>[\s\S]*?<\/section>/, (block) => {
     const pageWord = title.replace(/\.\s*$/, '').trim();
     const gTitle = pageWord ? `${pageWord.charAt(0).toUpperCase()}${pageWord.slice(1).toLowerCase()} we've produced.` : 'Inspiration.';
-    const imgs = [...block.matchAll(/<img\b[^>]*>/g)].map((m) => m[0]);
+    // our own photos of finished work first (content/work-photos.json), then the WordPress gallery
+    const own = (WORK_PHOTOS[path] || []).map((p) => `<img src="${p.src}" srcset="${p.small} ${p.smallWidth}w, ${p.src} ${p.width}w" width="${p.width}" height="${p.height}" alt="${esc(p.alt)}">`);
+    const imgs = [...own, ...[...block.matchAll(/<img\b[^>]*>/g)].map((m) => m[0])];
     if (!imgs.length) return '';
     const big = (tag) => { const ss = (tag.match(/srcset="([^"]*)"/) || [])[1] || ''; const c = ss.split(',').map((x) => x.trim().split(/\s+/)).filter((x) => x[1]).sort((a, b) => parseInt(b[1]) - parseInt(a[1])); const fit = c.find((x) => parseInt(x[1]) <= 1600); return (fit || c[c.length - 1] || [(tag.match(/src="([^"]+)"/) || [])[1]])[0]; };
     const cells = imgs.map((tag, i) => {
