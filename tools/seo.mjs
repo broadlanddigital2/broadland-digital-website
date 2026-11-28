@@ -56,7 +56,7 @@ const FAQ = {
     ['Can I collect my order?', 'Yes, from our Norwich workshop at Vulcan House, Vulcan Road North, NR6 6AQ, Monday to Friday, 8:30am to 5pm.'],
   ],
 };
-const faqSet = (path) => (/\/product\/full-dip-/.test(path) ? FAQ.dip : /liquid|full-dip|dip-/.test(path) ? FAQ.liquid : /van-graphics|vehicle-graphics|vans/.test(path) ? FAQ.van : FAQ.shop);
+export const faqSet = (path) => (/\/product\/full-dip-/.test(path) ? FAQ.dip : /liquid|full-dip|dip-/.test(path) ? FAQ.liquid : /van-graphics|vehicle-graphics|vans/.test(path) ? FAQ.van : FAQ.shop);
 
 function describe(path, name, trailNames) {
   const n = name.replace(/\.\s*$/, '');
@@ -396,7 +396,7 @@ function secKey(path, h) {
   return /^(signage|vehicle|sectors)/.test(seg) ? 'signage' : /^print|digital-print|large-format/.test(seg) ? 'print' : /^design/.test(seg) ? 'design' : /^web|ecommerce|woocommerce|laravel|magento/.test(seg) ? 'web-dev' : /^liquid|hydro|category\/liquid/.test(seg) ? 'liquid-wrapping' : seg;
 }
 
-export function finishSeo(pages, { trail, sizes = {}, faqs = {}, keywords = {}, sections = {}, videos = {} }) {
+export function finishSeo(pages, { trail, sizes = {}, faqs = {}, keywords = {}, sections = {}, videos = {}, productFaqs = {} }) {
   const info = new Map();
   for (const [path, h] of pages) {
     const hd = h.slice(0, h.indexOf('</head>'));
@@ -483,7 +483,7 @@ export function finishSeo(pages, { trail, sizes = {}, faqs = {}, keywords = {}, 
     body = fixHeadings(body);
     // FAQs on shop and product pages (with FAQPage schema), when the page has none
     if (shopLike && !/FAQPage/.test(head)) {
-      const set = faqSet(path);
+      const set = productFaqs[path] || faqSet(path);
       const block = `<section class="bdhub-faq bdshop-faq"><div class="wrap"><h2>Questions.</h2><div class="bdhub-faqs">${set.map(([q, a]) => `<details><summary>${esc(q)}</summary><p>${esc(a)}</p></details>`).join('')}</div></div></section>`;
       body = body.replace(/<footer\b/, block + '\n<footer');
       const ld = { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: set.map(([q, a]) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })) };
