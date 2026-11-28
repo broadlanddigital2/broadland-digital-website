@@ -1,0 +1,57 @@
+{
+ "_about": "Our own photos of finished work, shown first in a service page's \"…we've produced\" gallery (tools/build.mjs → subPage). Files in site/public/img/work/ (WebP, keyword file names, an -800 copy for phones). Keep alt text descriptive: what the sign is, the customer, the material.",
+ "/signage-home/building-signage-shop-signs": [
+  {
+   "src": "/img/work/building-sign-bus-industrial-tools-orange-flat-cut-letters.webp",
+   "small": "/img/work/building-sign-bus-industrial-tools-orange-flat-cut-letters-800.webp",
+   "width": 1600,
+   "height": 1600,
+   "smallWidth": 800,
+   "alt": "Exterior building sign: BUS Industrial Tools orange flat-cut 3D letters on a grey office facade, made and fitted by Broadland Digital"
+  },
+  {
+   "src": "/img/work/garage-shop-sign-cat-automotive-fascia-panels.webp",
+   "small": "/img/work/garage-shop-sign-cat-automotive-fascia-panels-800.webp",
+   "width": 1600,
+   "height": 1600,
+   "smallWidth": 800,
+   "alt": "Shop sign for a garage: CAT Automotive logo panel and Servicing, Diagnostics, Re-mapping fascia sign above the workshop door, made and fitted by Broadland Digital"
+  },
+  {
+   "src": "/img/work/reception-sign-norfolk-toftwood-dental-brushed-silver-flat-cut-letters.webp",
+   "small": "/img/work/reception-sign-norfolk-toftwood-dental-brushed-silver-flat-cut-letters-800.webp",
+   "width": 900,
+   "height": 1600,
+   "smallWidth": 450,
+   "alt": "Reception sign: Toftwood Dental logo and lettering in brushed silver flat-cut letters on a timber slat wall, made and fitted by Broadland Digital"
+  }
+ ],
+ "/signage-home/exterior-building-signs": [
+  {
+   "src": "/img/work/building-sign-bus-industrial-tools-orange-flat-cut-letters.webp",
+   "small": "/img/work/building-sign-bus-industrial-tools-orange-flat-cut-letters-800.webp",
+   "width": 1600,
+   "height": 1600,
+   "smallWidth": 800,
+   "alt": "Exterior building sign: BUS Industrial Tools orange flat-cut 3D letters on a grey office facade, made and fitted by Broadland Digital"
+  },
+  {
+   "src": "/img/work/garage-shop-sign-cat-automotive-fascia-panels.webp",
+   "small": "/img/work/garage-shop-sign-cat-automotive-fascia-panels-800.webp",
+   "width": 1600,
+   "height": 1600,
+   "smallWidth": 800,
+   "alt": "Shop sign for a garage: CAT Automotive logo panel and Servicing, Diagnostics, Re-mapping fascia sign above the workshop door, made and fitted by Broadland Digital"
+  }
+ ],
+ "/signage-home/interior-signs": [
+  {
+   "src": "/img/work/reception-sign-norfolk-toftwood-dental-brushed-silver-flat-cut-letters.webp",
+   "small": "/img/work/reception-sign-norfolk-toftwood-dental-brushed-silver-flat-cut-letters-800.webp",
+   "width": 900,
+   "height": 1600,
+   "smallWidth": 450,
+   "alt": "Reception sign: Toftwood Dental logo and lettering in brushed silver flat-cut letters on a timber slat wall, made and fitted by Broadland Digital"
+  }
+ ]
+}
